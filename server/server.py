@@ -47,7 +47,7 @@ def summary():
 def handle_login():
     name = request.form['name']
     name = urllib.parse.quote_plus(name)
-   # backend.register_doctor_if_not_exists(name)
+    backend.register_doctor_if_not_exists(name)
     return redirect('/home/{}'.format(name))
 
 
@@ -93,7 +93,7 @@ def overview_ranked(name, model, layer):
 def survey(name, model, layer, unit, full=False, ranked=False):
     unquote_name = urllib.parse.unquote_plus(name)
     data, old_response = backend.get_unit_data(name, model, layer, unit)
-    num_responses = backend.get_num_responses(name)
+    num_responses = backend.get_num_responses(name)  # TODO: find out where/if this is needed
     return render_template('survey.html', name=name, unquote_name=unquote_name, num_responses=num_responses, full=full,
                            ranked=ranked, model=model, layer=layer, unit=unit, data=data, old_response=old_response)
 
@@ -117,13 +117,10 @@ def handle_survey(full=False, ranked=False):
     name = request.form['name']  # doctor username
     model = request.form['model']  # resnet152
     layer = request.form['layer']  # layer4
-    unit = request.form['unit']   #unit_0076
-    q1 = request.form['q1']
-    q2 = request.form['q2']
-    q3 = request.form['q3']
-    q4 = request.form['q4']
-    answers = (q1, q2, q3, q4)
-    backend.store_response(name, model, layer, unit, answers, response_data)
+    unit = request.form['unit']   # unit_0076
+    shows_phenomena = request.form['shows_phenomena']
+    phenomena_description = request.form['phenomena_description']
+    backend.store_survey(name, model, layer, unit, shows_phenomena, phenomena_description)
     if ranked:
         return redirect('/overview/ranked/{}/{}/{}#{}'.format(name, model, layer, unit))
     elif full:
