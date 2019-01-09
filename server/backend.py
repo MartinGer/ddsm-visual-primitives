@@ -165,35 +165,37 @@ def get_num_responses(name):
     return len(get_responses(name).keys())
 
 
-def store_response(name, model, layer, unit, answers, data):
-    # keep deepminer frontend working
-    responses = get_responses(name)
-    key = '{}/{}/{}'.format(model, layer, unit)
-    responses[key] = data
-    encoded_name = base64.urlsafe_b64encode(bytes(name, 'utf-8'))
-    data_path = os.path.join(DATA_DIR, '{}.pickle'.format(encoded_name))
-    if not os.path.exists(DATA_DIR):
-        os.makedirs(DATA_DIR)
-    with open(data_path, 'wb') as f:
-        pickle.dump(responses, f)
-
-    # write unit annotation into dabase
-    if answers[0] == 'no':  # does not show visible phenomena, we dont store anything
-        return
+def store_survey(name, model, layer, unit, shows_phenomena, phenomena_description):
     db = DB(DB_FILENAME, '../db/')
     conn = db.get_connection()
 
     select_unit = int(unit.split("_")[1])  # looks like: unit_0076
     select_net = "(SELECT id FROM net WHERE net = '{}')".format(model)
     select_doctor = "(SELECT id FROM doctor WHERE name = '{}')".format(name)
+    select_description = "descriptions || '{}'".format(phenomena_description)
 
-    # try updating first
-    update_stmt = "UPDATE unit_annotation SET descriptions = descriptions || '{}' WHERE " \
-            "unit_id = {} AND net_id = {} AND doctor_id = {};".format(answers[3], select_unit, select_net, select_doctor)
+    if shows_phenomena == "true":
+        select_concept = 1
+    else:
+        select_concept = 0
+        phenomena_description = ""
+        select_description = "\'\'"
+
+    # try updating in case it exists already
+    update_stmt = "UPDATE unit_annotation SET descriptions = {}, shows_concept={} WHERE " \
+                  "unit_id = {} AND net_id = {} AND doctor_id = {};".format(select_description,
+                                                                            select_concept,
+                                                                            select_unit,
+                                                                            select_net,
+                                                                            select_doctor)
     conn.execute(update_stmt)
     # make sure it exists
-    insert_stmt = "INSERT OR IGNORE INTO unit_annotation(unit_id, net_id, doctor_id, descriptions) " \
-           "VALUES ({}, {}, {}, '{}');".format(select_unit, select_net, select_doctor, answers[3])
+    insert_stmt = "INSERT OR IGNORE INTO unit_annotation(unit_id, net_id, doctor_id, descriptions, shows_concept) " \
+                  "VALUES ({}, {}, {}, '{}', {});".format(select_unit,
+                                                        select_net,
+                                                        select_doctor,
+                                                        phenomena_description,
+                                                        select_concept)
     conn.execute(insert_stmt)
     conn.commit()
 
