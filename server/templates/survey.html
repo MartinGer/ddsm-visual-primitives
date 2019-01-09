@@ -1,6 +1,19 @@
 <!doctype html>
 {% include "navbar.html" %}
 <link rel=stylesheet type=text/css href="{{ url_for('static', filename='survey.css') }}">
+<script type="text/javascript">
+    function radioButtonClicked() {
+        if (document.getElementById('shows_phenomena_btn').checked) {
+            document.getElementById('phenomena_desc').style.display = 'block';
+        } else {
+            document.getElementById('phenomena_desc').style.display = 'none';
+            document.getElementById('phenomena_tf').value = '';
+        }
+    }
+    window.onload = function() {
+        radioButtonClicked();
+    }
+</script>
 <div class="main">
 
     <h1>{{ model }}/{{ layer }}/{{ unit }}</h1>
@@ -17,8 +30,6 @@
     <h2>Survey Questions</h2>
     <p>Note: The following questions pertain only to the images shown on this page.</p>
 
-
-
     <form action="{{ url_for('handle_survey') }}{% if full %}/full{% endif %}{% if ranked %}/ranked{% endif %}" method="post">
         <input type="hidden" name="name" value="{{ name }}">
         <input type="hidden" name="model" value="{{ model }}">
@@ -27,20 +38,20 @@
         Are there ANY recognizable phenomena among the highlighted parts in the pictures?</br>
         <p>
             <label>
-                <input name="shows_phenomena" type="radio" value="{% if old_response is not none %}{{ old_response.shows_phenomena }} {% else %}false{% endif %}" checked />
+                <input name="shows_phenomena" type="radio" onclick="javascript:radioButtonClicked();" value="{% if old_response is not none %}{{ old_response.shows_phenomena }} {% else %}false{% endif %}" checked />
                 <span>No recognizable phenomena</span>
             </label>
         </p>
         <p>
             <label>
-                <input name="shows_phenomena" type="radio" value="{% if old_response is not none %}{{ old_response.shows_phenomena }} {% else %}true{% endif %}" />
+                <input id="shows_phenomena_btn" name="shows_phenomena" type="radio" onclick="javascript:radioButtonClicked();" value="{% if old_response is not none %}{{ old_response.shows_phenomena }} {% else %}true{% endif %}" />
                 <span>Recognizable phenomena are present</span>
             </label>
         </p>
-
-        <!-- TODO: would be nice to autohide/show this depending on the radiobutton selection, also autoempty if it shows no phenomena -->
-        If there are recognizable phenoma present, please enter a description of every phenomena that you see (separate them with a comma), else leave the textfield blank.</br>
-        <textarea name="phenomena_description" rows="10" cols="100">{% if old_response is not none %}{{ old_response.phenomena_description }}{% endif %}</textarea><br>
+        <div id="phenomena_desc">
+            If there are recognizable phenoma present, please enter a description of every phenomena that you see (separate them with a comma), else leave the textfield blank.</br>
+            <textarea id="phenomena_tf" name="phenomena_description" rows="10" cols="100">{% if old_response is not none %}{{ old_response.phenomena_description }}{% endif %}</textarea><br>
+        </div>
         <input type="submit">
     </form>
 
