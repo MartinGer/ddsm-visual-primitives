@@ -20,7 +20,7 @@ CREATE TABLE IF NOT EXISTS unit_annotation (
   doctor_id INTEGER NOT NULL,
   threshold REAL,
   descriptions TEXT,
-  filter INTEGER,
+  shows_concept INTEGER,
   FOREIGN KEY(net_id) REFERENCES net(id),
   FOREIGN KEY(doctor_id) REFERENCES doctor(id),
   PRIMARY KEY(unit_id, net_id, doctor_id)
