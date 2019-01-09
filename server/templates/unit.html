@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Unit Details</title>
+</head>
+<body>
+
+<h1>Unit {{ unit_id }}</h1>
+
+<div style="margin-top:18px;">
+    <p>Images were this unit activated highest:</p>
+    {% for i in range(top_images|length) %}
+        <p>Image: {{ top_images[i] }}</p>
+        <a href="/image/{{ top_images[i] }}"><div style="
+                        height: 200px; width: 200px;
+                        background-image: url({{ "/" + preprocessed_top_images[i] }}), url({{ "/" + activation_maps[i] }});
+                        background-blend-mode: screen;
+                        background-size: contain;
+                        background-repeat: no-repeat;
+        "></div></a>
+    {% endfor %}
+</div>
+
+</body>
+</html>
