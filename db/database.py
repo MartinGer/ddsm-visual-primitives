@@ -4,7 +4,6 @@ import os
 import sys
 sys.path.insert(0,'../db')
 from populate_images import populate_db_with_images
-from populate_patches import populate_db_with_patches
 
 
 class DB:
@@ -32,7 +31,7 @@ class DB:
         # populate images
         image_list_path = os.path.join(self._db_root, "..", "data", "ddsm_raw_image_lists")
         populate_db_with_images(self.__conn, image_list_path)
-        # populate patches
-        patch_path = os.path.join(self._db_root, "..", "data", "ddsm_patches")
-        patch_list_path = os.path.join(self._db_root, "..", "data", "ddsm_3class")
-        populate_db_with_patches(self.__conn, patch_path, patch_list_path)
+
+        # TODO: development only, populate with real nets later
+        self.__conn.execute("INSERT INTO net(id, net, filename) VALUES('id_placeholder', 'resnet152', 'filename_placeholder');")
+        self.__conn.commit()
