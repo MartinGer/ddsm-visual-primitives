@@ -88,6 +88,7 @@ class DDSM(torch.utils.data.Dataset):
         self.weight = 1 / (class_count / np.amin(class_count))
 
         print("Dataset balance (normal, benign, malignant):", class_count)
+        print("Preprocessing:", IMAGE_SIZE_TO_ANALYZE, TARGET_ASPECT_RATIO, TOP_CROP, BOTTOM_CROP, LEFT_CROP, RIGHT_CROP)
 
     @staticmethod
     def create_full_image_dataset(split):
