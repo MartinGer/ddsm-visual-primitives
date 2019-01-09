@@ -39,7 +39,7 @@
         <p>
             <label>
                 <input name="shows_phenomena" type="radio" onclick="javascript:radioButtonClicked();" value="{% if old_response is not none %}{{ old_response.shows_phenomena }} {% else %}false{% endif %}" checked />
-                <span>No recognizable phenomena</span>
+                <span>No recognizable phenomena present</span>
             </label>
         </p>
         <p>
@@ -49,7 +49,7 @@
             </label>
         </p>
         <div id="phenomena_desc">
-            If there are recognizable phenoma present, please enter a description of every phenomena that you see (separate them with a comma), else leave the textfield blank.</br>
+            Please enter a description of every phenomenon that you see (separate them with a comma).</br>
             <textarea id="phenomena_tf" name="phenomena_description" rows="10" cols="100">{% if old_response is not none %}{{ old_response.phenomena_description }}{% endif %}</textarea><br>
         </div>
         <input type="submit">
