@@ -227,6 +227,8 @@ def image(image_path):
 
 @app.route('/unit/<unit_id>')
 def unit(unit_id):
+    if not os.path.exists(app.config['ACTIVATIONS_FOLDER']):
+        os.makedirs(app.config['ACTIVATIONS_FOLDER'])
     unit_id = int(unit_id)
     top_images = backend.get_top_images_for_unit(unit_id, 4)
     preprocessed_top_images = []
