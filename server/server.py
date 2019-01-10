@@ -90,10 +90,12 @@ def overview_ranked(name, model, layer):
 @app.route('/survey/<name>/<model>/<layer>/<unit>')
 def survey(name, model, layer, unit, full=False, ranked=False):
     unquote_name = urllib.parse.unquote_plus(name)
-    data, old_response = backend.get_unit_data(name, model, layer, unit)
-    num_responses = backend.get_num_responses(name)  # TODO: find out where/if this is needed
-    return render_template('survey.html', name=name, unquote_name=unquote_name, num_responses=num_responses, full=full,
-                           ranked=ranked, model=model, layer=layer, unit=unit, data=data, old_response=old_response)
+    unit_id = int(unit.split("_")[1])  # looks like: unit_0076
+    result = backend.get_top_images_with_activation_for_unit(unit_id, 8)
+    top_images, preprocessed_top_images, activation_maps = result
+    return render_template('survey.html', name=name, unquote_name=unquote_name, full=full,
+                           ranked=ranked, model=model, layer=layer, unit=unit, top_images=top_images,
+                           preprocessed_top_images=preprocessed_top_images, activation_maps=activation_maps)
 
 
 @app.route('/survey/full/<name>/<model>/<layer>/<unit>')
@@ -227,23 +229,8 @@ def image(image_path):
 
 @app.route('/unit/<unit_id>')
 def unit(unit_id):
-    if not os.path.exists(app.config['ACTIVATIONS_FOLDER']):
-        os.makedirs(app.config['ACTIVATIONS_FOLDER'])
-    unit_id = int(unit_id)
-    top_images = backend.get_top_images_for_unit(unit_id, 4)
-    preprocessed_top_images = []
-    activation_maps = []
-
-    for i, image_path in enumerate(top_images):
-        preprocessed_image = get_preview_of_preprocessed_image(os.path.join("../data/ddsm_raw/", image_path))
-        preprocessed_image_path = os.path.join(app.config['ACTIVATIONS_FOLDER'], 'preprocessed_{}.jpg'.format(uuid.uuid4()))
-        preprocessed_image.save(preprocessed_image_path)
-        preprocessed_top_images.append(preprocessed_image_path)
-        act_map_img = backend.get_activation_map(os.path.join("../data/ddsm_raw/", image_path), unit_id)
-        activation_map_path = os.path.join(app.config['ACTIVATIONS_FOLDER'], 'activation_{}.jpg'.format(uuid.uuid4()))
-        act_map_img.save(activation_map_path, "JPEG")
-        activation_maps.append(activation_map_path)
-
+    result = backend.get_top_images_with_activation_for_unit(unit_id, 4)
+    top_images, preprocessed_top_images, activation_maps = result
     return render_template('unit.html',
                            unit_id=unit_id,
                            top_images=top_images,

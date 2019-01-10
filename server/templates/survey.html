@@ -38,37 +38,39 @@
         Are there ANY recognizable phenomena among the highlighted parts in the pictures?</br>
         <p>
             <label>
-                <input name="shows_phenomena" type="radio" onclick="javascript:radioButtonClicked();" value="{% if old_response is not none %}{{ old_response.shows_phenomena }} {% else %}false{% endif %}" checked />
+                <input name="shows_phenomena" type="radio" onclick="javascript:radioButtonClicked();" value="false" checked />
                 <span>No recognizable phenomena present</span>
             </label>
         </p>
         <p>
             <label>
-                <input id="shows_phenomena_btn" name="shows_phenomena" type="radio" onclick="javascript:radioButtonClicked();" value="{% if old_response is not none %}{{ old_response.shows_phenomena }} {% else %}true{% endif %}" />
+                <input id="shows_phenomena_btn" name="shows_phenomena" type="radio" onclick="javascript:radioButtonClicked();" value="true" />
                 <span>Recognizable phenomena are present</span>
             </label>
         </p>
         <div id="phenomena_desc">
             Please enter a description of every phenomenon that you see (separate them with a comma).</br>
-            <textarea id="phenomena_tf" name="phenomena_description" rows="10" cols="100">{% if old_response is not none %}{{ old_response.phenomena_description }}{% endif %}</textarea><br>
+            <textarea id="phenomena_tf" name="phenomena_description" rows="10" cols="100"></textarea><br>
         </div>
         <input type="submit">
     </form>
 
-    {% for row in data %}
-        <div class="thumbwrap">
-            {% for item in row %}
-                <a class="thumb" href="#">
-                    <img src="{{ url_for('static', filename=item.img_name) }}" class="patch">
-                    <p class="label">patch label: {{ item.label }}</p>
-                    <div>
-                        <img src="{{ url_for('static', filename=item.raw_name) }}" class="raw">
-                        <div style="{{ item.style }} border: 2px solid red;"></div>
-                    </div>
-                </a>
-            {% endfor %}
-        </div>
+
+    <div style="margin-top:18px;">
+    {% for i in range(top_images|length) %}
+        {% if i % 4 == 0 %} </br> {% endif %}
+        <a href="/image/{{ top_images[i] }}" style="display: inline-block">
+            <div style="
+                    height: 200px; width: 200px;
+                    background-image: url({{ "/" + preprocessed_top_images[i] }}), url({{ "/" + activation_maps[i] }});
+                    background-blend-mode: screen;
+                    background-size: contain;
+                    background-repeat: no-repeat;">
+
+            </div>
+        </a>
     {% endfor %}
+    </div>
     <div style="clear: both;"></div>
 
 </div>

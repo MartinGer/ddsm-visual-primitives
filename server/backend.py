@@ -2,6 +2,7 @@ import base64
 import glob
 import os
 import pickle
+import uuid
 
 import sys
 sys.path.insert(0,'..')
@@ -17,6 +18,7 @@ from common.dataset import get_preview_of_preprocessed_image
 STATIC_DIR = 'static'
 DATA_DIR = 'data'
 LOG_DIR = os.path.join(DATA_DIR, 'log')
+ACTIVATIONS_FOLDER = os.path.join(STATIC_DIR, 'activation_maps')
 
 DB_FILENAME = os.environ['DB_FILENAME'] if 'DB_FILENAME' in os.environ else 'test.db'
 
@@ -250,6 +252,27 @@ def get_top_images_for_unit(unit_id, count):
         top_images.append(row[0])
 
     return top_images
+
+
+def get_top_images_with_activation_for_unit(unit_id, count):
+    if not os.path.exists(ACTIVATIONS_FOLDER):
+        os.makedirs(ACTIVATIONS_FOLDER)
+    unit_id = int(unit_id)
+    top_images = get_top_images_for_unit(unit_id, count)
+    preprocessed_top_images = []
+    activation_maps = []
+
+    for i, image_path in enumerate(top_images):
+        preprocessed_image = get_preview_of_preprocessed_image(os.path.join("../data/ddsm_raw/", image_path))
+        preprocessed_image_path = os.path.join(ACTIVATIONS_FOLDER, 'preprocessed_{}.jpg'.format(uuid.uuid4()))
+        preprocessed_image.save(preprocessed_image_path)
+        preprocessed_top_images.append(preprocessed_image_path)
+        act_map_img = get_activation_map(os.path.join("../data/ddsm_raw/", image_path), unit_id)
+        activation_map_path = os.path.join(ACTIVATIONS_FOLDER, 'activation_{}.jpg'.format(uuid.uuid4()))
+        act_map_img.save(activation_map_path, "JPEG")
+        activation_maps.append(activation_map_path)
+
+    return (top_images, preprocessed_top_images, activation_maps)
 
 
 def get_activation_map(image_path, unit_id):
