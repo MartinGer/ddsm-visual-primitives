@@ -158,6 +158,26 @@ def get_num_responses(name):
     return len(get_responses(name).keys())
 
 
+def get_survey(name, model, layer, unit):
+    db = DB(DB_FILENAME, '../db/')
+    conn = db.get_connection()
+
+    select_unit = int(unit.split("_")[1])  # looks like: unit_0076
+    select_net = "(SELECT id FROM net WHERE net = '{}')".format(model)
+    select_doctor = "(SELECT id FROM doctor WHERE name = '{}')".format(name)
+
+    select_stmt = "SELECT descriptions FROM unit_annotation " \
+                  "WHERE unit_id = {} " \
+                  "AND net_id = {} " \
+                  "AND doctor_id = {};".format(select_unit, select_net, select_doctor)
+
+    result = conn.execute(select_stmt)
+    description = [row for row in result]
+    if description:
+        description = description[0][0].split('\n')
+    return description
+
+
 def store_survey(name, model, layer, unit, shows_phenomena, phenomena):
     db = DB(DB_FILENAME, '../db/')
     conn = db.get_connection()
