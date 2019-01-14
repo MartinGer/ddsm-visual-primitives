@@ -3,17 +3,18 @@ import glob
 import os
 import pickle
 import uuid
-
+import math
 import sys
-sys.path.insert(0,'..')
+sys.path.insert(0, '..')
 from db.doctor import insert_doctor_into_db_if_not_exists
 from db.database import DB
 import numpy as np
-from PIL import Image, ImageOps
+from PIL import Image
+import matplotlib.colors
 
 from training.grad_cam import run_grad_cam
-from analyze_single_image import SingleImageAnalysis
-from common.dataset import get_preview_of_preprocessed_image
+from training.analyze_single_image import SingleImageAnalysis
+from training.common.dataset import get_preview_of_preprocessed_image
 
 STATIC_DIR = 'static'
 DATA_DIR = 'data'
@@ -238,7 +239,7 @@ def resize_activation_map(img, activation_map):
 def normalize_activation_map(activation_map):
     max_value = activation_map.max()
     min_value = activation_map.min()
-    activation_map = 255 * ((activation_map - min_value) / (max_value - min_value))
+    activation_map = (activation_map - min_value) / (max_value - min_value)
     return activation_map
 
 
@@ -290,9 +291,44 @@ def get_activation_map(image_path, unit_id):
     result = single_image_analysis.analyze_one_image(image_path)
 
     activation_map = result.feature_maps[unit_id]
-    activation_map_normalized = normalize_activation_map(activation_map)
-
-    act_map_img = Image.fromarray(activation_map_normalized.astype(np.uint8), mode="L")
-    act_map_img = ImageOps.colorize(act_map_img, (0, 0, 0), (255, 0, 0))
+    act_map_img = to_heatmap(activation_map)
     act_map_img = act_map_img.resize(preprocessed_full_image.size, resample=Image.BICUBIC)
     return act_map_img
+
+
+def to_heatmap(activation_map):
+    activation_map_normalized = normalize_activation_map(activation_map)
+
+    get_highest_activations_in_percentage(activation_map_normalized, 20)
+
+    activation_heatmap = np.ndarray((activation_map.shape[0], activation_map.shape[1], 3), np.double)
+    for x in range(activation_map.shape[0]):
+        for y in range(activation_map.shape[1]):
+            v = activation_map_normalized[x, y]
+            activation_heatmap[x, y] = matplotlib.colors.hsv_to_rgb((0.5 - (v * 0.5), 1, v))
+
+    activation_heatmap = activation_heatmap * 255
+    return Image.fromarray(activation_heatmap.astype(np.uint8), mode="RGB")
+
+
+def get_highest_activations_in_percentage(activation_map, percentage):
+    no_of_elements_in_matrix = activation_map.shape[0] * activation_map.shape[1]
+    no_of_elements_in_percentage_range = math.ceil((no_of_elements_in_matrix/100) * percentage)
+
+    flat = activation_map.flatten()
+    flat.sort()
+    threshold = flat[-no_of_elements_in_percentage_range:][0]
+
+    for x in range(len(activation_map)):
+        for y in range(len(activation_map[0])):
+            if activation_map[x][y] < threshold:
+                activation_map[x][y] = 0
+
+    print('Showing top', percentage, 'percent of activations in activation map. That`s'
+          , no_of_elements_in_percentage_range, 'of', no_of_elements_in_matrix, 'elements.')
+    return activation_map
+
+
+def sum_matrix(matrix):
+        return sum(map(sum, matrix))
+

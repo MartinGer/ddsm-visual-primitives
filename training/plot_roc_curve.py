@@ -7,8 +7,8 @@ import torchnet
 from munch import Munch
 from torch.autograd import Variable
 
-from dataset import DDSM
-from models.resnet_3class import get_resnet152_3class_model
+from common.dataset import DDSM, preprocessing_description
+from common.model import get_resnet152_3class_model
 
 from tqdm import tqdm as tqdm
 from sklearn.metrics import roc_curve
@@ -66,12 +66,11 @@ for input, target in tqdm(val_loader):
 
 # --- Print statistics: ---
 checkpoint_identifier = checkpoint_path.replace('/', '__')
-with open('auc_score_{}.txt'.format(checkpoint_identifier), 'w') as text_file:
+with open('auc_score_{}_new.txt'.format(checkpoint_identifier), 'w') as text_file:
+    print(preprocessing_description(), file=text_file)
     for i in range(cfg.arch.num_classes):
         print('class {}'.format(i), file=text_file)
         print('torchnet.meter.AUCMeter: {}'.format(aucs[i].value()[0]), file=text_file)
-        print('sklearn.metrics.roc_auc_score: {}'.format(roc_auc_score(targets[i], probs[i])), file=text_file)
-        print('', file=text_file)
 
 
 def plot_roc_curve(y_true, y_score, filename):

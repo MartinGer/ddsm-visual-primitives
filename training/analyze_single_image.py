@@ -6,8 +6,8 @@ import torch.utils.data
 import torch.nn as nn
 from munch import Munch
 from torch.autograd import Variable
-from common.dataset import preprocess_image_default
-from common.model import get_model_from_config
+from training.common.dataset import preprocess_image_default
+from training.common.model import get_model_from_config
 
 import sys
 sys.path.insert(0, '..')

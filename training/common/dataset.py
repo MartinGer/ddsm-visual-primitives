@@ -11,6 +11,7 @@ TOP_CROP = 200
 BOTTOM_CROP = 200
 LEFT_CROP = 50
 RIGHT_CROP = 50
+BLACK_LEVEL = 55
 
 
 def get_default_transform():
@@ -48,7 +49,7 @@ def preprocess_image(path, target_size, transform):
     image = Image.open(path)
     image = resize_and_pad_image(image, target_size, TARGET_ASPECT_RATIO)
     image = np.asarray(image).astype(np.int16)
-    image = np.clip((image - 55) * (255.0 / 200), 0, 255).astype(np.uint8)
+    image = np.clip((image - BLACK_LEVEL) * (255.0 / (255 - BLACK_LEVEL)), 0, 255).astype(np.uint8)
     image = np.broadcast_to(np.expand_dims(image, 2), image.shape + (3,))  # image shape is now (~1500, 896, 3)
     image = transform(image)  # image shape is now (3, ~1500, 896) and a it is a tensor
     return image
@@ -63,9 +64,14 @@ def get_preview_of_preprocessed_image(path):
     image = Image.open(path)
     image = resize_and_pad_image(image, IMAGE_SIZE_TO_ANALYZE, TARGET_ASPECT_RATIO)
     image = np.asarray(image).astype(np.int16)
-    image = np.clip((image - 55) * (255.0 / 200), 0, 255).astype(np.uint8)
+    image = np.clip((image - BLACK_LEVEL) * (255.0 / (255 - BLACK_LEVEL)), 0, 255).astype(np.uint8)
     image = Image.fromarray(image)
     return image
+
+
+def preprocessing_description():
+    return "Preprocessing (IMAGE_SIZE_TO_ANALYZE, TARGET_ASPECT_RATIO, TOP_CROP, BOTTOM_CROP, LEFT_CROP, RIGHT_CROP, BLACK_LEVEL):\n" + \
+        str((IMAGE_SIZE_TO_ANALYZE, TARGET_ASPECT_RATIO, TOP_CROP, BOTTOM_CROP, LEFT_CROP, RIGHT_CROP, BLACK_LEVEL))
 
 
 class DDSM(torch.utils.data.Dataset):
@@ -88,7 +94,8 @@ class DDSM(torch.utils.data.Dataset):
         self.weight = 1 / (class_count / np.amin(class_count))
 
         print("Dataset balance (normal, benign, malignant):", class_count)
-        print("Preprocessing:", IMAGE_SIZE_TO_ANALYZE, TARGET_ASPECT_RATIO, TOP_CROP, BOTTOM_CROP, LEFT_CROP, RIGHT_CROP)
+        print(preprocessing_description())
+
 
     @staticmethod
     def create_full_image_dataset(split):
