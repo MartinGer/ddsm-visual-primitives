@@ -7,13 +7,57 @@
             document.getElementById('phenomena_desc').style.display = 'block';
         } else {
             document.getElementById('phenomena_desc').style.display = 'none';
-            document.getElementById('phenomena_tf').value = '';
         }
     }
     window.onload = function() {
         radioButtonClicked();
+
+        var subOptions = document.querySelectorAll('ul.subList');
+
+
+        subOptions.forEach(subOption => {
+            subOption.style.display = 'none';
+        });
+    };
+
+
+    var getSiblings = function (elem) {
+        var siblings = [];
+        var sibling = elem.parentNode.firstChild;
+        for (; sibling; sibling = sibling.nextSibling) {
+            if (sibling.nodeType !== 1 || sibling === elem) continue;
+            siblings.push(sibling);
+        }
+        return siblings;
+    };
+
+
+    function optionClicked(elem) {
+        var siblings = getSiblings(elem);
+        for (s of siblings) {
+            if (s.tagName == 'LABEL') {
+
+            } else {
+                if (elem.checked) {
+                    s.style.display = 'block';
+                } else {
+                    s.style.display = 'none';
+                    s.querySelectorAll('input.subOption').forEach(subOpt => {
+                        subOpt.checked = false;
+                    })
+                }
+            }
+        }
     }
+
+
+
 </script>
+<style type="text/css">
+    ul {
+        list-style: none;
+    }
+</style>
 <div class="main">
 
     <h1>{{ model }}/{{ layer }}/{{ unit }}</h1>
@@ -48,9 +92,93 @@
                 <span>Recognizable phenomena are present</span>
             </label>
         </p>
-        <div id="phenomena_desc">
-            Please enter a description of every phenomenon that you see (separate them with a comma).</br>
-            <textarea id="phenomena_tf" name="phenomena_description" rows="10" cols="100"></textarea><br>
+        <div id="phenomena_desc" class="phenomena_desc">
+            <ul>
+                <li>
+                    <input type="checkbox" id="option" onclick="optionClicked(this)"><label for="option">Herdläsion</label>
+                    <ul class="subList">
+                        <li>Form</li>
+                        <li><label><input type="checkbox" class="subOption" name="phe[mass[oval]]">Oval</label></li>
+                        <li><label><input type="checkbox" class="subOption" name="phe[mass[round]]">Rund</label></li>
+                        <li><label><input type="checkbox" class="subOption" name="phe[mass[irregular]]">Unregelmäßig</label></li>
+                    </ul>
+                    <ul class="subList">
+                        <li>Rand</li>
+                        <li><label><input type="checkbox" class="subOption" name="phe[margin[circumscribed]]">Umschrieben</label></li>
+                        <li><label><input type="checkbox" class="subOption" name="phe[margin[obscured]]">Verdeckt</label></li>
+                        <li><label><input type="checkbox" class="subOption" name="phe[margin[microlobulated]]">Mikrobuliert</label></li>
+                        <li><label><input type="checkbox" class="subOption" name="phe[margin[spiculated]]">Spikuliert</label></li>
+                    </ul>
+                    <ul class="subList">
+                        <li>Dichte</li>
+                        <li><label><input type="checkbox" class="subOption" name="phe[density[high]]">Hoch</label></li>
+                        <li><label><input type="checkbox" class="subOption" name="phe[density[equal]]">Gleich</label></li>
+                        <li><label><input type="checkbox" class="subOption" name="phe[density[low]]">Gering</label></li>
+                        <li><label><input type="checkbox" class="subOption" name="phe[density[fat]]">Fetthaltig</label></li>
+                    </ul>
+                </li>
+
+                <li>
+                    <input type="checkbox" id="option" onclick="optionClicked(this)"><label for="option">Verkalkung</label>
+                    <ul class="subList">
+                        <li>Verteilung</li>
+                        <li><label><input type="checkbox" class="subOption" name="phe[distribution[diffuse]]">Diffus</label></li>
+                        <li><label><input type="checkbox" class="subOption" name="phe[distribution[regional]]">Regional</label></li>
+                        <li><label><input type="checkbox" class="subOption" name="phe[distribution[grouped]]">Gruppiert</label></li>
+                        <li><label><input type="checkbox" class="subOption" name="phe[distribution[linear]]">Linear</label></li>
+                        <li><label><input type="checkbox" class="subOption" name="phe[distribution[segmental]]">Segmental</label></li>
+                    </ul>
+                    <ul class="subList">
+                        <li>Form</li>
+                        <li><label><input type="checkbox" class="subOption" name="phe[type[vascular]]">Gefäßverkalkung</label></li>
+                        <li><label><input type="checkbox" class="subOption" name="phe[type[skin]]">Hautverkalkung</label></li>
+                        <li><label><input type="checkbox" class="subOption" name="phe[type[popcorn]]">Popcorn-Verkalkung</label></li>
+                        <li><label><input type="checkbox" class="subOption" name="phe[type[round]]">Runde Verkalkung</label></li>
+                        <li><label><input type="checkbox" class="subOption" name="phe[type[rim]]">Randverkalkung</label></li>
+                        <li><label><input type="checkbox" class="subOption" name="phe[type[dystrophic]">Dystroph</label></li>
+                        <li><label><input type="checkbox" class="subOption" name="phe[type[suture]]">Nahtmaterial</label></li>
+                        <li><label><input type="checkbox" class="subOption" name="phe[type[amorphous]]">Amorph</label></li>
+                        <li><label><input type="checkbox" class="subOption" name="phe[type[courseheterogenous]]">Grob heterogen</label></li>
+                    </ul>
+                </li>
+
+                <li>
+                    <input type="checkbox" id="option" onclick="optionClicked(this)" name="phe[architectural distorsion]"><label for="option">Architekturzerstörungen</label>
+                </li>
+
+                <li>
+                    <input type="checkbox" id="option" onclick="optionClicked(this)"><label for="option">Asymetrien</label>
+                    <ul class="subList">
+                        <li>Typ</li>
+                        <li><label><input type="checkbox" class="subOption" name="phe[asymetry[global]]">Global</label></li>
+                        <li><label><input type="checkbox" class="subOption"name="phe[asymetry[focal]]">Fokal</label></li>
+                    </ul>
+                </li>
+
+                <li>
+                    <input type="checkbox" id="option" onclick="optionClicked(this)" name="phe[skinlesion]"><label for="option">Hautläsion</label>
+                </li>
+
+                <li>
+                    <input type="checkbox" id="option" onclick="optionClicked(this)" name="phe[milkduct]"><label for="option">Einzelner erweiterter Milchgang</label>
+                </li>
+
+                <li>
+                    <input type="checkbox" id="option" onclick="optionClicked(this)" name="phe[intramammarylymphnode]"><label for="option">Intramammärer Lymphknoten</label>
+                </li>
+
+                 <li>
+                    <input type="checkbox" id="option" onclick="optionClicked(this)"><label for="option">Begleiterscheinungen</label>
+                    <ul class="subList">
+                        <li><label><input type="checkbox" class="subOption" name="phe[skinretraction]">Hautretraktion</label></li>
+                        <li><label><input type="checkbox" class="subOption" name="phe[mamillaryretraction]">Mamillenretraktion</label></li>
+                        <li><label><input type="checkbox" class="subOption" name="phe[skinthickening]">Hautverdickung</label></li>
+                        <li><label><input type="checkbox" class="subOption" name="phe[trabeculary]">Trabekuläre Verdichtung</label></li>
+                        <li><label><input type="checkbox" class="subOption" name="phe[axillary]">Auxiläre Verdichtung</label></li>
+                    </ul>
+
+                </li>
+            </ul>
         </div>
         <input type="submit">
     </form>
