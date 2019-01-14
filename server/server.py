@@ -204,11 +204,7 @@ def image(image_path):
 
     for i in range(units_to_show):
         activation_map = top_units_and_activations[i][2]  # activation map for unit with rank i
-
-        activation_map_normalized = backend.normalize_activation_map(activation_map)
-
-        act_map_img = Image.fromarray(activation_map_normalized.astype(np.uint8), mode="L")
-        act_map_img = ImageOps.colorize(act_map_img, (0, 0, 0), (255, 0, 0))
+        act_map_img = backend.to_heatmap(activation_map)
         act_map_img = act_map_img.resize(preprocessed_full_image.size, resample=Image.BICUBIC)
         activation_map_path = os.path.join(app.config['ACTIVATIONS_FOLDER'], 'activation_{}.jpg'.format(uuid.uuid4()))
         act_map_img.save(activation_map_path, "JPEG")
