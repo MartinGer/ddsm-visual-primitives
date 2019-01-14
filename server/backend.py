@@ -12,8 +12,8 @@ from PIL import Image
 import matplotlib.colors
 
 from training.grad_cam import run_grad_cam
-from analyze_single_image import SingleImageAnalysis
-from common.dataset import get_preview_of_preprocessed_image
+from training.analyze_single_image import SingleImageAnalysis
+from training.common.dataset import get_preview_of_preprocessed_image
 
 STATIC_DIR = 'static'
 DATA_DIR = 'data'
