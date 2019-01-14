@@ -2,7 +2,7 @@ import base64
 import glob
 import os
 import pickle
-
+import math
 import sys
 sys.path.insert(0, '..')
 from db.doctor import insert_doctor_into_db_if_not_exists
@@ -265,6 +265,9 @@ def get_activation_map(image_path, unit_id):
 
 def to_heatmap(activation_map):
     activation_map_normalized = normalize_activation_map(activation_map)
+
+    get_highest_activations_in_percentage(activation_map_normalized, 20)
+
     activation_heatmap = np.ndarray((activation_map.shape[0], activation_map.shape[1], 3), np.double)
     for x in range(activation_map.shape[0]):
         for y in range(activation_map.shape[1]):
@@ -273,3 +276,26 @@ def to_heatmap(activation_map):
 
     activation_heatmap = activation_heatmap * 255
     return Image.fromarray(activation_heatmap.astype(np.uint8), mode="RGB")
+
+
+def get_highest_activations_in_percentage(activation_map, percentage):
+    no_of_elements_in_matrix = activation_map.shape[0] * activation_map.shape[1]
+    no_of_elements_in_percentage_range = math.ceil((no_of_elements_in_matrix/100) * percentage)
+
+    flat = activation_map.flatten()
+    flat.sort()
+    threshold = flat[-no_of_elements_in_percentage_range:][0]
+
+    for x in range(len(activation_map)):
+        for y in range(len(activation_map[0])):
+            if activation_map[x][y] < threshold:
+                activation_map[x][y] = 0
+
+    print('Showing top', percentage, 'percent of activations in activation map. That`s'
+          , no_of_elements_in_percentage_range, 'of', no_of_elements_in_matrix, 'elements.')
+    return activation_map
+
+
+def sum_matrix(matrix):
+        return sum(map(sum, matrix))
+
