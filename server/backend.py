@@ -143,15 +143,6 @@ def get_labels():
     return labels
 
 
-def log_response(data):
-    if not os.path.exists(LOG_DIR):
-        os.makedirs(LOG_DIR)
-    timestamp = data['timestamp']
-    filename = '{}_response.pickle'.format(timestamp)
-    with open(os.path.join(LOG_DIR, filename), 'wb') as f:
-        pickle.dump(data, f)
-
-
 def get_responses(name):
     encoded_name = base64.urlsafe_b64encode(bytes(name, 'utf-8'))
     data_path = os.path.join(DATA_DIR, '{}.pickle'.format(encoded_name))
@@ -167,25 +158,24 @@ def get_num_responses(name):
     return len(get_responses(name).keys())
 
 
-def store_survey(name, model, layer, unit, shows_phenomena, phenomena_description):
+def store_survey(name, model, layer, unit, shows_phenomena, phenomena):
     db = DB(DB_FILENAME, '../db/')
     conn = db.get_connection()
 
+    phenomena_description = '\n'.join(phenomena)
     select_unit = int(unit.split("_")[1])  # looks like: unit_0076
     select_net = "(SELECT id FROM net WHERE net = '{}')".format(model)
     select_doctor = "(SELECT id FROM doctor WHERE name = '{}')".format(name)
-    select_description = "descriptions || '{}'".format(phenomena_description)
 
     if shows_phenomena == "true":
         select_concept = 1
     else:
         select_concept = 0
         phenomena_description = ""
-        select_description = "\'\'"
 
     # try updating in case it exists already
-    update_stmt = "UPDATE unit_annotation SET descriptions = {}, shows_concept={} WHERE " \
-                  "unit_id = {} AND net_id = {} AND doctor_id = {};".format(select_description,
+    update_stmt = "UPDATE unit_annotation SET descriptions = '{}', shows_concept={} WHERE " \
+                  "unit_id = {} AND net_id = {} AND doctor_id = {};".format(phenomena_description,
                                                                             select_concept,
                                                                             select_unit,
                                                                             select_net,
