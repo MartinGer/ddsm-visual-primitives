@@ -8,11 +8,10 @@ from munch import Munch
 from torch.autograd import Variable
 
 from common.dataset import DDSM, preprocessing_description
-from common.model import get_resnet152_3class_model
+from common.model import get_resnet_3class_model
 
 from tqdm import tqdm as tqdm
 from sklearn.metrics import roc_curve
-from sklearn.metrics import roc_auc_score
 import matplotlib.pyplot as plt
 
 
@@ -35,7 +34,7 @@ if cfg.training.resume is not None:
         raise Exception
 
 # --- Prepare model: ---
-model, start_epoch, optimizer_state, features_layer = get_resnet152_3class_model(checkpoint_path)
+model, start_epoch, optimizer_state, features_layer = get_resnet_3class_model(checkpoint_path, subtype=cfg.arch.model)
 optimizer = torch.optim.SGD(model.parameters(),
                             lr=cfg.optimizer.lr,
                             momentum=cfg.optimizer.momentum,
