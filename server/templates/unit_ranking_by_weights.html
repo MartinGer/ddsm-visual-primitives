@@ -1,0 +1,10 @@
+<!doctype html>
+<body>
+This is a list of all checkpoints listed in the <tt>&ltproject-home&gt/training/checkpoints_full_images</tt> directory.
+<ul>
+{% for link in links %}
+    <li><a href="/unit_ranking_by_weights/{% if session %}{{ session }}/{% endif %}{{ link }}">{{ link }}</a></li>
+{% endfor %}
+</ul>
+</body>
+</html>
