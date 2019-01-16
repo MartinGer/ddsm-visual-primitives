@@ -7,13 +7,13 @@ import urllib.parse
 import os
 import backend
 import sys
-from PIL import Image, ImageOps
+from PIL import Image
 import matplotlib.pyplot as plt
-import numpy as np
 import uuid
+from shutil import copyfile
 
 sys.path.insert(0, '../training')
-from common.dataset import get_preview_of_preprocessed_image
+from common.dataset import get_preview_of_preprocessed_image, preprocessing_description
 
 app = Flask(__name__)
 
@@ -187,14 +187,21 @@ def example_analysis():
     return image('cancer_05-C_0128_1.LEFT_CC.LJPEG.1.jpg')
 
 
-@app.route('/image/<image_path>')
-def image(image_path):
-    image_path = os.path.join('../data/ddsm_raw/', image_path)
+@app.route('/image/<image_filename>')
+def image(image_filename):
+    image_path = os.path.join('../data/ddsm_raw/', image_filename)
     preprocessed_full_image = get_preview_of_preprocessed_image(image_path)
-    preprocessed_image_height = preprocessed_full_image.size[1]
     preprocessed_full_image_path = os.path.join(app.config['ACTIVATIONS_FOLDER'], 'full_image_{}.jpg'.format(uuid.uuid4()))
     preprocessed_full_image.save(preprocessed_full_image_path)
     result = backend.single_image_analysis.analyze_one_image(image_path)
+
+    mask_dirs = ["benigns", "benign_without_callbacks", "cancers"]
+    mask_path = ""
+    for mask_dir in mask_dirs:
+        orig_mask_path = os.path.join('../data/ddsm_masks/3class', mask_dir, image_filename[:-4] + '.png')
+        if os.path.exists(orig_mask_path):
+            mask_path = os.path.join(app.config['ACTIVATIONS_FOLDER'], 'mask_{}.png'.format(uuid.uuid4()))
+            copyfile(orig_mask_path, mask_path)
 
     units_to_show = 10
     top_units_and_activations = result.get_top_units(result.classification, units_to_show)
@@ -209,11 +216,14 @@ def image(image_path):
         act_map_img.save(activation_map_path, "JPEG")
         activation_maps.append(activation_map_path)
 
+    preprocessing_descr = preprocessing_description()
+
     return render_template('image.html',
                            image_path=result.image_path,
                            preprocessed_full_image_path=preprocessed_full_image_path,
-                           preprocessed_image_height=preprocessed_image_height,
+                           mask_path=mask_path,
                            checkpoint_path=result.checkpoint_path,
+                           preprocessing_descr=preprocessing_descr,
                            classification=result.classification,
                            class_probs=result.class_probs,
                            top_units_and_activations=top_units_and_activations,

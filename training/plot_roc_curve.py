@@ -8,12 +8,12 @@ from munch import Munch
 from torch.autograd import Variable
 
 from common.dataset import DDSM, preprocessing_description
-from common.model import get_resnet152_3class_model
+from common.model import get_resnet_3class_model
 
 from tqdm import tqdm as tqdm
 from sklearn.metrics import roc_curve
-from sklearn.metrics import roc_auc_score
 import matplotlib.pyplot as plt
+import numpy as np
 
 
 # --- Load config file: ---
@@ -35,7 +35,7 @@ if cfg.training.resume is not None:
         raise Exception
 
 # --- Prepare model: ---
-model, start_epoch, optimizer_state, features_layer = get_resnet152_3class_model(checkpoint_path)
+model, start_epoch, optimizer_state, features_layer = get_resnet_3class_model(checkpoint_path, subtype=cfg.arch.model)
 optimizer = torch.optim.SGD(model.parameters(),
                             lr=cfg.optimizer.lr,
                             momentum=cfg.optimizer.momentum,
@@ -53,11 +53,18 @@ probs = [[] for _ in range(cfg.arch.num_classes)]
 aucs = [torchnet.meter.AUCMeter() for _ in range(cfg.arch.num_classes)]
 
 # --- Run model on all full images and store classification results: ---
+image_count = np.zeros([3], np.int32)
+correct = np.zeros([3], np.int32)
 for input, target in tqdm(val_loader):
     with torch.no_grad():
         input_var = Variable(input)
         output = model(input_var)
         prob = nn.Softmax(dim=1)(output)
+
+    for i in range(len(prob)):
+        image_count[target] += 1
+        if np.argmax(prob[i]) == target[i]:
+            correct[target] += 1
 
     for i in range(cfg.arch.num_classes):
         aucs[i].add(prob[:, i].data, target == i)
@@ -68,9 +75,11 @@ for input, target in tqdm(val_loader):
 checkpoint_identifier = checkpoint_path.replace('/', '__')
 with open('auc_score_{}_new.txt'.format(checkpoint_identifier), 'w') as text_file:
     print(preprocessing_description(), file=text_file)
+    correct_percent = (correct.astype(np.float) / image_count) * 100
     for i in range(cfg.arch.num_classes):
         print('class {}'.format(i), file=text_file)
         print('torchnet.meter.AUCMeter: {}'.format(aucs[i].value()[0]), file=text_file)
+        print("Correct classified: {}/{} -> {:.1f}%".format(correct[i], image_count[i], correct_percent[i]), file=text_file)
 
 
 def plot_roc_curve(y_true, y_score, filename):
