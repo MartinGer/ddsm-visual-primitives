@@ -8,21 +8,21 @@ sorted_weights_class_2
 <h2>Class weights for class 0</h2>
 <ul>
 {% for weight in sorted_weights_class_0 %}
-    <li>Unit {{ weight[0] }} has weight {{ weight[1] }}</li>
+    <li><a href="/unit/{{ weight[0] }}">Unit {{ weight[0] }}</a> has weight {{ weight[1] }}</li>
 {% endfor %}
 </ul>
 
 <h2>Class weights for class 1</h2>
 <ul>
     {% for weight in sorted_weights_class_1 %}
-        <li>Unit {{ weight[0] }} has weight {{ weight[1] }}</li>
+        <li><a href="/unit/{{ weight[0] }}">Unit {{ weight[0] }}</a> has weight {{ weight[1] }}</li>
     {% endfor %}
 </ul>
 
 <h2>Class weights for class 2</h2>
 <ul>
     {% for weight in sorted_weights_class_2 %}
-        <li>Unit {{ weight[0] }} has weight {{ weight[1] }}</li>
+        <li><a href="/unit/{{ weight[0] }}">Unit {{ weight[0] }}</a> has weight {{ weight[1] }}</li>
     {% endfor %}
 </ul>
 </body>
