@@ -5,7 +5,7 @@ import torch.utils.data
 import torch.backends.cudnn as cudnn
 import torch.nn as nn
 
-from models.resnet import resnet152, resnet18
+from training.models.resnet import resnet152, resnet18
 
 
 def get_resnet_3class_model(checkpoint_path=None, subtype='resnet152'):

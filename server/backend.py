@@ -299,7 +299,7 @@ def get_activation_map(image_path, unit_id):
 def to_heatmap(activation_map):
     activation_map_normalized = normalize_activation_map(activation_map)
 
-    get_highest_activations_in_percentage(activation_map_normalized, 100)
+    get_highest_activations_in_percentage(activation_map_normalized, 0.25)
 
     activation_heatmap = np.ndarray((activation_map.shape[0], activation_map.shape[1], 3), np.double)
     for x in range(activation_map.shape[0]):

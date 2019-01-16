@@ -5,6 +5,9 @@ sorted_weights_class_0
 sorted_weights_class_1
 sorted_weights_class_2
 -->
+<h1>Checkpoint {{ link }} loaded</h1>
+<p>Inspect the top activations for this network state or upload an image to get results<p>
+<a href="/unit_ranking_by_weights/{% if session %}{{ session }}/{% endif %}{{ link }}/upload">Upload and inspect an image</a>
 <h2>Class weights for class 0</h2>
 <ul>
 {% for weight in sorted_weights_class_0 %}

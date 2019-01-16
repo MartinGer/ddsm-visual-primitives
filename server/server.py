@@ -51,18 +51,8 @@ def handle_login():
 @app.route('/home/<name>')
 def home(name):
     unquote_name = urllib.parse.unquote_plus(name)
-    models_and_layers = backend.get_models_and_layers()
-    models_and_layers = map(lambda x: '{}/{}'.format(x[0], x[1]), models_and_layers)
-    full_models_and_layers = backend.get_models_and_layers(full=True)
-    full_models_and_layers = map(lambda x: '{}/{}'.format(x[0], x[1]), full_models_and_layers)
-    ranked_models_and_layers = backend.get_models_and_layers(full=True, ranked=True)
-    ranked_models_and_layers = map(lambda x: '{}/{}'.format(x[0], x[1]), ranked_models_and_layers)
     responded_units = backend.get_responded_units(name)
-    num_responses = backend.get_num_responses(name)
-    return render_template('home.html', name=name, unquote_name=unquote_name, num_responses=num_responses,
-                           models_and_layers=models_and_layers, full_models_and_layers=full_models_and_layers,
-                           ranked_models_and_layers=ranked_models_and_layers,
-                           responded_units=responded_units)
+    return render_template('home.html', name=name, unquote_name=unquote_name, responded_units=responded_units)
 
 
 @app.route('/overview/<name>/<model>/<layer>')
@@ -177,8 +167,8 @@ def process_image():
                            activation_map_path=activation_map_path, activations_overlayed_path=activations_overlayed_path)
 
 
-@app.route('/single_image/')
-def single_image():
+@app.route('/unit_ranking_by_weights/<training_session>/<checkpoint_name>/upload')
+def single_image(training_session, checkpoint_name):
     return render_template('single_image.html', success=False, processed=False, full_path='')
 
 
@@ -241,12 +231,14 @@ def unit(unit_id):
                            preprocessed_top_images=preprocessed_top_images,
                            activation_maps=activation_maps)
 
+
 @app.route('/unit_ranking_by_weights')
 def unit_ranking_by_weights():
     sessions = sorted(os.listdir(os.path.join('..', 'training', 'checkpoints_full_images')))
     return render_template('unit_ranking_by_weights.html',
                            session=False,
                            links=sessions)
+
 
 @app.route('/unit_ranking_by_weights/<training_session>')
 def unit_ranking_by_weights_for_session(training_session):
@@ -255,11 +247,14 @@ def unit_ranking_by_weights_for_session(training_session):
                            session=training_session,
                            links=checkpoints)
 
+
 @app.route('/unit_ranking_by_weights/<training_session>/<checkpoint_name>')
 def unit_ranking_by_weights_for_checkpoint(training_session, checkpoint_name):
     checkpoint_path = os.path.join('..', 'training', 'checkpoints_full_images', training_session, checkpoint_name)
     sorted_weights_class_0, sorted_weights_class_1, sorted_weights_class_2 = get_class_influences_for_class(checkpoint_path)
     return render_template('unit_ranking_by_weights_for_checkpoint.html',
+                           session=training_session,
+                           link=checkpoint_name,
                            sorted_weights_class_0=sorted_weights_class_0,
                            sorted_weights_class_1=sorted_weights_class_1,
                            sorted_weights_class_2=sorted_weights_class_2)

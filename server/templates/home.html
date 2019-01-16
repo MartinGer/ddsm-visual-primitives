@@ -4,39 +4,12 @@
 
   <h1>Welcome {{ unquote_name }}!</h1>
 
-  <p>Please select a model/layer combination below:</p>
+    <p><a href="/unit_ranking_by_weights">Investigate activations of different resnet152 checkpoints</a></p>
 
-  <ul>
-    {% for model_and_layer in models_and_layers %}
-      <li><a href="/overview/{{ name }}/{{ model_and_layer }}">[{{ model_and_layer }}]</a></li>
-    {% endfor %}
-  </ul>
-
-  <p>Or, select a model/layer combination below that uses an alternative ranking:</p>
-
-  <ul>
-    {% for model_and_layer in ranked_models_and_layers %}
-      <li><a href="/overview/ranked/{{ name }}/{{ model_and_layer }}">[{{ model_and_layer }}]</a></li>
-    {% endfor %}
-  </ul>
-
-  <p>You may view your previously submitted survey responses below:</p>
-
+    <p>You may view your previously submitted survey responses below:</p>
   <ul>
     {% for key, units in responded_units %}
     <li>{{ key }}:{% for unit in units %} <a href="/survey/full/{{ name }}/{{ key }}/{{ unit }}">[{{ unit }}]</a>{% endfor %}</li>
     {% endfor %}
   </ul>
-
-  <p>If necessary, you may select from the full list of model/layer combinations below:</p>
-
-  <ul>
-    {% for model_and_layer in full_models_and_layers %}
-      <li><a href="/overview/full/{{ name }}/{{ model_and_layer }}">[{{ model_and_layer }}]</a></li>
-    {% endfor %}
-  </ul>
-
-    <p><a href="/single_image/">Add an Image</a></p>
-
-    <p><a href="/unit_ranking_by_weights">Investigate weights</a></p>
 </div>
