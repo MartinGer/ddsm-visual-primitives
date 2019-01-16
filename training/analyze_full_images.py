@@ -172,8 +172,8 @@ def analyze_full_images(args, cfg, db_path):
 if __name__ == "__main__":
     DB_FILENAME = os.environ['DB_FILENAME'] if 'DB_FILENAME' in os.environ else 'test.db'
     parser = argparse.ArgumentParser()
-    parser.add_argument('--config_path', default='../training/pretrained/resnet152_3class/config.yml')
-    parser.add_argument('--epoch', type=int, default=5)
+    parser.add_argument('--config_path')
+    parser.add_argument('--epoch', type=int)
     parser.add_argument('--final_layer_name', default='layer4')
     parser.add_argument('--output_dir', default='output/')
     args = parser.parse_args()

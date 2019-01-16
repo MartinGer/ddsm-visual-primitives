@@ -2,21 +2,24 @@ import base64
 import glob
 import os
 import pickle
-
+import uuid
+import math
 import sys
-sys.path.insert(0,'..')
+sys.path.insert(0, '..')
 from db.doctor import insert_doctor_into_db_if_not_exists
 from db.database import DB
 import numpy as np
-from PIL import Image, ImageOps
+from PIL import Image
+import matplotlib.colors
 
 from training.grad_cam import run_grad_cam
-from analyze_single_image import SingleImageAnalysis
-from common.dataset import get_preview_of_preprocessed_image
+from training.analyze_single_image import SingleImageAnalysis
+from training.common.dataset import get_preview_of_preprocessed_image
 
 STATIC_DIR = 'static'
 DATA_DIR = 'data'
 LOG_DIR = os.path.join(DATA_DIR, 'log')
+ACTIVATIONS_FOLDER = os.path.join(STATIC_DIR, 'activation_maps')
 
 DB_FILENAME = os.environ['DB_FILENAME'] if 'DB_FILENAME' in os.environ else 'test.db'
 
@@ -141,15 +144,6 @@ def get_labels():
     return labels
 
 
-def log_response(data):
-    if not os.path.exists(LOG_DIR):
-        os.makedirs(LOG_DIR)
-    timestamp = data['timestamp']
-    filename = '{}_response.pickle'.format(timestamp)
-    with open(os.path.join(LOG_DIR, filename), 'wb') as f:
-        pickle.dump(data, f)
-
-
 def get_responses(name):
     encoded_name = base64.urlsafe_b64encode(bytes(name, 'utf-8'))
     data_path = os.path.join(DATA_DIR, '{}.pickle'.format(encoded_name))
@@ -165,25 +159,44 @@ def get_num_responses(name):
     return len(get_responses(name).keys())
 
 
-def store_survey(name, model, layer, unit, shows_phenomena, phenomena_description):
+def get_survey(name, model, layer, unit):
     db = DB(DB_FILENAME, '../db/')
     conn = db.get_connection()
 
     select_unit = int(unit.split("_")[1])  # looks like: unit_0076
     select_net = "(SELECT id FROM net WHERE net = '{}')".format(model)
     select_doctor = "(SELECT id FROM doctor WHERE name = '{}')".format(name)
-    select_description = "descriptions || '{}'".format(phenomena_description)
+
+    select_stmt = "SELECT descriptions FROM unit_annotation " \
+                  "WHERE unit_id = {} " \
+                  "AND net_id = {} " \
+                  "AND doctor_id = {};".format(select_unit, select_net, select_doctor)
+
+    result = conn.execute(select_stmt)
+    description = [row for row in result]
+    if description:
+        description = description[0][0].split('\n')
+    return description
+
+
+def store_survey(name, model, layer, unit, shows_phenomena, phenomena):
+    db = DB(DB_FILENAME, '../db/')
+    conn = db.get_connection()
+
+    phenomena_description = '\n'.join(phenomena)
+    select_unit = int(unit.split("_")[1])  # looks like: unit_0076
+    select_net = "(SELECT id FROM net WHERE net = '{}')".format(model)
+    select_doctor = "(SELECT id FROM doctor WHERE name = '{}')".format(name)
 
     if shows_phenomena == "true":
         select_concept = 1
     else:
         select_concept = 0
         phenomena_description = ""
-        select_description = "\'\'"
 
     # try updating in case it exists already
-    update_stmt = "UPDATE unit_annotation SET descriptions = {}, shows_concept={} WHERE " \
-                  "unit_id = {} AND net_id = {} AND doctor_id = {};".format(select_description,
+    update_stmt = "UPDATE unit_annotation SET descriptions = '{}', shows_concept={} WHERE " \
+                  "unit_id = {} AND net_id = {} AND doctor_id = {};".format(phenomena_description,
                                                                             select_concept,
                                                                             select_unit,
                                                                             select_net,
@@ -226,7 +239,7 @@ def resize_activation_map(img, activation_map):
 def normalize_activation_map(activation_map):
     max_value = activation_map.max()
     min_value = activation_map.min()
-    activation_map = 255 * ((activation_map - min_value) / (max_value - min_value))
+    activation_map = (activation_map - min_value) / (max_value - min_value)
     return activation_map
 
 
@@ -252,14 +265,70 @@ def get_top_images_for_unit(unit_id, count):
     return top_images
 
 
+def get_top_images_with_activation_for_unit(unit_id, count):
+    if not os.path.exists(ACTIVATIONS_FOLDER):
+        os.makedirs(ACTIVATIONS_FOLDER)
+    unit_id = int(unit_id)
+    top_images = get_top_images_for_unit(unit_id, count)
+    preprocessed_top_images = []
+    activation_maps = []
+
+    for i, image_path in enumerate(top_images):
+        preprocessed_image = get_preview_of_preprocessed_image(os.path.join("../data/ddsm_raw/", image_path))
+        preprocessed_image_path = os.path.join(ACTIVATIONS_FOLDER, 'preprocessed_{}.jpg'.format(uuid.uuid4()))
+        preprocessed_image.save(preprocessed_image_path)
+        preprocessed_top_images.append(preprocessed_image_path)
+        act_map_img = get_activation_map(os.path.join("../data/ddsm_raw/", image_path), unit_id)
+        activation_map_path = os.path.join(ACTIVATIONS_FOLDER, 'activation_{}.jpg'.format(uuid.uuid4()))
+        act_map_img.save(activation_map_path, "JPEG")
+        activation_maps.append(activation_map_path)
+
+    return (top_images, preprocessed_top_images, activation_maps)
+
+
 def get_activation_map(image_path, unit_id):
     preprocessed_full_image = get_preview_of_preprocessed_image(image_path)
     result = single_image_analysis.analyze_one_image(image_path)
 
     activation_map = result.feature_maps[unit_id]
-    activation_map_normalized = normalize_activation_map(activation_map)
-
-    act_map_img = Image.fromarray(activation_map_normalized.astype(np.uint8), mode="L")
-    act_map_img = ImageOps.colorize(act_map_img, (0, 0, 0), (255, 0, 0))
+    act_map_img = to_heatmap(activation_map)
     act_map_img = act_map_img.resize(preprocessed_full_image.size, resample=Image.BICUBIC)
     return act_map_img
+
+
+def to_heatmap(activation_map):
+    activation_map_normalized = normalize_activation_map(activation_map)
+
+    get_highest_activations_in_percentage(activation_map_normalized, 20)
+
+    activation_heatmap = np.ndarray((activation_map.shape[0], activation_map.shape[1], 3), np.double)
+    for x in range(activation_map.shape[0]):
+        for y in range(activation_map.shape[1]):
+            v = activation_map_normalized[x, y]
+            activation_heatmap[x, y] = matplotlib.colors.hsv_to_rgb((0.5 - (v * 0.5), 1, v))
+
+    activation_heatmap = activation_heatmap * 255
+    return Image.fromarray(activation_heatmap.astype(np.uint8), mode="RGB")
+
+
+def get_highest_activations_in_percentage(activation_map, percentage):
+    no_of_elements_in_matrix = activation_map.shape[0] * activation_map.shape[1]
+    no_of_elements_in_percentage_range = math.ceil((no_of_elements_in_matrix/100) * percentage)
+
+    flat = activation_map.flatten()
+    flat.sort()
+    threshold = flat[-no_of_elements_in_percentage_range:][0]
+
+    for x in range(len(activation_map)):
+        for y in range(len(activation_map[0])):
+            if activation_map[x][y] < threshold:
+                activation_map[x][y] = 0
+
+    print('Showing top', percentage, 'percent of activations in activation map. That`s'
+          , no_of_elements_in_percentage_range, 'of', no_of_elements_in_matrix, 'elements.')
+    return activation_map
+
+
+def sum_matrix(matrix):
+        return sum(map(sum, matrix))
+

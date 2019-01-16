@@ -6,8 +6,8 @@ import torch.utils.data
 import torch.nn as nn
 from munch import Munch
 from torch.autograd import Variable
-from common.dataset import preprocess_image_default
-from common.model import get_model_from_config
+from training.common.dataset import preprocess_image_default
+from training.common.model import get_model_from_config
 
 import sys
 sys.path.insert(0, '..')
@@ -48,13 +48,13 @@ class SingleImageAnalysis(object):
     def __init__(self, cfg=None):
         self.cfg = cfg
         if not self.cfg:
-            config_path = "/home/mp1819/ddsm-visual-primitives-python3/training/logs_full_images/2018-12-20_13-23-05.683938_resnet152/config.yml"
+            config_path = "/home/mp1819/ddsm-visual-primitives-python3/training/logs_full_images/2019-01-15_15-35-02.449581_resnet152/config.yml"
             with open(config_path, 'r') as f:
                 self.cfg = Munch.fromYAML(f)
         self.model, self.features_layer, self.checkpoint_path = get_model_from_config(self.cfg)
 
     def analyze_one_image(self, image_path):
-        image = preprocess_image_default(image_path)
+        image = preprocess_image_default(image_path, augmentation=True)
         image_batch = image.unsqueeze(0)  # unsqueeze: (3, ~1500, 896) -> (1, 3, ~1500, 896)
         result = AnalysisResult(image_path, self.checkpoint_path, self.model)
 
