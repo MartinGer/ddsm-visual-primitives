@@ -54,7 +54,7 @@ class SingleImageAnalysis(object):
         self.model, self.features_layer, self.checkpoint_path = get_model_from_config(self.cfg)
 
     def analyze_one_image(self, image_path):
-        image = preprocess_image_default(image_path, augmentation=True)
+        image = preprocess_image_default(image_path, augmentation=False)
         image_batch = image.unsqueeze(0)  # unsqueeze: (3, ~1500, 896) -> (1, 3, ~1500, 896)
         result = AnalysisResult(image_path, self.checkpoint_path, self.model)
 
