@@ -7,13 +7,60 @@
             document.getElementById('phenomena_desc').style.display = 'block';
         } else {
             document.getElementById('phenomena_desc').style.display = 'none';
-            document.getElementById('phenomena_tf').value = '';
         }
     }
+
     window.onload = function() {
         radioButtonClicked();
+
+        var subLists = document.querySelectorAll('ul.subList');
+        subLists.forEach(subList => {
+            var shouldBeVisible = false;
+            var subOptionChildren = subList.querySelectorAll('input.subOption');
+            for (subOption of subOptionChildren) {
+                if (subOption.checked == true) {
+                    shouldBeVisible = true;
+                    break; //return from inner loop
+                }
+            }
+            if (!shouldBeVisible) {
+                subList.style.display = 'none';
+            }
+        });
+
+    };
+
+    function optionClicked(elem) {
+        var siblings = getSiblings(elem);
+        for (s of siblings) {
+            if (s.tagName != 'LABEL') {
+                if (elem.checked) {
+                    s.style.display = 'block';
+                } else {
+                    s.style.display = 'none';
+                    s.querySelectorAll('input.subOption').forEach(subOpt => {
+                        subOpt.checked = false;
+                    })
+                }
+            }
+        }
     }
+
+    var getSiblings = function (elem) {
+        var siblings = [];
+        var sibling = elem.parentNode.firstChild;
+        for (; sibling; sibling = sibling.nextSibling) {
+            if (sibling.nodeType !== 1 || sibling === elem) continue;
+            siblings.push(sibling);
+        }
+        return siblings;
+    };
 </script>
+<style type="text/css">
+    ul {
+        list-style: none;
+    }
+</style>
 <div class="main">
 
     <h1>{{ model }}/{{ layer }}/{{ unit }}</h1>
@@ -38,37 +85,123 @@
         Are there ANY recognizable phenomena among the highlighted parts in the pictures?</br>
         <p>
             <label>
-                <input name="shows_phenomena" type="radio" onclick="javascript:radioButtonClicked();" value="{% if old_response is not none %}{{ old_response.shows_phenomena }} {% else %}false{% endif %}" checked />
-                <span>No recognizable phenomena present</span>
-            </label>
-        </p>
-        <p>
-            <label>
-                <input id="shows_phenomena_btn" name="shows_phenomena" type="radio" onclick="javascript:radioButtonClicked();" value="{% if old_response is not none %}{{ old_response.shows_phenomena }} {% else %}true{% endif %}" />
+                <input id="shows_phenomena_btn" name="shows_phenomena" type="radio" onclick="javascript:radioButtonClicked();" value="true" checked/>
                 <span>Recognizable phenomena are present</span>
             </label>
         </p>
-        <div id="phenomena_desc">
-            Please enter a description of every phenomenon that you see (separate them with a comma).</br>
-            <textarea id="phenomena_tf" name="phenomena_description" rows="10" cols="100">{% if old_response is not none %}{{ old_response.phenomena_description }}{% endif %}</textarea><br>
+        <div id="phenomena_desc" class="phenomena_desc">
+            <ul>
+                <li>
+                    <input type="checkbox" id="option" onclick="optionClicked(this)" name="phe_mass" {% if phe_mass %} checked {% endif %}><label for="option">Herdläsion</label>
+                    <ul class="subList">
+                        <li>Form</li>
+                        <li><label><input type="checkbox" class="subOption" name="phe_mass_oval" {% if phe_mass_oval %} checked {% endif %}>Oval</label></li>
+                        <li><label><input type="checkbox" class="subOption" name="phe_mass_round" {% if phe_mass_round %} checked {% endif %}>Rund</label></li>
+                        <li><label><input type="checkbox" class="subOption" name="phe_mass_irregular" {% if phe_mass_irregular %} checked {% endif %}>Unregelmäßig</label></li>
+                    </ul>
+                    <ul class="subList">
+                        <li>Rand</li>
+                        <li><label><input type="checkbox" class="subOption" name="phe_margin_circumscribed" {% if phe_margin_circumscribed %} checked {% endif %}>Umschrieben</label></li>
+                        <li><label><input type="checkbox" class="subOption" name="phe_margin_obscured" {% if phe_margin_obscured %} checked {% endif %}>Verdeckt</label></li>
+                        <li><label><input type="checkbox" class="subOption" name="phe_margin_microlobulated" {% if phe_margin_microlobulated %} checked {% endif %}>Mikrobuliert</label></li>
+                        <li><label><input type="checkbox" class="subOption" name="phe_margin_spiculated" {% if phe_margin_spiculated %} checked {% endif %}>Spikuliert</label></li>
+                    </ul>
+                    <ul class="subList">
+                        <li>Dichte</li>
+                        <li><label><input type="checkbox" class="subOption" name="phe_density_high" {% if phe_density_high %} checked {% endif %}>Hoch</label></li>
+                        <li><label><input type="checkbox" class="subOption" name="phe_density_equal" {% if phe_density_equal %} checked {% endif %}>Gleich</label></li>
+                        <li><label><input type="checkbox" class="subOption" name="phe_density_low" {% if phe_density_low %} checked {% endif %}>Gering</label></li>
+                        <li><label><input type="checkbox" class="subOption" name="phe_density_fat" {% if phe_density_fat %} checked {% endif %}>Fetthaltig</label></li>
+                    </ul>
+                </li>
+
+                <li>
+                    <input type="checkbox" id="option" onclick="optionClicked(this)" name="phe_calc" {% if phe_calc %} checked {% endif %}><label for="option">Verkalkung</label>
+                    <ul class="subList">
+                        <li>Verteilung</li>
+                        <li><label><input type="checkbox" class="subOption" name="phe_distribution_diffuse" {% if phe_distribution_diffuse %} checked {% endif %}>Diffus</label></li>
+                        <li><label><input type="checkbox" class="subOption" name="phe_distribution_regional" {% if phe_distribution_regional %} checked {% endif %}>Regional</label></li>
+                        <li><label><input type="checkbox" class="subOption" name="phe_distribution_grouped" {% if phe_distribution_grouped %} checked {% endif %}>Gruppiert</label></li>
+                        <li><label><input type="checkbox" class="subOption" name="phe_distribution_linear" {% if phe_distribution_linear %} checked {% endif %}>Linear</label></li>
+                        <li><label><input type="checkbox" class="subOption" name="phe_distribution_segmental" {% if phe_distribution_segmental %} checked {% endif %}>Segmental</label></li>
+                    </ul>
+                    <ul class="subList">
+                        <li>Form</li>
+                        <li><label><input type="checkbox" class="subOption" name="phe_type_vascular" {% if phe_type_vascular %} checked {% endif %}>Gefäßverkalkung</label></li>
+                        <li><label><input type="checkbox" class="subOption" name="phe_type_skin" {% if phe_type_skin %} checked {% endif %}>Hautverkalkung</label></li>
+                        <li><label><input type="checkbox" class="subOption" name="phe_type_popcorn" {% if phe_type_popcorn %} checked {% endif %}>Popcorn-Verkalkung</label></li>
+                        <li><label><input type="checkbox" class="subOption" name="phe_type_round" {% if phe_type_round %} checked {% endif %}>Runde Verkalkung</label></li>
+                        <li><label><input type="checkbox" class="subOption" name="phe_type_rim" {% if phe_type_rim %} checked {% endif %}>Randverkalkung</label></li>
+                        <li><label><input type="checkbox" class="subOption" name="phe_type_dystrophic" {% if phe_type_dystrophic %} checked {% endif %}>Dystroph</label></li>
+                        <li><label><input type="checkbox" class="subOption" name="phe_type_suture" {% if phe_type_suture %} checked {% endif %}>Nahtmaterial</label></li>
+                        <li><label><input type="checkbox" class="subOption" name="phe_type_amorphous" {% if phe_type_amorphous %} checked {% endif %}>Amorph</label></li>
+                        <li><label><input type="checkbox" class="subOption" name="phe_type_courseheterogenous" {% if phe_type_courseheterogenous %} checked {% endif %}>Grob heterogen</label></li>
+                    </ul>
+                </li>
+
+                <li>
+                    <input type="checkbox" id="option" onclick="optionClicked(this)" name="phe_architectural_distorsion" {% if phe_architectural_distorsion %} checked {% endif %}><label for="option">Architekturzerstörungen</label>
+                </li>
+
+                <li>
+                    <input type="checkbox" id="option" onclick="optionClicked(this)" name="phe_asymmetries" {% if phe_asymmetries %} checked {% endif %}><label for="option">Asymetrien</label>
+                    <ul class="subList">
+                        <li>Typ</li>
+                        <li><label><input type="checkbox" class="subOption" name="phe_asymetry_global" {% if phe_asymetry_global %} checked {% endif %}>Global</label></li>
+                        <li><label><input type="checkbox" class="subOption"name="phe_asymetry_focal" {% if phe_asymetry_focal %} checked {% endif %}>Fokal</label></li>
+                    </ul>
+                </li>
+
+                <li>
+                    <input type="checkbox" id="option" onclick="optionClicked(this)" name="phe_skinlesion" {% if phe_skinlesion %} checked {% endif %}><label for="option">Hautläsion</label>
+                </li>
+
+                <li>
+                    <input type="checkbox" id="option" onclick="optionClicked(this)" name="phe_milkduct" {% if phe_milkduct %} checked {% endif %}><label for="option">Einzelner erweiterter Milchgang</label>
+                </li>
+
+                <li>
+                    <input type="checkbox" id="option" onclick="optionClicked(this)" name="phe_intramammarylymphnode" {% if phe_intramammarylymphnode %} checked {% endif %}><label for="option">Intramammärer Lymphknoten</label>
+                </li>
+
+                 <li>
+                    <input type="checkbox" id="option" onclick="optionClicked(this)" name="phe_epiphenomenon" {% if phe_epiphenomenon %} checked {% endif %}><label for="option">Begleiterscheinungen</label>
+                    <ul class="subList">
+                        <li><label><input type="checkbox" class="subOption" name="phe_skinretraction" {% if phe_skinretraction %} checked {% endif %}>Hautretraktion</label></li>
+                        <li><label><input type="checkbox" class="subOption" name="phe_mamillaryretraction" {% if phe_mamillaryretraction %} checked {% endif %}>Mamillenretraktion</label></li>
+                        <li><label><input type="checkbox" class="subOption" name="phe_skinthickening" {% if phe_skinthickening %} checked {% endif %}>Hautverdickung</label></li>
+                        <li><label><input type="checkbox" class="subOption" name="phe_trabeculary" {% if phe_trabeculary %} checked {% endif %}>Trabekuläre Verdichtung</label></li>
+                        <li><label><input type="checkbox" class="subOption" name="phe_axillary" {% if phe_axillary %} checked {% endif %}>Auxiläre Verdichtung</label></li>
+                    </ul>
+
+                </li>
+            </ul>
         </div>
+        <p>
+            <label>
+                <input name="shows_phenomena" type="radio" onclick="javascript:radioButtonClicked();" value="false" />
+                <span>No recognizable phenomena present</span>
+            </label>
+        </p>
         <input type="submit">
     </form>
 
-    {% for row in data %}
-        <div class="thumbwrap">
-            {% for item in row %}
-                <a class="thumb" href="#">
-                    <img src="{{ url_for('static', filename=item.img_name) }}" class="patch">
-                    <p class="label">patch label: {{ item.label }}</p>
-                    <div>
-                        <img src="{{ url_for('static', filename=item.raw_name) }}" class="raw">
-                        <div style="{{ item.style }} border: 2px solid red;"></div>
-                    </div>
-                </a>
-            {% endfor %}
-        </div>
+
+    <div style="margin-top:18px;">
+    {% for i in range(top_images|length) %}
+        {% if i % 4 == 0 %} </br> {% endif %}
+        <a href="/image/{{ top_images[i] }}" style="display: inline-block">
+            <div style="
+                    height: 200px; width: 200px;
+                    background-image: url({{ "/" + preprocessed_top_images[i] }}), url({{ "/" + activation_maps[i] }});
+                    background-blend-mode: screen;
+                    background-size: contain;
+                    background-repeat: no-repeat;">
+
+            </div>
+        </a>
     {% endfor %}
+    </div>
     <div style="clear: both;"></div>
 
 </div>
