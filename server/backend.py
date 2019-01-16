@@ -2,6 +2,7 @@ import base64
 import glob
 import os
 import pickle
+import uuid
 import math
 import sys
 sys.path.insert(0, '..')
@@ -18,6 +19,7 @@ from training.common.dataset import get_preview_of_preprocessed_image
 STATIC_DIR = 'static'
 DATA_DIR = 'data'
 LOG_DIR = os.path.join(DATA_DIR, 'log')
+ACTIVATIONS_FOLDER = os.path.join(STATIC_DIR, 'activation_maps')
 
 DB_FILENAME = os.environ['DB_FILENAME'] if 'DB_FILENAME' in os.environ else 'test.db'
 
@@ -142,15 +144,6 @@ def get_labels():
     return labels
 
 
-def log_response(data):
-    if not os.path.exists(LOG_DIR):
-        os.makedirs(LOG_DIR)
-    timestamp = data['timestamp']
-    filename = '{}_response.pickle'.format(timestamp)
-    with open(os.path.join(LOG_DIR, filename), 'wb') as f:
-        pickle.dump(data, f)
-
-
 def get_responses(name):
     encoded_name = base64.urlsafe_b64encode(bytes(name, 'utf-8'))
     data_path = os.path.join(DATA_DIR, '{}.pickle'.format(encoded_name))
@@ -166,25 +159,44 @@ def get_num_responses(name):
     return len(get_responses(name).keys())
 
 
-def store_survey(name, model, layer, unit, shows_phenomena, phenomena_description):
+def get_survey(name, model, layer, unit):
     db = DB(DB_FILENAME, '../db/')
     conn = db.get_connection()
 
     select_unit = int(unit.split("_")[1])  # looks like: unit_0076
     select_net = "(SELECT id FROM net WHERE net = '{}')".format(model)
     select_doctor = "(SELECT id FROM doctor WHERE name = '{}')".format(name)
-    select_description = "descriptions || '{}'".format(phenomena_description)
+
+    select_stmt = "SELECT descriptions FROM unit_annotation " \
+                  "WHERE unit_id = {} " \
+                  "AND net_id = {} " \
+                  "AND doctor_id = {};".format(select_unit, select_net, select_doctor)
+
+    result = conn.execute(select_stmt)
+    description = [row for row in result]
+    if description:
+        description = description[0][0].split('\n')
+    return description
+
+
+def store_survey(name, model, layer, unit, shows_phenomena, phenomena):
+    db = DB(DB_FILENAME, '../db/')
+    conn = db.get_connection()
+
+    phenomena_description = '\n'.join(phenomena)
+    select_unit = int(unit.split("_")[1])  # looks like: unit_0076
+    select_net = "(SELECT id FROM net WHERE net = '{}')".format(model)
+    select_doctor = "(SELECT id FROM doctor WHERE name = '{}')".format(name)
 
     if shows_phenomena == "true":
         select_concept = 1
     else:
         select_concept = 0
         phenomena_description = ""
-        select_description = "\'\'"
 
     # try updating in case it exists already
-    update_stmt = "UPDATE unit_annotation SET descriptions = {}, shows_concept={} WHERE " \
-                  "unit_id = {} AND net_id = {} AND doctor_id = {};".format(select_description,
+    update_stmt = "UPDATE unit_annotation SET descriptions = '{}', shows_concept={} WHERE " \
+                  "unit_id = {} AND net_id = {} AND doctor_id = {};".format(phenomena_description,
                                                                             select_concept,
                                                                             select_unit,
                                                                             select_net,
@@ -251,6 +263,27 @@ def get_top_images_for_unit(unit_id, count):
         top_images.append(row[0])
 
     return top_images
+
+
+def get_top_images_with_activation_for_unit(unit_id, count):
+    if not os.path.exists(ACTIVATIONS_FOLDER):
+        os.makedirs(ACTIVATIONS_FOLDER)
+    unit_id = int(unit_id)
+    top_images = get_top_images_for_unit(unit_id, count)
+    preprocessed_top_images = []
+    activation_maps = []
+
+    for i, image_path in enumerate(top_images):
+        preprocessed_image = get_preview_of_preprocessed_image(os.path.join("../data/ddsm_raw/", image_path))
+        preprocessed_image_path = os.path.join(ACTIVATIONS_FOLDER, 'preprocessed_{}.jpg'.format(uuid.uuid4()))
+        preprocessed_image.save(preprocessed_image_path)
+        preprocessed_top_images.append(preprocessed_image_path)
+        act_map_img = get_activation_map(os.path.join("../data/ddsm_raw/", image_path), unit_id)
+        activation_map_path = os.path.join(ACTIVATIONS_FOLDER, 'activation_{}.jpg'.format(uuid.uuid4()))
+        act_map_img.save(activation_map_path, "JPEG")
+        activation_maps.append(activation_map_path)
+
+    return (top_images, preprocessed_top_images, activation_maps)
 
 
 def get_activation_map(image_path, unit_id):
