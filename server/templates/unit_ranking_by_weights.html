@@ -1,6 +1,14 @@
 <!doctype html>
 <body>
-This is a list of all checkpoints listed in the <tt>&ltproject-home&gt/training/checkpoints_full_images</tt> directory.
+<p>
+    This is a list of all checkpoints listed in the <tt>&ltproject-home&gt/training/checkpoints_full_images</tt> directory.
+</p>
+<p>
+    <i>
+        Only checkpoints for the Resnet152 architecture are supported.<br />
+        Please note that loading the checkpoints will take some time.
+    </i>
+</p>
 <ul>
 {% for link in links %}
     <li><a href="/unit_ranking_by_weights/{% if session %}{{ session }}/{% endif %}{{ link }}">{{ link }}</a></li>
