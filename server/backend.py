@@ -329,6 +329,7 @@ def get_highest_activations_in_percentage(activation_map, percentage):
     return activation_map
 
 
+# after resize WIP
 def get_highest_activations_in_percentage_after_resize(activation_map, percentage):
     no_of_elements_in_matrix = activation_map.size[0] * activation_map.size[1]
     no_of_elements_in_percentage_range = math.ceil((no_of_elements_in_matrix/100) * percentage)
@@ -336,9 +337,12 @@ def get_highest_activations_in_percentage_after_resize(activation_map, percentag
     flat = np.array(activation_map)
     flat.sort()
     threshold = flat[-no_of_elements_in_percentage_range:][0]
-    #print(flat)
+
+    print("threshold")
     print(threshold)
-    print(activation_map[50,50])
+    print("activation map")
+    print(activation_map[50][50])
+
     for x in range(activation_map.size[0]):
         for y in range(activation_map.size[1]):
             if activation_map[x, y] < threshold:
