@@ -74,8 +74,8 @@ def preprocess_image_default(path, augmentation):
 
 def get_preview_of_preprocessed_image(path):
     image = Image.open(path)
-    image = resize_and_pad_image(image, IMAGE_SIZE_TO_ANALYZE, TARGET_ASPECT_RATIO, augmentation=True)
-    image = remove_background_noise(image, augmentation=True)
+    image = resize_and_pad_image(image, IMAGE_SIZE_TO_ANALYZE, TARGET_ASPECT_RATIO, augmentation=False)
+    image = remove_background_noise(image, augmentation=False)
     image = Image.fromarray(image)
     return image
 
