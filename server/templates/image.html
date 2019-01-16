@@ -7,21 +7,33 @@
 <body>
 
     <div class="container">
+
+        <h1 class="my-2">Image Analysis</h1>
+
         <div class="row">
-            <div class="col-md-6 card">
-                <div class="card-body">
-                    <p>Input file: {{ image_path }}</p>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h4 class="m-0">Prediction: {{ ('Normal', 'Benign', 'Cancer')[classification] }}</h4>
+                    </div>
+                    <div class="card-body">
+                        <p>Input file: {{ image_path }}</p>
 
-                    <p>Preprocessed input (height: {{ preprocessed_image_height }}):</p>
-
-                    <p>Checkpoint used: {{ checkpoint_path }}</p>
-                    <p>Class probabilities: {{ class_probs }}</p>
-                    <p>Classification: {{ classification }}</p>
+                        <p>{{ preprocessing_descr }}</p>
+                        <p>Checkpoint used: {{ checkpoint_path }}</p>
+                        <p>Class probabilities:</p>
+                        <ul>
+                            <li>Normal: {{ (class_probs[0] * 100)|int }}%</li>
+                            <li>Benign: {{ (class_probs[1] * 100)|int }}%</li>
+                            <li>Cancer: {{ (class_probs[2] * 100)|int }}%</li>
+                        </ul>
+                    </div>
                 </div>
             </div>
             <div class="col-md-6 card">
                 <div class="card-image">
                     <img src="{{ "/" + preprocessed_full_image_path }}" style="max-height: 500px; max-width: 500px;">
+                    <img src="{{ "/" + mask_path }}" style="max-height: 500px; max-width: 500px;">
                 </div>
             </div>
         </div>
@@ -30,18 +42,27 @@
 
         <div class="row">
             {% for rank in range(10) %}
-                <div class="col-md-3 card pr-3 mt-3">
-                    <a href="/unit/{{ top_units_and_activations[rank][0] }}"><div style="
-                        height: 200px; width: 200px;
-                        background-image: url({{ "/" + preprocessed_full_image_path }}), url({{ "/" + activation_maps[rank] }});
-                        background-blend-mode: screen;
-                        background-size: contain;
-                        background-repeat: no-repeat;
-                        "></div>
-                    </a>
-                    <div class="card-body">
-                        <p class="card-text">Unit: {{ top_units_and_activations[rank][0] }}</p>
-                        <p class="card-text">Influence per class: {{ top_units_and_activations[rank][1] }}</p>
+                <div class="col-md-3 mt-3">
+                    <div class="card">
+                        <div class="card-header">
+                            {{ rank + 1 }}: Unit {{ top_units_and_activations[rank][0] }}
+                        </div>
+                        <a href="/unit/{{ top_units_and_activations[rank][0] }}"><div style="
+                            height: 300px; width: 100%;
+                            background-image: url({{ "/" + preprocessed_full_image_path }}), url({{ "/" + activation_maps[rank] }});
+                            background-blend-mode: screen;
+                            background-size: contain;
+                            background-repeat: no-repeat;
+                            "></div>
+                        </a>
+                        <div class="card-body">
+                            <p>Influence per class:</p>
+                            <ul>
+                                <li>Normal: {{ top_units_and_activations[rank][1][0] }}</li>
+                                <li>Benign: {{ top_units_and_activations[rank][1][1] }}</li>
+                                <li>Cancer: {{ top_units_and_activations[rank][1][2] }}</li>
+                            </ul>
+                        </div>
                     </div>
                 </div>
             {% endfor %}
