@@ -11,7 +11,9 @@ import uuid
 from shutil import copyfile
 
 sys.path.insert(0, '../training')
+
 from common.dataset import get_preview_of_preprocessed_image, preprocessing_description
+from training.unit_rankings import get_class_influences_for_class
 
 app = Flask(__name__)
 
@@ -238,3 +240,25 @@ def unit(unit_id):
                            preprocessed_top_images=preprocessed_top_images,
                            activation_maps=activation_maps)
 
+@app.route('/unit_ranking_by_weights')
+def unit_ranking_by_weights():
+    sessions = sorted(os.listdir(os.path.join('..', 'training', 'checkpoints_full_images')))
+    return render_template('unit_ranking_by_weights.html',
+                           session=False,
+                           links=sessions)
+
+@app.route('/unit_ranking_by_weights/<training_session>')
+def unit_ranking_by_weights_for_session(training_session):
+    checkpoints = sorted(os.listdir(os.path.join('..', 'training', 'checkpoints_full_images', training_session)))
+    return render_template('unit_ranking_by_weights.html',
+                           session=training_session,
+                           links=checkpoints)
+
+@app.route('/unit_ranking_by_weights/<training_session>/<checkpoint_name>')
+def unit_ranking_by_weights_for_checkpoint(training_session, checkpoint_name):
+    checkpoint_path = os.path.join('..', 'training', 'checkpoints_full_images', training_session, checkpoint_name)
+    sorted_weights_class_0, sorted_weights_class_1, sorted_weights_class_2 = get_class_influences_for_class(checkpoint_path)
+    return render_template('unit_ranking_by_weights_for_checkpoint.html',
+                           sorted_weights_class_0=sorted_weights_class_0,
+                           sorted_weights_class_1=sorted_weights_class_1,
+                           sorted_weights_class_2=sorted_weights_class_2)
