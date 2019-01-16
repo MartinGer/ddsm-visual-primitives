@@ -266,7 +266,7 @@ def get_activation_map(image_path, unit_id):
 def to_heatmap(activation_map):
     activation_map_normalized = normalize_activation_map(activation_map)
 
-    get_highest_activations_in_percentage(activation_map_normalized, 20)
+    get_highest_activations_in_percentage(activation_map_normalized, 100)
 
     activation_heatmap = np.ndarray((activation_map.shape[0], activation_map.shape[1], 3), np.double)
     for x in range(activation_map.shape[0]):
@@ -290,6 +290,26 @@ def get_highest_activations_in_percentage(activation_map, percentage):
         for y in range(len(activation_map[0])):
             if activation_map[x][y] < threshold:
                 activation_map[x][y] = 0
+
+    print('Showing top', percentage, 'percent of activations in activation map. That`s'
+          , no_of_elements_in_percentage_range, 'of', no_of_elements_in_matrix, 'elements.')
+    return activation_map
+
+
+def get_highest_activations_in_percentage_after_resize(activation_map, percentage):
+    no_of_elements_in_matrix = activation_map.size[0] * activation_map.size[1]
+    no_of_elements_in_percentage_range = math.ceil((no_of_elements_in_matrix/100) * percentage)
+    print(no_of_elements_in_matrix)
+    flat = np.array(activation_map)
+    flat.sort()
+    threshold = flat[-no_of_elements_in_percentage_range:][0]
+    #print(flat)
+    print(threshold)
+    print(activation_map[50,50])
+    for x in range(activation_map.size[0]):
+        for y in range(activation_map.size[1]):
+            if activation_map[x, y] < threshold:
+                activation_map[x, y] = 0
 
     print('Showing top', percentage, 'percent of activations in activation map. That`s'
           , no_of_elements_in_percentage_range, 'of', no_of_elements_in_matrix, 'elements.')

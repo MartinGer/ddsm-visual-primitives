@@ -206,6 +206,9 @@ def image(image_path):
         activation_map = top_units_and_activations[i][2]  # activation map for unit with rank i
         act_map_img = backend.to_heatmap(activation_map)
         act_map_img = act_map_img.resize(preprocessed_full_image.size, resample=Image.BICUBIC)
+
+        act_map_img = backend.get_highest_activations_in_percentage_after_resize(act_map_img, 10)
+
         activation_map_path = os.path.join(app.config['ACTIVATIONS_FOLDER'], 'activation_{}.jpg'.format(uuid.uuid4()))
         act_map_img.save(activation_map_path, "JPEG")
         activation_maps.append(activation_map_path)
