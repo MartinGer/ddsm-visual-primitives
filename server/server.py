@@ -92,11 +92,13 @@ def survey(name, model, layer, unit, full=False, ranked=False):
     unit_id = int(unit.split("_")[1])  # looks like: unit_0076
     previous_annotations = backend.get_survey(unquote_name, model, layer, unit)
     previous_annotations = {a:a for a in previous_annotations}  # turn into dict for flask
+    shows_phenomena = 'true' if previous_annotations else 'false'
     result = backend.get_top_images_with_activation_for_unit(unit_id, 8)
     top_images, preprocessed_top_images, activation_maps = result
     return render_template('survey.html', name=name, unquote_name=unquote_name, full=full,
                            ranked=ranked, model=model, layer=layer, unit=unit, top_images=top_images,
-                           preprocessed_top_images=preprocessed_top_images, activation_maps=activation_maps, **previous_annotations)
+                           preprocessed_top_images=preprocessed_top_images, activation_maps=activation_maps,
+                           shows_phenomena=shows_phenomena, **previous_annotations)
 
 
 @app.route('/survey/full/<name>/<model>/<layer>/<unit>')
