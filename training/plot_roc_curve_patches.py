@@ -7,7 +7,7 @@ import torchnet
 from munch import Munch
 from torch.autograd import Variable
 
-from common.dataset import DDSM, preprocessing_description
+from common.dataset_patches import DDSM, preprocessing_description
 from common.model import get_resnet_3class_model
 
 from tqdm import tqdm as tqdm
@@ -42,7 +42,7 @@ optimizer = torch.optim.SGD(model.parameters(),
                             weight_decay=cfg.optimizer.weight_decay)
 
 # --- Prepare dataset: ---
-val_dataset = DDSM.create_full_image_dataset('val')
+val_dataset = DDSM.create_patch_dataset('val')
 val_loader = torch.utils.data.DataLoader(
     val_dataset, batch_size=cfg.data.batch_size, shuffle=False,
     num_workers=cfg.data.workers, pin_memory=True)
@@ -73,7 +73,7 @@ for input, target in tqdm(val_loader):
 
 # --- Print statistics: ---
 checkpoint_identifier = checkpoint_path.replace('/', '__')
-with open('auc_score_{}_on_full_images.txt'.format(checkpoint_identifier), 'w') as text_file:
+with open('auc_score_{}_on_patches.txt'.format(checkpoint_identifier), 'w') as text_file:
     print(preprocessing_description(), file=text_file)
     correct_percent = (correct.astype(np.float) / image_count) * 100
     for i in range(cfg.arch.num_classes):
