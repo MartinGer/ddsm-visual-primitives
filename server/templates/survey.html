@@ -169,7 +169,7 @@
                     <input type="hidden" name="unit" value="{{ unit }}">
                     <p>
                         <label>
-                            <input id="shows_phenomena_false" name="shows_phenomena" type="radio" onclick="javascript:updateShowPhenomena();" value="false" />
+                            <input id="shows_phenomena_false" name="shows_phenomena" type="radio" onclick="javascript:updateShowPhenomena();" value="false" {% if shows_phenomena == "false" %} checked {% endif %}/>
                             <span>No recognizable phenomena present</span>
                         </label>
                     </p>

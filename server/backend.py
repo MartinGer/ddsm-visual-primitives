@@ -167,16 +167,21 @@ def get_survey(name, model, layer, unit):
     select_net = "(SELECT id FROM net WHERE net = '{}')".format(model)
     select_doctor = "(SELECT id FROM doctor WHERE name = '{}')".format(name)
 
-    select_stmt = "SELECT descriptions FROM unit_annotation " \
+    select_stmt = "SELECT shows_concept, descriptions FROM unit_annotation " \
                   "WHERE unit_id = {} " \
                   "AND net_id = {} " \
                   "AND doctor_id = {};".format(select_unit, select_net, select_doctor)
 
     result = conn.execute(select_stmt)
-    description = [row for row in result]
-    if description:
-        description = description[0][0].split('\n')
-    return description
+    row = [r for r in result]
+    if row:
+        shows_phenomena, description = row[0]
+        if description:
+            description = description.split('\n')
+        shows_phenomena = True if shows_phenomena == 1 else False
+        return shows_phenomena, description
+    else:
+        return None
 
 
 def store_survey(name, model, layer, unit, shows_phenomena, phenomena):

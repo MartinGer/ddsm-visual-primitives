@@ -90,9 +90,18 @@ def overview_ranked(name, model, layer):
 def survey(name, model, layer, unit, full=False, ranked=False):
     unquote_name = urllib.parse.unquote_plus(name)
     unit_id = int(unit.split("_")[1])  # looks like: unit_0076
-    previous_annotations = backend.get_survey(unquote_name, model, layer, unit)
-    previous_annotations = {a:a for a in previous_annotations}  # turn into dict for flask
-    shows_phenomena = 'true' if previous_annotations else 'false'
+    previous_survey = backend.get_survey(unquote_name, model, layer, unit)
+    if previous_survey:
+        shows_phenomena, description = previous_survey
+        if shows_phenomena:
+            shows_phenomena = 'true'
+            previous_annotations = {a: a for a in description}  # turn into dict for flask
+        else:
+            shows_phenomena = 'false'
+            previous_annotations = {}
+    else:
+        shows_phenomena = 'true'
+        previous_annotations = {}
     result = backend.get_top_images_with_activation_for_unit(unit_id, 8)
     top_images, preprocessed_top_images, activation_maps = result
     return render_template('survey.html', name=name, unquote_name=unquote_name, full=full,
