@@ -1,145 +1,12 @@
 <!doctype html>
 {% include "navbar.html" %}
-<link rel=stylesheet type=text/css href="{{ url_for('static', filename='survey.css') }}">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/octicons/4.4.0/font/octicons.min.css" crossorigin="anonymous">
 <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js" integrity="sha384-B0UglyR+jN6CkvvICOB2joaf5I4l3gm9GU6Hc1og6Ls7i6U/mkkaduKaBhlAXv9k" crossorigin="anonymous"></script>
-<script type="text/javascript">
-    function updateShowPhenomena() {
-        if (document.getElementById('shows_phenomena_true').checked) {
-            document.getElementById('phenomena_desc').style.display = 'block';
-        } else {
-            document.getElementById('phenomena_desc').style.display = 'none';
-        }
-    }
+<link rel="stylesheet" type=text/css href="{{ url_for('static', filename='survey.css') }}">
+<script type="text/javascript" src="{{ url_for('static', filename='survey.js') }}"></script>
 
-    window.onload = function() {
-        updateShowPhenomena();
-
-        var options = document.getElementsByClassName('mainBox');
-        for (option of options) {
-            updateOptionIcon(option);
-        }
-
-        var subLists = document.querySelectorAll('ul.subList');
-        subLists.forEach(subList => {
-            var shouldBeVisible = false;
-            var subOptionChildren = subList.querySelectorAll('input.subOption');
-            for (subOption of subOptionChildren) {
-                updateSuboptionIcon(subOption);
-            }
-            for (subOption of subOptionChildren) {
-                if (subOption.checked == true) {
-                    shouldBeVisible = true;
-                    break; //return from inner loop
-                }
-            }
-            if (!shouldBeVisible) {
-                subList.style.display = 'none';
-            }
-        });
-
-    };
-
-    function updateOptionIcon(elem) {
-        var siblings = getSiblings(elem);
-        for (s of siblings) {
-            if (s.tagName == 'LABEL') {
-                var octicons = s.getElementsByClassName('octicon');
-                if (elem.checked) {
-                    setOcticonsChecked(octicons);
-                } else {
-                    setOcticonsUnchecked(octicons);
-                }
-            }
-        }
-    }
-
-    function optionClicked(elem) {
-        updateOptionIcon(elem);
-        var siblings = getSiblings(elem);
-        for (s of siblings) {
-            if (s.tagName != 'LABEL') {
-                if (elem.checked) {
-                    s.style.display = 'block';
-                } else {
-                    s.style.display = 'none';
-                    s.querySelectorAll('input.subOption').forEach(subOpt => {
-                        subOpt.checked = false;
-                        updateSuboptionIcon(subOpt)
-                    })
-                }
-            }
-        }
-    }
-
-    function setOcticonsChecked(octicons) {
-        for (octicon of octicons) {
-            if (octicon.classList.contains("octicon-chevron-right")) {
-                octicon.classList.remove("octicon-chevron-right");
-                octicon.classList.add("octicon-chevron-down");
-            } else if (octicon.classList.contains("octicon-x")) {
-                octicon.classList.remove("octicon-x");
-                octicon.classList.add("octicon-check");
-            }
-        }
-    }
-
-    function setOcticonsUnchecked(octicons) {
-        for (octicon of octicons) {
-            if (octicon.classList.contains("octicon-chevron-down")) {
-                octicon.classList.remove("octicon-chevron-down");
-                octicon.classList.add("octicon-chevron-right");
-            } else if (octicon.classList.contains("octicon-check")) {
-                octicon.classList.remove("octicon-check");
-                octicon.classList.add("octicon-x");
-            }
-        }
-    }
-
-    function updateSuboptionIcon(elem) {
-        if (elem.checked === true) {
-            var octicons = elem.parentElement.getElementsByClassName('octicon');
-            setOcticonsChecked(octicons);
-        } else {
-            var octicons = elem.parentElement.getElementsByClassName('octicon');
-            setOcticonsUnchecked(octicons)
-        }
-    }
-
-    function getSiblings (elem) {
-        var siblings = [];
-        var sibling = elem.parentNode.firstChild;
-        for (; sibling; sibling = sibling.nextSibling) {
-            if (sibling.nodeType !== 1 || sibling === elem) continue;
-            siblings.push(sibling);
-        }
-        return siblings;
-    };
-</script>
-<style type="text/css">
-    ul {
-        list-style: none;
-    }
-
-    input[type='checkbox'] {
-        margin-right: 5px;
-    }
-
-    li.category {
-        font-style: italic;
-    }
-
-    input.mainBox {
-        display: none;
-    }
-
-    input.subOption {
-        display: none;
-    }
-</style>
 <div class="main container">
-
     <h1>{{ model }}/{{ layer }}/{{ unit }}</h1>
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
@@ -204,7 +71,6 @@
                                     <li><label><input type="checkbox" class="subOption" onclick="updateSuboptionIcon(this)" name="phe_density_fat" {% if phe_density_fat %} checked {% endif %}><i class="octicon octicon-x"></i>Fetthaltig</label></li>
                                 </ul>
                             </li>
-
                             <li>
                                 <input type="checkbox" class="mainBox" id="calcBox" onclick="optionClicked(this)" name="phe_calc" {% if phe_calc %} checked {% endif %}><label for="calcBox" class="mainCategory"><i class="octicon octicon-chevron-right"></i>Verkalkung</label>
                                 <ul class="subList">
@@ -228,11 +94,9 @@
                                     <li><label><input type="checkbox" class="subOption" onclick="updateSuboptionIcon(this)" name="phe_type_courseheterogenous" {% if phe_type_courseheterogenous %} checked {% endif %}><i class="octicon octicon-x"></i>Grob heterogen</label></li>
                                 </ul>
                             </li>
-
                             <li>
                                 <input type="checkbox" class="mainBox" id="distorsion_box" onclick="optionClicked(this)" name="phe_architectural_distorsion" {% if phe_architectural_distorsion %} checked {% endif %}><label for="distorsion_box" class="mainCategory"><i class="octicon octicon-x"></i>Architekturzerstörungen</label>
                             </li>
-
                             <li>
                                 <input type="checkbox" class="mainBox" id="asym_box" onclick="optionClicked(this)" name="phe_asymmetries" {% if phe_asymmetries %} checked {% endif %}><label for="asym_box" class="mainCategory"><i class="octicon octicon-chevron-right"></i>Asymetrien</label>
                                 <ul class="subList">
@@ -241,19 +105,15 @@
                                     <li><label><input type="checkbox" class="subOption" onclick="updateSuboptionIcon(this)"name="phe_asymetry_focal" {% if phe_asymetry_focal %} checked {% endif %}><i class="octicon octicon-x"></i>Fokal</label></li>
                                 </ul>
                             </li>
-
                             <li>
                                 <input type="checkbox" class="mainBox" id="skinlesion_box" onclick="optionClicked(this)" name="phe_skinlesion" {% if phe_skinlesion %} checked {% endif %}><label for="skinlesion_box" class="mainCategory"><i class="octicon octicon-x"></i>Hautläsion</label>
                             </li>
-
                             <li>
                                 <input type="checkbox" class="mainBox" id="milkduct_box" onclick="optionClicked(this)" name="phe_milkduct" {% if phe_milkduct %} checked {% endif %}><label for="milkduct_box" class="mainCategory"><i class="octicon octicon-x"></i>Einzelner erweiterter Milchgang</label>
                             </li>
-
                             <li>
                                 <input type="checkbox" class="mainBox" id="lymphnode_box" onclick="optionClicked(this)" name="phe_intramammarylymphnode" {% if phe_intramammarylymphnode %} checked {% endif %}><label for="lymphnode_box" class="mainCategory"><i class="octicon octicon-x"></i>Intramammärer Lymphknoten</label>
                             </li>
-
                             <li>
                                 <input type="checkbox" class="mainBox" id="epi_box" onclick="optionClicked(this)" name="phe_epiphenomenon" {% if phe_epiphenomenon %} checked {% endif %}><label for="epi_box" class="mainCategory"><i class="octicon octicon-chevron-right"></i>Begleiterscheinungen</label>
                                 <ul class="subList">
@@ -263,14 +123,13 @@
                                     <li><label><input type="checkbox" class="subOption" onclick="updateSuboptionIcon(this)" name="phe_trabeculary" {% if phe_trabeculary %} checked {% endif %}><i class="octicon octicon-x"></i>Trabekuläre Verdichtung</label></li>
                                     <li><label><input type="checkbox" class="subOption" onclick="updateSuboptionIcon(this)" name="phe_axillary" {% if phe_axillary %} checked {% endif %}><i class="octicon octicon-x"></i>Auxiläre Verdichtung</label></li>
                                 </ul>
-
                             </li>
                         </ul>
                     </div>
-
                     <button type="submit" class="btn btn-primary">Senden</button>
                 </form>
             </div>
+
             <div class="col-8">
                 {% for i in range(top_images|length) %}
                     <a href="/image/{{ top_images[i] }}" style="display: inline-block; margin: 0px 5px 10px 5px;">
@@ -286,10 +145,4 @@
             </div>
         </div>
     </div>
-
-
-
-
-
-
 </div>

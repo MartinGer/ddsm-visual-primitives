@@ -1,38 +1,19 @@
-.main {
-  width: 65vw;
+ul {
+  list-style: none;
 }
-.thumb .patch {
-  float: left;
-  margin: 0.1vw;
-  width: 16vw;
+
+input[type='checkbox'] {
+  margin-right: 5px;
 }
-.thumbwrap {
-  position: relative;
-  display: block;
-  width: 70vw;
+
+li.category {
+  font-style: italic;
 }
-.thumbwrap a {
-  text-decoration: none;
+
+input.mainBox {
+  display: none;
 }
-.thumb .raw {
-  height: 80vh;
-}
-.thumb div { 
-  position: fixed;
-  visibility: hidden;
-  top: 10vh;
-  left: 70vw; 
-}
-.thumb:hover div { 
-  visibility: visible;
-}
-.thumb .label { 
-  color: black;
-  position: fixed;
-  visibility: hidden;
-  top: 5vh;
-  left: 70vw; 
-}
-.thumb:hover .label { 
-  visibility: visible;
+
+input.subOption {
+  display: none;
 }
