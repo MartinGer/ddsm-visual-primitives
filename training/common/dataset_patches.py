@@ -20,9 +20,9 @@ def get_default_transform():
 
 def preprocess_image(path, transform, augmentation):
     image = Image.open(path)
-    #if augmentation:
-    #    angle = int((random() * 2 - 1) * MAX_ROTATION)
-    #    image = image.rotate(angle, resample=Image.BICUBIC, expand=True)
+    if augmentation:
+        angle = int((random() * 2 - 1) * MAX_ROTATION)
+        image = image.rotate(angle, resample=Image.BICUBIC, expand=True)
     image = transform(image)
     return image
 
