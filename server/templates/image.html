@@ -3,6 +3,22 @@
     <title>Image Analysis</title>
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js" integrity="sha384-B0UglyR+jN6CkvvICOB2joaf5I4l3gm9GU6Hc1og6Ls7i6U/mkkaduKaBhlAXv9k" crossorigin="anonymous"></script>
+
+    <script
+  src="https://code.jquery.com/jquery-3.3.1.min.js"
+  integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
+  crossorigin="anonymous"></script>
+
+    <style>
+
+      .zoom-on-hover {
+        transition: transform .2s;
+      }
+        .zoom-on-hover:hover {
+            transform: scale(2);
+            z-index: 9999;
+        }
+    </style>
 </head>
 <body>
 
@@ -12,7 +28,7 @@
 
         <div class="row">
             <div class="col-md-6">
-                <div class="card">
+                <div class="card top-on-hover">
                     <div class="card-header">
                         <h4 class="m-0">Prediction: {{ ('Normal', 'Benign', 'Cancer')[classification] }}</h4>
                     </div>
@@ -47,7 +63,7 @@
                         <div class="card-header">
                             {{ rank + 1 }}: Unit {{ top_units_and_activations[rank][0] }}
                         </div>
-                        <a href="/unit/{{ top_units_and_activations[rank][0] }}"><div style="
+                        <a href="/unit/{{ top_units_and_activations[rank][0] }}"><div class="zoom-on-hover" style="
                             height: 300px; width: 100%;
                             background-image: url({{ "/" + preprocessed_full_image_path }}), url({{ "/" + activation_maps[rank] }});
                             background-blend-mode: screen;
