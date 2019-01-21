@@ -48,8 +48,14 @@
             </div>
             <div class="col-md-6 card">
                 <div class="card-image">
-                    <img src="{{ "/" + preprocessed_full_image_path }}" style="max-height: 500px; max-width: 500px;">
-                    <img src="{{ "/" + mask_path }}" style="max-height: 500px; max-width: 500px;">
+
+                    <div class="zoom-on-hover" style="
+                            height: 500px; width: 100%;
+                            background-image: url({{ "/" + preprocessed_full_image_path }}), url({{ "/" + mask_path }});
+                            background-blend-mode: screen;
+                            background-size: contain;
+                            background-repeat: no-repeat;
+                            "></div>
                 </div>
             </div>
         </div>

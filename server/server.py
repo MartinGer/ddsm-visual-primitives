@@ -14,6 +14,7 @@ sys.path.insert(0, '../training')
 
 from common.dataset import get_preview_of_preprocessed_image, preprocessing_description
 from training.unit_rankings import get_class_influences_for_class
+from PIL import ImageOps
 
 app = Flask(__name__)
 
@@ -201,8 +202,10 @@ def image(image_filename):
     for mask_dir in mask_dirs:
         orig_mask_path = os.path.join('../data/ddsm_masks/3class', mask_dir, image_filename[:-4] + '.png')
         if os.path.exists(orig_mask_path):
+            mask_preprocessed = get_preview_of_preprocessed_image(orig_mask_path)
+            mask_preprocessed = ImageOps.colorize(ImageOps.equalize(mask_preprocessed), (0, 0, 0), (255, 0, 0))
             mask_path = os.path.join(app.config['ACTIVATIONS_FOLDER'], 'mask_{}.png'.format(uuid.uuid4()))
-            copyfile(orig_mask_path, mask_path)
+            mask_preprocessed.save(mask_path)
 
     units_to_show = 10
     top_units_and_activations = result.get_top_units(result.classification, units_to_show)
