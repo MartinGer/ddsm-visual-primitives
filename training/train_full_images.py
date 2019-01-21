@@ -22,8 +22,8 @@ def accuracy(output, target):
     return 100.0 * target.eq(pred).float().mean()
 
 
-def save_checkpoint(checkpoint_dir, state, epoch):
-    file_path = os.path.join(checkpoint_dir, 'checkpoint_{:08d}.pth.tar'.format(epoch))
+def save_checkpoint(checkpoint_dir, state, epoch, loss):
+    file_path = os.path.join(checkpoint_dir, 'checkpoint_{:08d}_{:.4f}_{:.4f}.pth.tar'.format(epoch, loss, accuracy))
     torch.save(state, file_path)
     return file_path
 
@@ -248,7 +248,7 @@ def main():
                         'epoch': epoch + 1,
                         'state_dict': model.state_dict(),
                         'optimizer': optimizer.state_dict(),
-                    }, epoch + 1)
+                    }, epoch + 1, val_loss, val_accuracy)
                     cfg.training.log_dir = log_dir
                     cfg.training.resume = checkpoint_path
                     with open(os.path.join(log_dir, 'config.yml'), 'w') as f:
@@ -262,7 +262,7 @@ def main():
                 'epoch': epoch + 1,
                 'state_dict': model.state_dict(),
                 'optimizer': optimizer.state_dict(),
-            }, epoch + 1)
+            }, epoch + 1, val_loss, val_accuracy)
             cfg.training.log_dir = log_dir
             cfg.training.resume = checkpoint_path
             with open(os.path.join(log_dir, 'config.yml'), 'w') as f:
