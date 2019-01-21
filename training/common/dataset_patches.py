@@ -18,17 +18,25 @@ def get_default_transform():
     return transform
 
 
+def get_default_augmented_transform():
+    transform = transforms.Compose([
+        transforms.RandomHorizontalFlip(),
+        transforms.RandomVerticalFlip(),
+        transforms.RandomAffine(degrees=90, translate=(0.1, 0.1), scale=(0.95, 1.05)),
+        transforms.ToTensor(),
+        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+    ])
+    return transform
+
+
 def preprocess_image(path, transform, augmentation):
     image = Image.open(path)
-    if augmentation:
-        angle = int((random() * 2 - 1) * MAX_ROTATION)
-        image = image.rotate(angle, resample=Image.BICUBIC, expand=True)
     image = transform(image)
     return image
 
 
 def preprocess_image_default(path, augmentation):
-    transform = get_default_transform()
+    transform = get_default_augmented_transform() if augmentation else get_default_transform()
     return preprocess_image(path, transform, augmentation)
 
 
@@ -38,7 +46,7 @@ def get_preview_of_preprocessed_image(path):
 
 
 def preprocessing_description():
-    return "No preprocessing (patches)"
+    return "Random rotation, translation and scale: degrees=90, translate=(0.1, 0.1), scale=(0.95, 1.05)"
 
 
 class DDSM(torch.utils.data.Dataset):
@@ -77,7 +85,8 @@ class DDSM(torch.utils.data.Dataset):
     def create_patch_dataset(split):
         patch_dir = '../data/ddsm_3class'
         image_list = '../data/ddsm_3class/' + split + '.txt'
-        dataset = DDSM(patch_dir, image_list, get_default_transform(), augmentation=split == 'train')
+        transform = get_default_augmented_transform() if split == 'train' else get_default_transform()
+        dataset = DDSM(patch_dir, image_list, transform, augmentation=split == 'train')
         return dataset
 
     def __len__(self):
