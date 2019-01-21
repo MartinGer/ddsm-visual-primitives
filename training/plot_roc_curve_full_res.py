@@ -7,7 +7,7 @@ import torchnet
 from munch import Munch
 from torch.autograd import Variable
 
-from common.dataset import DDSM, preprocessing_description
+from common.dataset_full_res_images import DDSM, preprocessing_description
 from common.model import get_resnet_3class_model
 
 from tqdm import tqdm as tqdm
@@ -44,8 +44,8 @@ optimizer = torch.optim.SGD(model.parameters(),
 # --- Prepare dataset: ---
 val_dataset = DDSM.create_full_image_dataset('val')
 val_loader = torch.utils.data.DataLoader(
-    val_dataset, batch_size=cfg.data.batch_size, shuffle=False,
-    num_workers=cfg.data.workers, pin_memory=True)
+    val_dataset, batch_size=1, shuffle=False,  # batch_size is 1 because images have different size
+    num_workers=1, pin_memory=True)
 
 # --- Prepare data structures for results: ---
 targets = [[] for _ in range(cfg.arch.num_classes)]
@@ -66,14 +66,15 @@ for input, target in tqdm(val_loader):
         if np.argmax(prob[i]) == target[i]:
             correct[target[i]] += 1
 
-    for i in range(cfg.arch.num_classes):
-        aucs[i].add(prob[:, i].data, target == i)
-        targets[i].extend(target.numpy() == i)
-        probs[i].extend(prob[:, i].data.cpu().numpy())
+    # print(prob, target)
+    # for i in range(cfg.arch.num_classes):
+    #     aucs[i].add(prob[:, i].data, target == i)
+    #     targets[i].extend(target.numpy() == i)
+    #     probs[i].extend(prob[:, i].data.cpu().numpy())
 
 # --- Print statistics: ---
 checkpoint_identifier = checkpoint_path.replace('/', '__')
-with open('auc_score_{}_on_full_images.txt'.format(checkpoint_identifier), 'w') as text_file:
+with open('auc_score_{}_on_full_res.txt'.format(checkpoint_identifier), 'w') as text_file:
     print(preprocessing_description(), file=text_file)
     correct_percent = (correct.astype(np.float) / image_count) * 100
     for i in range(cfg.arch.num_classes):

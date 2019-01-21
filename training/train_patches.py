@@ -1,4 +1,4 @@
-# classification into (no cancer / benign / cancer) on full images
+# classification into (no cancer / benign / cancer) on patches
 
 import argparse
 import os
@@ -13,7 +13,7 @@ from munch import Munch
 from tensorboardX import SummaryWriter
 from torch.autograd import Variable
 
-from common.dataset import DDSM
+from common.dataset_patches import DDSM
 from common.model import get_resnet_3class_model
 
 
@@ -22,7 +22,7 @@ def accuracy(output, target):
     return 100.0 * target.eq(pred).float().mean()
 
 
-def save_checkpoint(checkpoint_dir, state, epoch, loss):
+def save_checkpoint(checkpoint_dir, state, epoch, loss, accuracy):
     file_path = os.path.join(checkpoint_dir, 'checkpoint_{:08d}_{:.4f}_{:.4f}.pth.tar'.format(epoch, loss, accuracy))
     torch.save(state, file_path)
     return file_path
@@ -181,8 +181,8 @@ def main():
     if optimizer_state:
         optimizer.load_state_dict(optimizer_state)
 
-    train_dataset = DDSM.create_full_image_dataset('train')
-    val_dataset = DDSM.create_full_image_dataset('val')
+    train_dataset = DDSM.create_patch_dataset('train')
+    val_dataset = DDSM.create_patch_dataset('val')
 
     criterion = nn.CrossEntropyLoss(weight=torch.from_numpy(train_dataset.weight).float()).cuda()
 
@@ -215,8 +215,9 @@ def main():
         lr = adjust_learning_rate(optimizer, epoch)
         train_summary_writer.add_scalar('learning_rate', lr, epoch + 1)
 
+        train_dataset.pick_new_normal_images()
         train_batch_time, train_data_time, train_loss, train_accuracy, train_auc0, train_auc1, train_auc2 = train(
-            train_loader, model, criterion, optimizer, epoch)
+            val_loader, model, criterion, optimizer, epoch)
         train_summary_writer.add_scalar('batch_time', train_batch_time, epoch + 1)
         train_summary_writer.add_scalar('loss', train_loss, epoch + 1)
         train_summary_writer.add_scalar('accuracy', train_accuracy, epoch + 1)
