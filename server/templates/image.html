@@ -51,7 +51,7 @@
 
                     <div class="zoom-on-hover" style="
                             height: 500px; width: 100%;
-                            background-image: url({{ "/" + preprocessed_full_image_path }}), url({{ "/" + mask_path }});
+                            background-image: url({{ "/" + preprocessed_full_image_path }}), url({{ "/" + preprocessed_mask_path }});
                             background-blend-mode: screen;
                             background-size: contain;
                             background-repeat: no-repeat;
@@ -71,7 +71,7 @@
                         </div>
                         <a href="/unit/{{ top_units_and_activations[rank][0] }}"><div class="zoom-on-hover" style="
                             height: 300px; width: 100%;
-                            background-image: url({{ "/" + preprocessed_full_image_path }}), url({{ "/" + activation_maps[rank] }});
+                            background-image: url({{ "/" + preprocessed_full_image_path }}), url({{ "/" + heatmap_paths[rank] }});
                             background-blend-mode: screen;
                             background-size: contain;
                             background-repeat: no-repeat;
