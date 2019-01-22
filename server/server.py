@@ -4,8 +4,6 @@ import urllib
 import urllib.parse
 import os
 import sys
-from PIL import Image
-import matplotlib.pyplot as plt
 
 sys.path.insert(0, '../training')
 
@@ -139,46 +137,40 @@ def handle_survey_ranked():
 def upload_file():
     file = request.files['image']
     full_path = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
-
-    # add your custom code to check that the uploaded file is a valid image and not a malicious file (out-of-scope for this post)
     file.save(full_path)
 
-    return render_template('single_image.html', success=True, full_path=full_path)
-
-
-@app.route('/process_image', methods=['POST'])
-def process_image():
-    original_path = os.path.join(app.config['UPLOAD_FOLDER'],  'test.jpg')
-    processed_path = os.path.join(app.config['PROCESSED_FOLDER'], 'benign.jpg')
-    result = backend.single_image_analysis.analyze_one_image(os.path.join('../server/static/uploads', 'benign.jpg'))
-
-    activation_map_path = os.path.join(app.config['ACTIVATIONS_FOLDER'], 'activation.jpg')
-
-    top_units_and_activations = result.get_top_units(result.classification, 1)
-    activation_map = top_units_and_activations[0][2]  # activation map for unit 0 => top unit
-
-    img = Image.open(original_path)
-    # normalize activation values between 0 and 255
-    activation_map_normalized = backend.normalize_activation_map(activation_map)
-
-    # resize activation map to img size
-    activation_map_resized = backend.resize_activation_map(img, activation_map_normalized)
-
-    plt.gray()  # grayscale
-    plt.imsave(activation_map_path, activation_map_resized)
-
-    activations_overlayed_path = os.path.join(app.config['ACTIVATIONS_FOLDER'], 'benign.jpg')
-    img.save(activations_overlayed_path)
-
-    backend.grad_cam()
-    return render_template('single_image.html', success=False, processed=True, full_path=processed_path,
-                           top_units_and_activations=top_units_and_activations,
-                           activation_map_path=activation_map_path, activations_overlayed_path=activations_overlayed_path)
+    return render_template('single_image.html', success=True, full_path=full_path, image_filename=file.filename)
 
 
 @app.route('/unit_ranking_by_weights/<training_session>/<checkpoint_name>/upload')
 def single_image(training_session, checkpoint_name):
-    return render_template('single_image.html', success=False, processed=False, full_path='')
+    return render_template('single_image.html', success=False, processed=False)
+
+
+@app.route('/image_/<image_filename>')
+def image_(image_filename):
+    image_path = os.path.join(app.config['UPLOAD_FOLDER'], image_filename)
+
+    preprocessed_full_image_path = backend.get_preprocessed_image_path(image_filename, app.config['UPLOAD_FOLDER'])
+    preprocessed_mask_path = ""  # no mask available for new images
+    preprocessing_descr = dataset.preprocessing_description()
+
+    result = backend.single_image_analysis.analyze_one_image(image_path)
+
+    units_to_show = 10
+    top_units_and_activations = result.get_top_units(result.classification, units_to_show)
+    heatmap_paths = backend.get_heatmap_paths_for_top_units(image_filename, top_units_and_activations, units_to_show, app.config['UPLOAD_FOLDER'])
+
+    return render_template('image.html',
+                           image_path=result.image_path,
+                           preprocessed_full_image_path=preprocessed_full_image_path,
+                           preprocessed_mask_path=preprocessed_mask_path,
+                           checkpoint_path=result.checkpoint_path,
+                           preprocessing_descr=preprocessing_descr,
+                           classification=result.classification,
+                           class_probs=result.class_probs,
+                           top_units_and_activations=top_units_and_activations,
+                           heatmap_paths=heatmap_paths)
 
 
 @app.route('/example_analysis')

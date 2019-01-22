@@ -302,10 +302,10 @@ def _get_top_images_for_unit(unit_id, count):
     return top_images
 
 
-def get_preprocessed_image_path(full_image_name):
+def get_preprocessed_image_path(full_image_name, root="../data/ddsm_raw/"):
     path = os.path.join(PREPROCESSED_IMAGES_FOLDER, '{}.jpg'.format(full_image_name[:-4]))
     if not os.path.exists(path):
-        preprocessed_image = get_preview_of_preprocessed_image(os.path.join("../data/ddsm_raw/", full_image_name))
+        preprocessed_image = get_preview_of_preprocessed_image(os.path.join(root, full_image_name))
         preprocessed_image.save(path)
     return path
 
@@ -387,11 +387,11 @@ def get_preprocessed_mask_path(image_filename):
     return ""
 
 
-def get_heatmap_paths_for_top_units(image_filename, top_units_and_activations, units_to_show):
+def get_heatmap_paths_for_top_units(image_filename, top_units_and_activations, units_to_show, root="../data/ddsm_raw/"):
     activation_maps = np.asarray([top_units_and_activations[i][2] for i in range(units_to_show)])
 
     checkpoint_identifier = single_image_analysis.checkpoint_path[:-8].replace("/", "_").replace(".", "_")
-    preprocessed_size = get_preview_of_preprocessed_image(os.path.join("../data/ddsm_raw/", image_filename)).size
+    preprocessed_size = get_preview_of_preprocessed_image(os.path.join(root, image_filename)).size
     heatmap_paths = []
 
     for i in range(units_to_show):
