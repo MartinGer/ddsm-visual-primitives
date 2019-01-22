@@ -217,7 +217,7 @@ def main():
 
         train_dataset.pick_new_normal_images()
         train_batch_time, train_data_time, train_loss, train_accuracy, train_auc0, train_auc1, train_auc2 = train(
-            val_loader, model, criterion, optimizer, epoch)
+            train_loader, model, criterion, optimizer, epoch)
         train_summary_writer.add_scalar('batch_time', train_batch_time, epoch + 1)
         train_summary_writer.add_scalar('loss', train_loss, epoch + 1)
         train_summary_writer.add_scalar('accuracy', train_accuracy, epoch + 1)

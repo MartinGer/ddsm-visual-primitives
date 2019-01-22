@@ -3,10 +3,7 @@ import torch.utils.data
 from PIL import Image
 import numpy as np
 import torchvision.transforms as transforms
-from random import random, sample, shuffle
-
-
-MAX_ROTATION = 15
+from random import sample, shuffle
 
 
 def get_default_transform():
