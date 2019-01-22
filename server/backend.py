@@ -2,16 +2,15 @@ import base64
 import glob
 import os
 import pickle
-import uuid
 import math
 import sys
 sys.path.insert(0, '..')
-from db.doctor import insert_doctor_into_db_if_not_exists
-from db.database import DB
 import numpy as np
-from PIL import Image
+from PIL import Image, ImageOps
 import matplotlib.colors
 
+from db.doctor import insert_doctor_into_db_if_not_exists
+from db.database import DB
 from training.grad_cam import run_grad_cam
 from training.analyze_single_image import SingleImageAnalysis
 from training.common.dataset import get_preview_of_preprocessed_image
@@ -20,6 +19,9 @@ STATIC_DIR = 'static'
 DATA_DIR = 'data'
 LOG_DIR = os.path.join(DATA_DIR, 'log')
 ACTIVATIONS_FOLDER = os.path.join(STATIC_DIR, 'activation_maps')
+HEATMAPS_FOLDER = os.path.join(STATIC_DIR, 'heatmaps')
+PREPROCESSED_IMAGES_FOLDER = os.path.join(STATIC_DIR, 'preprocessed_images')
+PREPROCESSED_MASKS_FOLDER = os.path.join(STATIC_DIR, 'preprocessed_masks')
 
 DB_FILENAME = os.environ['DB_FILENAME'] if 'DB_FILENAME' in os.environ else 'test.db'
 
@@ -233,17 +235,19 @@ def register_doctor_if_not_exists(name):
     insert_doctor_into_db_if_not_exists(name, DB_FILENAME, '../db/')
 
 
-    # resize activation map to img size
 def resize_activation_map(img, activation_map):
+    # resize activation map to img size
     basewidth = img.size[0]
     wpercent = (basewidth / float(len(activation_map[0])))
     hsize = int((float(len(activation_map[1])) * float(wpercent)))
     return np.resize(activation_map, (basewidth, hsize))
 
 
-def normalize_activation_map(activation_map):
-    max_value = activation_map.max()
-    min_value = activation_map.min()
+def normalize_activation_map(activation_map, all_activation_maps=None):
+    if all_activation_maps is None:
+        all_activation_maps = activation_map
+    max_value = all_activation_maps.max()
+    min_value = all_activation_maps.min()
     activation_map = (activation_map - min_value) / (max_value - min_value)
     return activation_map
 
@@ -252,59 +256,64 @@ def grad_cam():
     run_grad_cam(image_path='static/processed/benign.jpg', cuda=False)
 
 
-def get_top_images_for_unit(unit_id, count):
+def get_top_images_and_heatmaps_for_unit(unit_id, count):
+    unit_id = int(unit_id)
+    top_images = _get_top_images_for_unit(unit_id, count)
+    if len(top_images) < 1:
+        print("No top images for unit found, is the database populated?")
+        return [], [], []
+
+    if not os.path.exists(HEATMAPS_FOLDER):
+        os.makedirs(HEATMAPS_FOLDER)
+    if not os.path.exists(PREPROCESSED_IMAGES_FOLDER):
+        os.makedirs(PREPROCESSED_IMAGES_FOLDER)
+
+    preprocessed_image_paths = [get_preprocessed_image_path(full_image_name) for full_image_name in top_images]
+
+    checkpoint_identifier = single_image_analysis.checkpoint_path[:-8].replace("/", "_").replace(".", "_")
+    heatmap_paths = [os.path.join(HEATMAPS_FOLDER, '{}_{}_{}.jpg'.format(full_image_name[:-4], unit_id, checkpoint_identifier)) for full_image_name in top_images]
+
+    for heatmap_path in heatmap_paths:
+        if not os.path.exists(heatmap_path):
+            # -> at least one heatmap is missing, regenerate all:
+            model_results = [single_image_analysis.analyze_one_image(os.path.join("../data/ddsm_raw/", full_image_name)) for full_image_name in top_images]
+            activation_maps = np.asarray([result.feature_maps[unit_id] for result in model_results])
+            preprocessed_size = get_preview_of_preprocessed_image(os.path.join("../data/ddsm_raw/", top_images[0])).size
+
+            for i, full_image_name in enumerate(top_images):
+                heatmap = _activation_map_to_heatmap(activation_maps[i], activation_maps)
+                heatmap = heatmap.resize(preprocessed_size, resample=Image.BICUBIC)
+                heatmap.save(heatmap_paths[i], "JPEG")
+            break
+
+    return top_images, preprocessed_image_paths, heatmap_paths
+
+
+def _get_top_images_for_unit(unit_id, count):
     db = DB(DB_FILENAME, '../db/')
     conn = db.get_connection()
     c = conn.cursor()
-
     select_stmt = "SELECT image.image_path FROM image_unit_activation " \
                   "INNER JOIN image ON image_unit_activation.image_id = image.id " \
                   "WHERE image_unit_activation.unit_id = ? ORDER BY image_unit_activation.activation DESC " \
                   "LIMIT ?"
-
-    top_images = []
-
-    for row in c.execute(select_stmt, (unit_id, count)):
-        top_images.append(row[0])
-
+    result = c.execute(select_stmt, (unit_id, count))
+    top_images = [row[0] for row in result]
     return top_images
 
 
-def get_top_images_with_activation_for_unit(unit_id, count):
-    if not os.path.exists(ACTIVATIONS_FOLDER):
-        os.makedirs(ACTIVATIONS_FOLDER)
-    unit_id = int(unit_id)
-    top_images = get_top_images_for_unit(unit_id, count)
-    preprocessed_top_images = []
-    activation_maps = []
-
-    for i, image_path in enumerate(top_images):
-        preprocessed_image = get_preview_of_preprocessed_image(os.path.join("../data/ddsm_raw/", image_path))
-        preprocessed_image_path = os.path.join(ACTIVATIONS_FOLDER, 'preprocessed_{}.jpg'.format(uuid.uuid4()))
-        preprocessed_image.save(preprocessed_image_path)
-        preprocessed_top_images.append(preprocessed_image_path)
-        act_map_img = get_activation_map(os.path.join("../data/ddsm_raw/", image_path), unit_id)
-        activation_map_path = os.path.join(ACTIVATIONS_FOLDER, 'activation_{}.jpg'.format(uuid.uuid4()))
-        act_map_img.save(activation_map_path, "JPEG")
-        activation_maps.append(activation_map_path)
-
-    return (top_images, preprocessed_top_images, activation_maps)
+def get_preprocessed_image_path(full_image_name, root="../data/ddsm_raw/"):
+    path = os.path.join(PREPROCESSED_IMAGES_FOLDER, '{}.jpg'.format(full_image_name[:-4]))
+    if not os.path.exists(path):
+        preprocessed_image = get_preview_of_preprocessed_image(os.path.join(root, full_image_name))
+        preprocessed_image.save(path)
+    return path
 
 
-def get_activation_map(image_path, unit_id):
-    preprocessed_full_image = get_preview_of_preprocessed_image(image_path)
-    result = single_image_analysis.analyze_one_image(image_path)
+def _activation_map_to_heatmap(activation_map, all_activation_maps):
+    activation_map_normalized = normalize_activation_map(activation_map, all_activation_maps)
 
-    activation_map = result.feature_maps[unit_id]
-    act_map_img = to_heatmap(activation_map)
-    act_map_img = act_map_img.resize(preprocessed_full_image.size, resample=Image.BICUBIC)
-    return act_map_img
-
-
-def to_heatmap(activation_map):
-    activation_map_normalized = normalize_activation_map(activation_map)
-
-    get_highest_activations_in_percentage(activation_map_normalized, 0.25)
+    #_get_highest_activations_in_percentage(activation_map_normalized, 0.25)
 
     activation_heatmap = np.ndarray((activation_map.shape[0], activation_map.shape[1], 3), np.double)
     for x in range(activation_map.shape[0]):
@@ -316,7 +325,7 @@ def to_heatmap(activation_map):
     return Image.fromarray(activation_heatmap.astype(np.uint8), mode="RGB")
 
 
-def get_highest_activations_in_percentage(activation_map, percentage):
+def _get_highest_activations_in_percentage(activation_map, percentage):
     no_of_elements_in_matrix = activation_map.shape[0] * activation_map.shape[1]
     no_of_elements_in_percentage_range = math.ceil((no_of_elements_in_matrix/100) * percentage)
 
@@ -335,7 +344,7 @@ def get_highest_activations_in_percentage(activation_map, percentage):
 
 
 # after resize WIP
-def get_highest_activations_in_percentage_after_resize(activation_map, percentage):
+def _get_highest_activations_in_percentage_after_resize(activation_map, percentage):
     no_of_elements_in_matrix = activation_map.size[0] * activation_map.size[1]
     no_of_elements_in_percentage_range = math.ceil((no_of_elements_in_matrix/100) * percentage)
     print(no_of_elements_in_matrix)
@@ -358,6 +367,41 @@ def get_highest_activations_in_percentage_after_resize(activation_map, percentag
     return activation_map
 
 
-def sum_matrix(matrix):
+def _sum_matrix(matrix):
         return sum(map(sum, matrix))
 
+
+def get_preprocessed_mask_path(image_filename):
+    mask_dirs = ["benigns", "benign_without_callbacks", "cancers"]
+    for mask_dir in mask_dirs:
+        mask_path = os.path.join('../data/ddsm_masks/3class', mask_dir, image_filename[:-4] + '.png')
+        if os.path.exists(mask_path):
+            if not os.path.exists(PREPROCESSED_MASKS_FOLDER):
+                os.makedirs(PREPROCESSED_MASKS_FOLDER)
+            preprocessed_mask_path = os.path.join(PREPROCESSED_MASKS_FOLDER, '{}.jpg'.format(image_filename[:-4]))
+            if not os.path.exists(preprocessed_mask_path):
+                mask_preprocessed = get_preview_of_preprocessed_image(mask_path)
+                mask_preprocessed = ImageOps.colorize(ImageOps.equalize(mask_preprocessed), (0, 0, 0), (255, 0, 0))
+                mask_preprocessed.save(preprocessed_mask_path)
+            return preprocessed_mask_path
+    return ""
+
+
+def get_heatmap_paths_for_top_units(image_filename, top_units_and_activations, units_to_show, root="../data/ddsm_raw/"):
+    activation_maps = np.asarray([top_units_and_activations[i][2] for i in range(units_to_show)])
+
+    checkpoint_identifier = single_image_analysis.checkpoint_path[:-8].replace("/", "_").replace(".", "_")
+    preprocessed_size = get_preview_of_preprocessed_image(os.path.join(root, image_filename)).size
+    heatmap_paths = []
+
+    for i in range(units_to_show):
+        heatmap = _activation_map_to_heatmap(activation_maps[i], activation_maps)
+        heatmap = heatmap.resize(preprocessed_size, resample=Image.BICUBIC)
+
+        heatmap_path = os.path.join(HEATMAPS_FOLDER,
+                                    '{}_{}_{}.jpg'.format(image_filename[:-4], top_units_and_activations[i][0],
+                                                          checkpoint_identifier))
+        heatmap.save(heatmap_path, "JPEG")
+        heatmap_paths.append(heatmap_path)
+
+    return heatmap_paths
