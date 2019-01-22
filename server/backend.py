@@ -302,6 +302,49 @@ def _get_top_images_for_unit(unit_id, count):
     return top_images
 
 
+def get_top_patches_and_heatmaps_for_unit(unit_id, count):
+    unit_id = int(unit_id)
+    top_patches = _get_top_patches_for_unit(unit_id, count)
+    if len(top_patches) < 1:
+        print("No top patches for unit found, is the database populated?")
+        return [], [], []
+
+    if not os.path.exists(HEATMAPS_FOLDER):
+        os.makedirs(HEATMAPS_FOLDER)
+
+    checkpoint_identifier = single_image_analysis.checkpoint_path[:-8].replace("/", "_").replace(".", "_")
+    heatmap_paths = [os.path.join(HEATMAPS_FOLDER, '{}_{}_{}.jpg'.format(patch_filename[:-4].replace("/", "_"), unit_id, checkpoint_identifier)) for patch_filename in top_patches]
+
+    for heatmap_path in heatmap_paths:
+        if not os.path.exists(heatmap_path):
+            # -> at least one heatmap is missing, regenerate all:
+            model_results = [single_image_analysis.analyze_one_patch(os.path.join("../data/ddsm_3class/", patch_filename)) for patch_filename in top_patches]
+            activation_maps = np.asarray([result.feature_maps[unit_id] for result in model_results])
+            patch_size = Image.open(os.path.join("../data/ddsm_3class/", top_patches[0])).size
+
+            for i, full_image_name in enumerate(top_patches):
+                heatmap = _activation_map_to_heatmap(activation_maps[i], activation_maps)
+                heatmap = heatmap.resize(patch_size, resample=Image.BICUBIC)
+                heatmap.save(heatmap_paths[i], "JPEG")
+            break
+
+    return top_patches, heatmap_paths
+
+
+def _get_top_patches_for_unit(unit_id, count):
+    db = DB(DB_FILENAME, '../db/')
+    conn = db.get_connection()
+    c = conn.cursor()  # FIXME: only looks for malignant activations
+    select_stmt = "SELECT patch_filename FROM patch_unit_activation " \
+                  "WHERE unit_id = ? AND class_id = 2 ORDER BY activation DESC " \
+                  "LIMIT ?"
+    print("Query database for top patches...")
+    result = c.execute(select_stmt, (unit_id, count))
+    top_patches = [row[0] for row in result]
+    print("Query finished.")
+    return top_patches
+
+
 def get_preprocessed_image_path(full_image_name, root="../data/ddsm_raw/"):
     path = os.path.join(PREPROCESSED_IMAGES_FOLDER, '{}.jpg'.format(full_image_name[:-4]))
     if not os.path.exists(path):

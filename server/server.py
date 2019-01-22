@@ -207,11 +207,14 @@ def image(image_filename):
 def unit(unit_id):
     result = backend.get_top_images_and_heatmaps_for_unit(unit_id, 4)
     top_images, preprocessed_top_images, heatmaps = result
+    top_patches, patch_heatmaps = backend.get_top_patches_and_heatmaps_for_unit(unit_id, 8)
     return render_template('unit.html',
                            unit_id=unit_id,
                            top_images=top_images,
                            preprocessed_top_images=preprocessed_top_images,
-                           heatmaps=heatmaps)
+                           heatmaps=heatmaps,
+                           top_patches=top_patches,
+                           patch_heatmaps=patch_heatmaps)
 
 
 @app.route('/unit_ranking_by_weights')
