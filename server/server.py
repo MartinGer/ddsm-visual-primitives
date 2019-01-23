@@ -222,12 +222,6 @@ def unit_ranking_by_weights_for_checkpoint(training_session, checkpoint_name):
 
 @app.route('/top_units')
 def top_units():
-    #hardcoding paths for now
-    #training_session = '2018-12-20_13-23-05.683938_resnet152'
-    #checkpoint_name = 'checkpoint_00000011.pth.tar'
-
-    #checkpoint_path = os.path.join('..', 'training', 'checkpoints_full_images', training_session, checkpoint_name)
-
     unit_ids = get_top_units_ranked()
     return render_template('unit_ranking_by_score.html', units=unit_ids)
 
