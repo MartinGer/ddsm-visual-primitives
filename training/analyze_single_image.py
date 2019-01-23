@@ -46,11 +46,11 @@ class AnalysisResult(object):
 class SingleImageAnalysis(object):
 
     def __init__(self, cfg=None):
-        self.cfg = cfg
-        if not self.cfg:
-            config_path = "/home/mp1819/ddsm-visual-primitives-python3/training/logs/2019-01-21_13-38-54.718746_resnet152/config.yml"
-            with open(config_path, 'r') as f:
-                self.cfg = Munch.fromYAML(f)
+    #    self.cfg = cfg
+    #    if not self.cfg:
+    #        config_path = "/home/mp1819/ddsm-visual-primitives-python3/training/logs/2019-01-21_13-38-54.718746_resnet152/config.yml"
+    #        with open(config_path, 'r') as f:
+    #            self.cfg = Munch.fromYAML(f)
         self.model, self.features_layer, self.checkpoint_path = get_model_from_config(self.cfg)
 
     def analyze_one_image(self, image_path):

@@ -10,6 +10,7 @@ def get_class_influences_for_class(checkpoint_path):
     :return: Three, one for each class outcome, rankings (sorted lists) of (unit, weight)-pairs in sorted order
     '''
     model, _, _, _ = get_resnet_3class_model(checkpoint_path)
+    # create single image analysis object
 
     class_influence_weights = {
         0: enumerate(model._modules['module'].fc.weight.data[0], 1),

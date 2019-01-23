@@ -22,7 +22,6 @@ LOG_DIR = os.path.join(DATA_DIR, 'log')
 ACTIVATIONS_FOLDER = os.path.join(STATIC_DIR, 'activation_maps')
 
 DB_FILENAME = os.environ['DB_FILENAME'] if 'DB_FILENAME' in os.environ else 'test.db'
-
 single_image_analysis = SingleImageAnalysis()
 
 
