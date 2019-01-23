@@ -45,8 +45,7 @@ def handle_login():
 @app.route('/home/<name>')
 def home(name):
     unquote_name = urllib.parse.unquote_plus(name)
-    responded_units = backend.get_responded_units(name)
-    return render_template('home.html', name=name, unquote_name=unquote_name, responded_units=responded_units)
+    return render_template('home.html', name=name, unquote_name=unquote_name)
 
 
 @app.route('/survey/<name>/<model>/<unit>')
