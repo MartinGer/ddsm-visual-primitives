@@ -15,26 +15,12 @@
 
 <body class="container mt-3">
 
-<h1>All units sorted by their weights per class</h1>
+<h1>Mammogram Diagnosis Survey</h1>
 
-<h2>Class weights for class 0</h2>
-<ul>
-{% for weight in sorted_weights_class_0 %}
-    <li><a href="/unit/{{ weight[0] }}">Unit {{ weight[0] }}</a> has weight {{ weight[1] }}</li>
-{% endfor %}
-</ul>
+<form action="{{ url_for('handle_login') }}" method="post">
+    Please enter your name:
+    <input type="text" name="name" required>
+    <input type="submit">
+</form>
 
-<h2>Class weights for class 1</h2>
-<ul>
-    {% for weight in sorted_weights_class_1 %}
-        <li><a href="/unit/{{ weight[0] }}">Unit {{ weight[0] }}</a> has weight {{ weight[1] }}</li>
-    {% endfor %}
-</ul>
-
-<h2>Class weights for class 2</h2>
-<ul>
-    {% for weight in sorted_weights_class_2 %}
-        <li><a href="/unit/{{ weight[0] }}">Unit {{ weight[0] }}</a> has weight {{ weight[1] }}</li>
-    {% endfor %}
-</ul>
 </body>

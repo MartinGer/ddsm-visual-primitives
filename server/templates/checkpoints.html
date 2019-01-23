@@ -1,7 +1,8 @@
-<!doctype html>
+<html lang="en">
+
 <head>
     <meta charset="UTF-8">
-    <title>Mammogram Diagnosis Survey</title>
+    <title>Checkpoints</title>
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" rel="stylesheet"
           integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js"
@@ -14,27 +15,18 @@
 </head>
 
 <body class="container mt-3">
-
-<h1>All units sorted by their weights per class</h1>
-
-<h2>Class weights for class 0</h2>
+<p>
+    This is a list of all checkpoints in the database.
+</p>
+<p>
+    <i>
+        Please note that loading the checkpoint will take some time.
+    </i>
+</p>
 <ul>
-{% for weight in sorted_weights_class_0 %}
-    <li><a href="/unit/{{ weight[0] }}">Unit {{ weight[0] }}</a> has weight {{ weight[1] }}</li>
+{% for checkpoint in checkpoints %}
+    <li><a href="/load_checkpoint/{{ checkpoint }}">{{ checkpoint }}</a></li>
 {% endfor %}
 </ul>
-
-<h2>Class weights for class 1</h2>
-<ul>
-    {% for weight in sorted_weights_class_1 %}
-        <li><a href="/unit/{{ weight[0] }}">Unit {{ weight[0] }}</a> has weight {{ weight[1] }}</li>
-    {% endfor %}
-</ul>
-
-<h2>Class weights for class 2</h2>
-<ul>
-    {% for weight in sorted_weights_class_2 %}
-        <li><a href="/unit/{{ weight[0] }}">Unit {{ weight[0] }}</a> has weight {{ weight[1] }}</li>
-    {% endfor %}
-</ul>
 </body>
+</html>
