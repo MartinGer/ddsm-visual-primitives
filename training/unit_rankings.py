@@ -3,7 +3,6 @@ from db.database import DB
 from common.model import get_resnet_3class_model
 import operator
 
-DB_FILENAME = os.environ['DB_FILENAME'] if 'DB_FILENAME' in os.environ else 'test.db'
 
 def get_class_influences_for_class(checkpoint_path):
     '''
@@ -30,25 +29,9 @@ def get_class_influences_for_class(checkpoint_path):
 
 
 def get_top_units_ranked():
-    db = DB(DB_FILENAME, '../db/')
+    db = DB()
     conn = db.get_connection()
     c = conn.cursor()
-
-    #select_stmt = "SELECT id, ground_truth FROM image;"
-    #result = c.execute(select_stmt)
-
-    #image_ground_truths = [r for r in result]
-    #if not image_ground_truths:
-    #    raise AssertionError('Could not retrieve image id and ground_truth from database')
-
-    #select_stmt = "SELECT net_id, image_id, image.id, unit_id, class_id, activation, image.ground_truth FROM image_unit_activation INNER JOIN image ON image_unit_activation.image_id = image.id WHERE image.split='val' LIMIT 5;"  # TODO remove limit
-    #result = c.execute(select_stmt)
-    #rows = [r for r in result]
-
-
-    # highest activation on whole val dataset is 2.04121923446655
-    # lowest activation on whole val dataset is -1.68306863307953
-
 
     # image id, ground_truth class, min_act(all classes), max_act(all_classes)
     select_stmt = "SELECT image_id, image.ground_truth, MIN(activation), MAX(activation) " \
@@ -57,26 +40,24 @@ def get_top_units_ranked():
     result = c.execute(select_stmt)
     rows = [r for r in result]
     if not rows:
-        raise AssertionError('Could not retrieve stuff from db')
+        raise AssertionError('Could not retrieve information from db')
 
     image_info = {tup[0] : tup[1:] for tup in rows}
 
     # unit_id, image_id, class_id, activation
-    select_stmt = "SELECT unit_id, image_id, class_id, activation FROM image_unit_activation INNER JOIN image ON image_unit_activation.image_id = image.id WHERE image.split='val';"  #ORDER BY unit_id LIMIT 20;"
+    select_stmt = "SELECT unit_id, image_id, class_id, activation FROM image_unit_activation INNER JOIN image ON image_unit_activation.image_id = image.id WHERE image.split='val';"
 
     result = c.execute(select_stmt)
     rows = [r for r in result]
     if not rows:
-        raise AssertionError('Could not retrieve stuff from db')
+        raise AssertionError('Could not retrieve information from db')
 
 
     scores = dict()
-
-    print(len(rows))
     c = 0
     for unit_info in rows:
         if c % 100000 == 0:
-            print(c)
+            print(str(c) + "/" + str(len(rows)))
         c += 1
 
         unit_id, image_id, class_id, activation = unit_info
@@ -98,10 +79,6 @@ def get_top_units_ranked():
             else:  # high activation value
                 scores[unit_id] = scores.get(unit_id, 0) - 5
 
-
-    print('yolo')
-
-    #sorted_scores = sorted(scores.items(), key=operator.itemgetter(1), reverse=True)  # list of (unit_id, score)
     sorted_scores = sorted(scores, key=scores.get, reverse=True)  # list of unit_ids
     return sorted_scores
 
