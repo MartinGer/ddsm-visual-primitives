@@ -3,18 +3,13 @@ from flask import redirect
 import urllib
 import urllib.parse
 import os
-import backend
 import sys
-from PIL import Image
-import matplotlib.pyplot as plt
-import uuid
-from shutil import copyfile
 
 sys.path.insert(0, '../training')
 
-from common.dataset import get_preview_of_preprocessed_image, preprocessing_description
+import backend
+from common import dataset
 from training.unit_rankings import get_class_influences_for_class
-from PIL import ImageOps
 
 app = Flask(__name__)
 
@@ -65,7 +60,7 @@ def survey(name, model, layer, unit, full=False, ranked=False):
     else:
         shows_phenomena = 'true'
         previous_annotations = {}
-    result = backend.get_top_images_with_activation_for_unit(unit_id, 8)
+    result = backend.get_top_images_and_heatmaps_for_unit(unit_id, 8)
     top_images, preprocessed_top_images, activation_maps = result
     return render_template('survey.html', name=name, unquote_name=unquote_name, full=full,
                            ranked=ranked, model=model, layer=layer, unit=unit, top_images=top_images,
@@ -117,6 +112,7 @@ def upload_file():
     file = request.files['image']
     full_path = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
     file.save(full_path)
+
     return render_template('single_image.html', success=True, full_path=full_path, image_filename=file.filename)
 
 
@@ -125,61 +121,74 @@ def single_image(training_session, checkpoint_name):
     return render_template('single_image.html', success=False, processed=False)
 
 
-@app.route('/image/<image_filename>')
-def image(image_filename):
+@app.route('/image_/<image_filename>')
+def image_(image_filename):
     image_path = os.path.join(app.config['UPLOAD_FOLDER'], image_filename)
-    preprocessed_full_image = get_preview_of_preprocessed_image(image_path)
-    preprocessed_full_image_path = os.path.join(app.config['ACTIVATIONS_FOLDER'], 'full_image_{}.jpg'.format(uuid.uuid4()))
-    preprocessed_full_image.save(preprocessed_full_image_path)
-    result = backend.single_image_analysis.analyze_one_image(image_path)
 
-    mask_dirs = ["benigns", "benign_without_callbacks", "cancers"]
-    mask_path = ""
-    for mask_dir in mask_dirs:
-        orig_mask_path = os.path.join('../data/ddsm_masks/3class', mask_dir, image_filename[:-4] + '.png')
-        if os.path.exists(orig_mask_path):
-            mask_preprocessed = get_preview_of_preprocessed_image(orig_mask_path)
-            mask_preprocessed = ImageOps.colorize(ImageOps.equalize(mask_preprocessed), (0, 0, 0), (255, 0, 0))
-            mask_path = os.path.join(app.config['ACTIVATIONS_FOLDER'], 'mask_{}.png'.format(uuid.uuid4()))
-            mask_preprocessed.save(mask_path)
+    preprocessed_full_image_path = backend.get_preprocessed_image_path(image_filename, app.config['UPLOAD_FOLDER'])
+    preprocessed_mask_path = ""  # no mask available for new images
+    preprocessing_descr = dataset.preprocessing_description()
+
+    result = backend.single_image_analysis.analyze_one_image(image_path)
 
     units_to_show = 10
     top_units_and_activations = result.get_top_units(result.classification, units_to_show)
-
-    activation_maps = []
-
-    for i in range(units_to_show):
-        activation_map = top_units_and_activations[i][2]  # activation map for unit with rank i
-        act_map_img = backend.to_heatmap(activation_map)
-        act_map_img = act_map_img.resize(preprocessed_full_image.size, resample=Image.BICUBIC)
-
-        activation_map_path = os.path.join(app.config['ACTIVATIONS_FOLDER'], 'activation_{}.jpg'.format(uuid.uuid4()))
-        act_map_img.save(activation_map_path, "JPEG")
-        activation_maps.append(activation_map_path)
-
-    preprocessing_descr = preprocessing_description()
+    heatmap_paths = backend.get_heatmap_paths_for_top_units(image_filename, top_units_and_activations, units_to_show, app.config['UPLOAD_FOLDER'])
 
     return render_template('image.html',
                            image_path=result.image_path,
                            preprocessed_full_image_path=preprocessed_full_image_path,
-                           mask_path=mask_path,
+                           preprocessed_mask_path=preprocessed_mask_path,
                            checkpoint_path=result.checkpoint_path,
                            preprocessing_descr=preprocessing_descr,
                            classification=result.classification,
                            class_probs=result.class_probs,
                            top_units_and_activations=top_units_and_activations,
-                           activation_maps=activation_maps)
+                           heatmap_paths=heatmap_paths)
+
+
+@app.route('/example_analysis')
+def example_analysis():
+    return image('cancer_09-B_3134_1.RIGHT_CC.LJPEG.1.jpg')
+
+
+@app.route('/image/<image_filename>')
+def image(image_filename):
+    image_path = os.path.join('../data/ddsm_raw/', image_filename)
+    preprocessed_full_image_path = backend.get_preprocessed_image_path(image_filename)
+    preprocessed_mask_path = backend.get_preprocessed_mask_path(image_filename)
+    preprocessing_descr = dataset.preprocessing_description()
+
+    result = backend.single_image_analysis.analyze_one_image(image_path)
+
+    units_to_show = 10
+    top_units_and_activations = result.get_top_units(result.classification, units_to_show)
+    heatmap_paths = backend.get_heatmap_paths_for_top_units(image_filename, top_units_and_activations, units_to_show)
+
+    return render_template('image.html',
+                           image_path=result.image_path,
+                           preprocessed_full_image_path=preprocessed_full_image_path,
+                           preprocessed_mask_path=preprocessed_mask_path,
+                           checkpoint_path=result.checkpoint_path,
+                           preprocessing_descr=preprocessing_descr,
+                           classification=result.classification,
+                           class_probs=result.class_probs,
+                           top_units_and_activations=top_units_and_activations,
+                           heatmap_paths=heatmap_paths)
 
 
 @app.route('/unit/<unit_id>')
 def unit(unit_id):
-    result = backend.get_top_images_with_activation_for_unit(unit_id, 4)
-    top_images, preprocessed_top_images, activation_maps = result
+    result = backend.get_top_images_and_heatmaps_for_unit(unit_id, 4)
+    top_images, preprocessed_top_images, heatmaps = result
+    top_patches, patch_heatmaps = backend.get_top_patches_and_heatmaps_for_unit(unit_id, 8)
     return render_template('unit.html',
                            unit_id=unit_id,
                            top_images=top_images,
                            preprocessed_top_images=preprocessed_top_images,
-                           activation_maps=activation_maps)
+                           heatmaps=heatmaps,
+                           top_patches=top_patches,
+                           patch_heatmaps=patch_heatmaps)
 
 
 @app.route('/unit_ranking_by_weights')
