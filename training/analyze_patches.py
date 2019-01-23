@@ -79,7 +79,6 @@ def save_activations_to_db(weighted_max_activations, classifications, val_datase
     db = DB(db_filename, "../db/")
     conn = db.get_connection()
     num_classes = 3
-    image_names = val_dataset.image_names
 
     with open(checkpoint_path, 'rb') as f:
         network_hash = hashlib.md5(f.read()).hexdigest()
@@ -88,8 +87,8 @@ def save_activations_to_db(weighted_max_activations, classifications, val_datase
     conn.execute(insert_statement_net, (network_hash, 'resnet152', checkpoint_path))
 
     for class_index in range(num_classes):
-        for image_index in range(len(val_dataset.shuffled_indices)):
-            patch_filename = val_dataset.image_names[val_dataset.shuffled_indices[image_index]]
+        for image_index in tqdm(range(len(val_dataset))):
+            patch_filename, ground_truth = val_dataset.images[val_dataset.shuffled_indices[image_index]]
             max_activation_per_unit = weighted_max_activations[image_index, class_index]
             temp = max_activation_per_unit.argsort()
             ranks = np.empty_like(temp)
@@ -99,8 +98,8 @@ def save_activations_to_db(weighted_max_activations, classifications, val_datase
                 activation = max_activation_per_unit[unit_index]
                 rank = ranks[unit_index]
 
-                insert_statement = "INSERT OR REPLACE INTO patch_unit_activation (net_id, patch_filename, unit_id, class_id, activation, rank) VALUES (?, ?, ?, ?, ?, ?)"
-                conn.execute(insert_statement, (network_hash, patch_filename, unit_index + 1, class_index, float(activation), int(rank)))
+                insert_statement = "INSERT OR REPLACE INTO patch_unit_activation (net_id, patch_filename, unit_id, class_id, activation, rank, ground_truth) VALUES (?, ?, ?, ?, ?, ?, ?)"
+                conn.execute(insert_statement, (network_hash, patch_filename, unit_index + 1, class_index, float(activation), int(rank), ground_truth))
 
     conn.commit()
 
