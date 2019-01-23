@@ -121,8 +121,8 @@ def single_image(training_session, checkpoint_name):
     return render_template('single_image.html', success=False, processed=False)
 
 
-@app.route('/image_/<image_filename>')
-def image_(image_filename):
+@app.route('/_image/<image_filename>')
+def _image(image_filename):
     image_path = os.path.join(app.config['UPLOAD_FOLDER'], image_filename)
 
     preprocessed_full_image_path = backend.get_preprocessed_image_path(image_filename, app.config['UPLOAD_FOLDER'])
@@ -210,7 +210,8 @@ def unit_ranking_by_weights_for_session(training_session):
 @app.route('/unit_ranking_by_weights/<training_session>/<checkpoint_name>')
 def unit_ranking_by_weights_for_checkpoint(training_session, checkpoint_name):
     checkpoint_path = os.path.join('..', 'training', 'checkpoints_full_images', training_session, checkpoint_name)
-    sorted_weights_class_0, sorted_weights_class_1, sorted_weights_class_2 = get_class_influences_for_class(checkpoint_path)
+    model = backend.init_single_image_analysis(checkpoint_path)  # load network
+    sorted_weights_class_0, sorted_weights_class_1, sorted_weights_class_2 = get_class_influences_for_class(model)
     return render_template('unit_ranking_by_weights_for_checkpoint.html',
                            session=training_session,
                            link=checkpoint_name,

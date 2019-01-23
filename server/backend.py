@@ -24,7 +24,14 @@ PREPROCESSED_IMAGES_FOLDER = os.path.join(STATIC_DIR, 'preprocessed_images')
 PREPROCESSED_MASKS_FOLDER = os.path.join(STATIC_DIR, 'preprocessed_masks')
 
 DB_FILENAME = os.environ['DB_FILENAME'] if 'DB_FILENAME' in os.environ else 'test.db'
-single_image_analysis = SingleImageAnalysis()
+single_image_analysis = None
+
+
+def init_single_image_analysis(checkpoint_path):
+    global single_image_analysis
+    single_image_analysis = SingleImageAnalysis(checkpoint_path)
+    model = single_image_analysis.get_model()
+    return model
 
 
 def get_models_and_layers(full=False, ranked=False):
