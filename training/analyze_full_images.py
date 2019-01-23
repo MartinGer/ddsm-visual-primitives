@@ -164,7 +164,7 @@ def analyze_full_images(args, cfg):
     unit_id_and_count_per_class, ranked_units, weighted_max_activations = create_unit_ranking(model, max_activation_per_unit_per_input)
 
     save_rankings_to_file(unit_id_and_count_per_class, args, cfg)
-    save_activations_to_db(weighted_max_activations, classifications, val_dataset checkpoint_path)
+    save_activations_to_db(weighted_max_activations, classifications, val_dataset, checkpoint_path)
 
     print_statistics(ranked_units, max_activation_per_unit_per_input)
 
