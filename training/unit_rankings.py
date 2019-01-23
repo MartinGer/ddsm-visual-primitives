@@ -1,16 +1,13 @@
-import os
 from db.database import DB
-from common.model import get_resnet_3class_model
-import operator
 
 
 def get_class_influences_for_class(model):
-    '''
+    """
     Loads a checkpoint for a resnet152_3class architecture and returns last hidden layer unit to class activation
     weights. These can be used as an influence ranking of all units for each individual outcome class.
 
     :return: Three, one for each class outcome, rankings (sorted lists) of (unit, weight)-pairs in sorted order
-    '''
+    """
 
     class_influence_weights = {
         0: enumerate(model._modules['module'].fc.weight.data[0], 1),
@@ -49,7 +46,6 @@ def get_top_units_ranked():
     rows = [r for r in result]
     if not rows:
         raise AssertionError('Could not retrieve information from db')
-
 
     scores = dict()
     c = 0
