@@ -10,6 +10,7 @@ sys.path.insert(0, '../training')
 import backend
 from common import dataset
 from training.unit_rankings import get_class_influences_for_class
+from db.database import DB
 
 app = Flask(__name__)
 
@@ -193,10 +194,14 @@ def unit(unit_id):
 
 @app.route('/unit_ranking_by_weights')
 def unit_ranking_by_weights():
-    sessions = sorted(os.listdir(os.path.join('..', 'training', 'checkpoints')))
+    db = DB()
+    conn = db.get_connection()
+    select_stmt = "SELECT filename FROM net"
+    result = conn.execute(select_stmt)
+    checkpoints = ["/".join(r[0].split("/")[-2:]) for r in result]
     return render_template('unit_ranking_by_weights.html',
                            session=False,
-                           links=sessions)
+                           links=checkpoints)
 
 
 @app.route('/unit_ranking_by_weights/<training_session>')

@@ -1,4 +1,5 @@
 import argparse
+import os
 
 import numpy as np
 import torch
@@ -46,12 +47,7 @@ class AnalysisResult(object):
 
 class SingleImageAnalysis(object):
 
-    def __init__(self, checkpoint_path, cfg=None):
-        self.cfg = cfg
-        if not self.cfg:
-            config_path = "/home/mp1819/ddsm-visual-primitives-python3/training/logs/2019-01-21_13-38-54.718746_resnet152/config.yml"
-            with open(config_path, 'r') as f:
-                self.cfg = Munch.fromYAML(f)
+    def __init__(self, checkpoint_path):
         self.model, _, _, self.features_layer = get_resnet_3class_model(checkpoint_path)
         self.checkpoint_path = checkpoint_path
 
@@ -103,7 +99,7 @@ def test():
     with open(args.config_path, 'r') as f:
         cfg = Munch.fromYAML(f)
 
-    single_image_analysis = SingleImageAnalysis(cfg)
+    single_image_analysis = SingleImageAnalysis(os.path.join('../training', cfg.training.resume))
     single_image_analysis.analyze_one_image(args.image_path)
 
 
