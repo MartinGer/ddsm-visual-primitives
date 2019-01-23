@@ -1,5 +1,4 @@
 <!doctype html>
-{% include "navbar.html" %}
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/octicons/4.4.0/font/octicons.min.css" crossorigin="anonymous">
 <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js" integrity="sha384-B0UglyR+jN6CkvvICOB2joaf5I4l3gm9GU6Hc1og6Ls7i6U/mkkaduKaBhlAXv9k" crossorigin="anonymous"></script>
@@ -7,11 +6,11 @@
 <script type="text/javascript" src="{{ url_for('static', filename='survey.js') }}"></script>
 
 <div class="main container">
-    <h1>{{ model }}/{{ layer }}/{{ unit }}</h1>
+    <h1>{{ model }}/{{ unit }}</h1>
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="/home/{{ name }}">home</a></li>
-            <li class="breadcrumb-item"><a href="/overview/{% if full %}full/{% endif %}{% if ranked %}ranked/{% endif %}{{ name }}/{{ model }}/{{ layer }}#{{ unit }}">{{ layer }}</a></li>
+            <!-- <li class="breadcrumb-item"><a href="/overview/{{ name }}/{{ model }}/{{ layer }}#{{ unit }}">{{ layer }}</a></li> -->
             <li class="breadcrumb-item active" aria-current="page">{{ unit }}</li>
         </ol>
     </nav>
@@ -29,10 +28,10 @@
     <div class="container">
         <div class="row">
             <div class="col-4">
-                <form action="{{ url_for('handle_survey') }}{% if full %}/full{% endif %}{% if ranked %}/ranked{% endif %}" method="post">
+                <form action="{{ url_for('handle_survey') }}" method="post">
                     <input type="hidden" name="name" value="{{ name }}">
                     <input type="hidden" name="model" value="{{ model }}">
-                    <input type="hidden" name="layer" value="{{ layer }}">
+                    <!-- <input type="hidden" name="layer" value="{{ layer }}"> -->
                     <input type="hidden" name="unit" value="{{ unit }}">
                     <p>
                         <label>
