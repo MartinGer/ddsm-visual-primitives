@@ -69,6 +69,8 @@ CREATE TABLE IF NOT EXISTS patch_unit_activation (
   PRIMARY KEY(net_id, patch_filename, unit_id, class_id)
 );
 
+CREATE INDEX patch_unit_activation_unit_ids ON patch_unit_activation (unit_id);
+
 INSERT INTO class (
   id,
   description
