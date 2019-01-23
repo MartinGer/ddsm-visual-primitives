@@ -1,5 +1,4 @@
-from flask import Flask, render_template, request
-from flask import redirect
+from flask import Flask, render_template, request, g, redirect
 import urllib
 import urllib.parse
 import os
@@ -11,15 +10,16 @@ import backend
 from common import dataset
 from training.unit_rankings import get_class_influences_for_class, get_top_units_ranked
 from db.database import DB
-from flask import g
 
 app = Flask(__name__)
+
 
 @app.teardown_appcontext
 def close_connection(exception):
     db = getattr(g, '_database', None)
     if db is not None:
         db.close()
+
 
 STATIC_DIR = 'static'
 UPLOAD_FOLDER = os.path.join(STATIC_DIR, 'uploads')
@@ -29,24 +29,101 @@ app.config['PROCESSED_FOLDER'] = PROCESSED_FOLDER
 PROCESSED_FOLDER = os.path.join(STATIC_DIR, 'activation_maps')
 app.config['ACTIVATIONS_FOLDER'] = PROCESSED_FOLDER
 
+CURRENT_USER = "default"
+
 
 @app.route('/')
 def index(name=None):
-    return render_template('index.html', name=name)
+    return render_template('login.html', name=name)
 
 
 @app.route('/handle_login', methods=['POST'])
 def handle_login():
+    global CURRENT_USER
     name = request.form['name']
     backend.register_doctor_if_not_exists(name)
-    return redirect('/home/{}'.format(name))
+    CURRENT_USER = name
+    return redirect('/home')
 
 
-@app.route('/home/<name>')
-def home(name):
-    unquote_name = urllib.parse.unquote_plus(name)
-    responded_units = backend.get_responded_units(name)
-    return render_template('home.html', name=name, unquote_name=unquote_name, responded_units=responded_units)
+@app.route('/home')
+def home():
+    return render_template('home.html', name=CURRENT_USER)
+
+
+@app.route('/checkpoints')
+def checkpoints():
+    db = DB()
+    conn = db.get_connection()
+    select_stmt = "SELECT filename FROM net"
+    result = conn.execute(select_stmt)
+    checkpoints = ["/".join(r[0].split("/")[-2:]) for r in result]
+    return render_template('checkpoints.html',
+                           checkpoints=checkpoints)
+
+
+@app.route('/load_checkpoint/<training_session>/<checkpoint_name>')
+def load_checkpoint(training_session, checkpoint_name):
+    checkpoint_path = os.path.join('..', 'training', 'checkpoints', training_session, checkpoint_name)
+    backend.init_single_image_analysis(checkpoint_path)
+    return redirect('/home')
+
+
+@app.route('/top_units')
+def top_units():
+    unit_ids = get_top_units_ranked()
+    return render_template('unit_ranking_by_score.html', units=unit_ids[:60])
+
+
+@app.route('/top_units_by_weights')
+def unit_ranking_by_weights_for_checkpoint():
+    if not backend.single_image_analysis:
+        return redirect('/checkpoints')
+    model = backend.single_image_analysis.get_model()
+    sorted_weights_class_0, sorted_weights_class_1, sorted_weights_class_2 = get_class_influences_for_class(model)
+    return render_template('unit_ranking_by_weights_for_checkpoint.html',
+                           sorted_weights_class_0=sorted_weights_class_0[:20],
+                           sorted_weights_class_1=sorted_weights_class_1[:20],
+                           sorted_weights_class_2=sorted_weights_class_2[:20])
+
+
+@app.route('/unit/<unit_id>')
+def unit(unit_id):
+    result = backend.get_top_images_and_heatmaps_for_unit(unit_id, 4)
+    top_images, preprocessed_top_images, heatmaps = result
+    top_patches, patch_heatmaps = backend.get_top_patches_and_heatmaps_for_unit(unit_id, 8)
+    return render_template('unit.html',
+                           unit_id=unit_id,
+                           top_images=top_images,
+                           preprocessed_top_images=preprocessed_top_images,
+                           heatmaps=heatmaps,
+                           top_patches=top_patches,
+                           patch_heatmaps=patch_heatmaps)
+
+
+@app.route('/image/<image_filename>')
+def image(image_filename):
+    image_path = os.path.join('../data/ddsm_raw/', image_filename)
+    preprocessed_full_image_path = backend.get_preprocessed_image_path(image_filename)
+    preprocessed_mask_path = backend.get_preprocessed_mask_path(image_filename)
+    preprocessing_descr = dataset.preprocessing_description()
+
+    result = backend.single_image_analysis.analyze_one_image(image_path)
+
+    units_to_show = 10
+    top_units_and_activations = result.get_top_units(result.classification, units_to_show)
+    heatmap_paths = backend.get_heatmap_paths_for_top_units(image_filename, top_units_and_activations, units_to_show)
+
+    return render_template('image.html',
+                           image_path=result.image_path,
+                           preprocessed_full_image_path=preprocessed_full_image_path,
+                           preprocessed_mask_path=preprocessed_mask_path,
+                           checkpoint_path=result.checkpoint_path,
+                           preprocessing_descr=preprocessing_descr,
+                           classification=result.classification,
+                           class_probs=result.class_probs,
+                           top_units_and_activations=top_units_and_activations,
+                           heatmap_paths=heatmap_paths)
 
 
 ######################################################################################TODO: fix survey routes
@@ -158,76 +235,3 @@ def _image(image_filename):
 @app.route('/example_analysis')
 def example_analysis():
     return image('cancer_09-B_3134_1.RIGHT_CC.LJPEG.1.jpg')
-
-
-@app.route('/image/<image_filename>')
-def image(image_filename):
-    image_path = os.path.join('../data/ddsm_raw/', image_filename)
-    preprocessed_full_image_path = backend.get_preprocessed_image_path(image_filename)
-    preprocessed_mask_path = backend.get_preprocessed_mask_path(image_filename)
-    preprocessing_descr = dataset.preprocessing_description()
-
-    result = backend.single_image_analysis.analyze_one_image(image_path)
-
-    units_to_show = 10
-    top_units_and_activations = result.get_top_units(result.classification, units_to_show)
-    heatmap_paths = backend.get_heatmap_paths_for_top_units(image_filename, top_units_and_activations, units_to_show)
-
-    return render_template('image.html',
-                           image_path=result.image_path,
-                           preprocessed_full_image_path=preprocessed_full_image_path,
-                           preprocessed_mask_path=preprocessed_mask_path,
-                           checkpoint_path=result.checkpoint_path,
-                           preprocessing_descr=preprocessing_descr,
-                           classification=result.classification,
-                           class_probs=result.class_probs,
-                           top_units_and_activations=top_units_and_activations,
-                           heatmap_paths=heatmap_paths)
-
-
-@app.route('/unit/<unit_id>')
-def unit(unit_id):
-    result = backend.get_top_images_and_heatmaps_for_unit(unit_id, 4)
-    top_images, preprocessed_top_images, heatmaps = result
-    top_patches, patch_heatmaps = backend.get_top_patches_and_heatmaps_for_unit(unit_id, 8)
-    return render_template('unit.html',
-                           unit_id=unit_id,
-                           top_images=top_images,
-                           preprocessed_top_images=preprocessed_top_images,
-                           heatmaps=heatmaps,
-                           top_patches=top_patches,
-                           patch_heatmaps=patch_heatmaps)
-
-
-@app.route('/unit_ranking_by_weights')
-def unit_ranking_by_weights():
-    db = DB()
-    conn = db.get_connection()
-    select_stmt = "SELECT filename FROM net"
-    result = conn.execute(select_stmt)
-    checkpoints = ["/".join(r[0].split("/")[-2:]) for r in result]
-    return render_template('unit_ranking_by_weights.html',
-                           session=False,
-                           links=checkpoints)
-
-
-@app.route('/unit_ranking_by_weights/<training_session>/<checkpoint_name>')
-def unit_ranking_by_weights_for_checkpoint(training_session, checkpoint_name):
-    checkpoint_path = os.path.join('..', 'training', 'checkpoints', training_session, checkpoint_name)
-    model = backend.init_single_image_analysis(checkpoint_path)  # load network
-    sorted_weights_class_0, sorted_weights_class_1, sorted_weights_class_2 = get_class_influences_for_class(model)
-    return render_template('unit_ranking_by_weights_for_checkpoint.html',
-                           session=training_session,
-                           link=checkpoint_name,
-                           sorted_weights_class_0=sorted_weights_class_0,
-                           sorted_weights_class_1=sorted_weights_class_1,
-                           sorted_weights_class_2=sorted_weights_class_2)
-
-@app.route('/top_units')
-def top_units():
-    unit_ids = get_top_units_ranked()
-    return render_template('unit_ranking_by_score.html', units=unit_ids)
-
-
-
-
