@@ -8,7 +8,7 @@ sys.path.insert(0, '../training')
 
 import backend
 from common import dataset
-from training.unit_rankings import get_class_influences_for_class, get_top_units_ranked
+from training.unit_rankings import get_class_influences_for_class, get_top_units_ranked, cached_unit_rankings
 from db.database import DB
 
 app = Flask(__name__)
@@ -71,6 +71,8 @@ def load_checkpoint(training_session, checkpoint_name):
 
 @app.route('/top_units')
 def top_units():
+    if cached_unit_rankings:
+        return render_template('unit_ranking_by_score.html', units=cached_unit_rankings[:60])
     unit_ids = get_top_units_ranked()
     return render_template('unit_ranking_by_score.html', units=unit_ids[:60])
 
@@ -203,3 +205,5 @@ def _image(image_filename):
 @app.route('/example_analysis')
 def example_analysis():
     return image('cancer_09-B_3134_1.RIGHT_CC.LJPEG.1.jpg')
+
+
