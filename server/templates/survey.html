@@ -49,79 +49,90 @@
                     <div id="phenomena_desc" class="phenomena_desc">
                         <ul>
                             <li>
-                                <input type="checkbox" class="mainBox" id="mass_box" onclick="optionClicked(this)" name="phe_mass" {% if phe_mass %} checked {% endif %}><label for="mass_box" class="mainCategory"><i class="octicon octicon-chevron-right"></i>Herdläsion</label>
+                                <input type="checkbox" class="mainBox" id="mass_box" onclick="optionClicked(this)" name="phe_mass" {% if phe_mass %} checked {% endif %}><label for="mass_box" class="mainCategory"><i class="octicon octicon-chevron-right"></i>Herdläsionen / Masses</label>
                                 <ul class="subList">
-                                    <li class="category">Form</li>
-                                    <li><label><input type="checkbox" class="subOption" onclick="updateSuboptionIcon(this)" name="phe_mass_oval" {% if phe_mass_oval %} checked {% endif %}><i class="octicon octicon-x"></i>Oval</label></li>
-                                    <li><label><input type="checkbox" class="subOption" onclick="updateSuboptionIcon(this)" name="phe_mass_round" {% if phe_mass_round %} checked {% endif %}><i class="octicon octicon-x"></i>Rund</label></li>
-                                    <li><label><input type="checkbox" class="subOption" onclick="updateSuboptionIcon(this)" name="phe_mass_irregular" {% if phe_mass_irregular %} checked {% endif %}><i class="octicon octicon-x"></i>Unregelmäßig</label></li>
+                                    <li class="category">Form / Shape</li>
+                                    <li><label><input type="checkbox" class="subOption" onclick="updateSuboptionIcon(this)" name="phe_mass_oval" {% if phe_mass_oval %} checked {% endif %}><i class="octicon octicon-x"></i>Oval / Oval</label></li>
+                                    <li><label><input type="checkbox" class="subOption" onclick="updateSuboptionIcon(this)" name="phe_mass_round" {% if phe_mass_round %} checked {% endif %}><i class="octicon octicon-x"></i>Rund / Round</label></li>
+                                    <li><label><input type="checkbox" class="subOption" onclick="updateSuboptionIcon(this)" name="phe_mass_irregular" {% if phe_mass_irregular %} checked {% endif %}><i class="octicon octicon-x"></i>Irregulär / Irregular</label></li>
                                 </ul>
                                 <ul class="subList">
-                                    <li class="category">Rand</li>
-                                    <li><label><input type="checkbox" class="subOption" onclick="updateSuboptionIcon(this)" name="phe_margin_circumscribed" {% if phe_margin_circumscribed %} checked {% endif %}><i class="octicon octicon-x"></i>Umschrieben</label></li>
-                                    <li><label><input type="checkbox" class="subOption" onclick="updateSuboptionIcon(this)" name="phe_margin_obscured" {% if phe_margin_obscured %} checked {% endif %}><i class="octicon octicon-x"></i>Verdeckt</label></li>
-                                    <li><label><input type="checkbox" class="subOption" onclick="updateSuboptionIcon(this)" name="phe_margin_microlobulated" {% if phe_margin_microlobulated %} checked {% endif %}><i class="octicon octicon-x"></i>Mikrobuliert</label></li>
-                                    <li><label><input type="checkbox" class="subOption" onclick="updateSuboptionIcon(this)" name="phe_margin_spiculated" {% if phe_margin_spiculated %} checked {% endif %}><i class="octicon octicon-x"></i>Spikuliert</label></li>
+                                    <li class="category">Rand / Margin</li>
+                                    <li><label><input type="checkbox" class="subOption" onclick="updateSuboptionIcon(this)" name="phe_margin_circumscribed" {% if phe_margin_circumscribed %} checked {% endif %}><i class="octicon octicon-x"></i>Umschrieben / Circumscribed</label></li>
+                                    <li><label><input type="checkbox" class="subOption" onclick="updateSuboptionIcon(this)" name="phe_margin_obscured" {% if phe_margin_obscured %} checked {% endif %}><i class="octicon octicon-x"></i>Verdeckt / Obscured</label></li>
+                                    <li><label><input type="checkbox" class="subOption" onclick="updateSuboptionIcon(this)" name="phe_margin_microlobulated" {% if phe_margin_microlobulated %} checked {% endif %}><i class="octicon octicon-x"></i>Mikrolobuliert / Microlobulated</label></li>
+                                    <li><label><input type="checkbox" class="subOption" onclick="updateSuboptionIcon(this)" name="phe_margin_indistinct" {% if phe_margin_indistinct %} checked {% endif %}><i class="octicon octicon-x"></i>Unscharf / Indistinct</label></li>
+                                    <li><label><input type="checkbox" class="subOption" onclick="updateSuboptionIcon(this)" name="phe_margin_spiculated" {% if phe_margin_spiculated %} checked {% endif %}><i class="octicon octicon-x"></i>Spikuliert / Spiculated</label></li>
                                 </ul>
                                 <ul class="subList">
-                                    <li class="category">Dichte</li>
-                                    <li><label><input type="checkbox" class="subOption" onclick="updateSuboptionIcon(this)" name="phe_density_high" {% if phe_density_high %} checked {% endif %}><i class="octicon octicon-x"></i>Hoch</label></li>
-                                    <li><label><input type="checkbox" class="subOption" onclick="updateSuboptionIcon(this)" name="phe_density_equal" {% if phe_density_equal %} checked {% endif %}><i class="octicon octicon-x"></i>Gleich</label></li>
-                                    <li><label><input type="checkbox" class="subOption" onclick="updateSuboptionIcon(this)" name="phe_density_low" {% if phe_density_low %} checked {% endif %}><i class="octicon octicon-x"></i>Gering</label></li>
-                                    <li><label><input type="checkbox" class="subOption" onclick="updateSuboptionIcon(this)" name="phe_density_fat" {% if phe_density_fat %} checked {% endif %}><i class="octicon octicon-x"></i>Fetthaltig</label></li>
-                                </ul>
-                            </li>
-                            <li>
-                                <input type="checkbox" class="mainBox" id="calcBox" onclick="optionClicked(this)" name="phe_calc" {% if phe_calc %} checked {% endif %}><label for="calcBox" class="mainCategory"><i class="octicon octicon-chevron-right"></i>Verkalkung</label>
-                                <ul class="subList">
-                                    <li class="category">Verteilung</li>
-                                    <li><label><input type="checkbox" class="subOption" onclick="updateSuboptionIcon(this)" name="phe_distribution_diffuse" {% if phe_distribution_diffuse %} checked {% endif %}><i class="octicon octicon-x"></i>Diffus</label></li>
-                                    <li><label><input type="checkbox" class="subOption" onclick="updateSuboptionIcon(this)" name="phe_distribution_regional" {% if phe_distribution_regional %} checked {% endif %}><i class="octicon octicon-x"></i>Regional</label></li>
-                                    <li><label><input type="checkbox" class="subOption" onclick="updateSuboptionIcon(this)" name="phe_distribution_grouped" {% if phe_distribution_grouped %} checked {% endif %}><i class="octicon octicon-x"></i>Gruppiert</label></li>
-                                    <li><label><input type="checkbox" class="subOption" onclick="updateSuboptionIcon(this)" name="phe_distribution_linear" {% if phe_distribution_linear %} checked {% endif %}><i class="octicon octicon-x"></i>Linear</label></li>
-                                    <li><label><input type="checkbox" class="subOption" onclick="updateSuboptionIcon(this)" name="phe_distribution_segmental" {% if phe_distribution_segmental %} checked {% endif %}><i class="octicon octicon-x"></i>Segmental</label></li>
-                                </ul>
-                                <ul class="subList">
-                                    <li class="category">Form</li>
-                                    <li><label><input type="checkbox" class="subOption" onclick="updateSuboptionIcon(this)" name="phe_type_vascular" {% if phe_type_vascular %} checked {% endif %}><i class="octicon octicon-x"></i>Gefäßverkalkung</label></li>
-                                    <li><label><input type="checkbox" class="subOption" onclick="updateSuboptionIcon(this)" name="phe_type_skin" {% if phe_type_skin %} checked {% endif %}><i class="octicon octicon-x"></i>Hautverkalkung</label></li>
-                                    <li><label><input type="checkbox" class="subOption" onclick="updateSuboptionIcon(this)" name="phe_type_popcorn" {% if phe_type_popcorn %} checked {% endif %}><i class="octicon octicon-x"></i>Popcorn-Verkalkung</label></li>
-                                    <li><label><input type="checkbox" class="subOption" onclick="updateSuboptionIcon(this)" name="phe_type_round" {% if phe_type_round %} checked {% endif %}><i class="octicon octicon-x"></i>Runde Verkalkung</label></li>
-                                    <li><label><input type="checkbox" class="subOption" onclick="updateSuboptionIcon(this)" name="phe_type_rim" {% if phe_type_rim %} checked {% endif %}><i class="octicon octicon-x"></i>Randverkalkung</label></li>
-                                    <li><label><input type="checkbox" class="subOption" onclick="updateSuboptionIcon(this)" name="phe_type_dystrophic" {% if phe_type_dystrophic %} checked {% endif %}><i class="octicon octicon-x"></i>Dystroph</label></li>
-                                    <li><label><input type="checkbox" class="subOption" onclick="updateSuboptionIcon(this)" name="phe_type_suture" {% if phe_type_suture %} checked {% endif %}><i class="octicon octicon-x"></i>Nahtmaterial</label></li>
-                                    <li><label><input type="checkbox" class="subOption" onclick="updateSuboptionIcon(this)" name="phe_type_amorphous" {% if phe_type_amorphous %} checked {% endif %}><i class="octicon octicon-x"></i>Amorph</label></li>
-                                    <li><label><input type="checkbox" class="subOption" onclick="updateSuboptionIcon(this)" name="phe_type_courseheterogenous" {% if phe_type_courseheterogenous %} checked {% endif %}><i class="octicon octicon-x"></i>Grob heterogen</label></li>
+                                    <li class="category">Dichte / Density</li>
+                                    <li><label><input type="checkbox" class="subOption" onclick="updateSuboptionIcon(this)" name="phe_density_high" {% if phe_density_high %} checked {% endif %}><i class="octicon octicon-x"></i>Vermehrt / High</label></li>
+                                    <li><label><input type="checkbox" class="subOption" onclick="updateSuboptionIcon(this)" name="phe_density_equal" {% if phe_density_equal %} checked {% endif %}><i class="octicon octicon-x"></i>Gleich / Equal</label></li>
+                                    <li><label><input type="checkbox" class="subOption" onclick="updateSuboptionIcon(this)" name="phe_density_low" {% if phe_density_low %} checked {% endif %}><i class="octicon octicon-x"></i>Niedrig / Low</label></li>
+                                    <li><label><input type="checkbox" class="subOption" onclick="updateSuboptionIcon(this)" name="phe_density_fat" {% if phe_density_fat %} checked {% endif %}><i class="octicon octicon-x"></i>Fett enthaltend / Fat-containing</label></li>
                                 </ul>
                             </li>
                             <li>
-                                <input type="checkbox" class="mainBox" id="distorsion_box" onclick="optionClicked(this)" name="phe_architectural_distorsion" {% if phe_architectural_distorsion %} checked {% endif %}><label for="distorsion_box" class="mainCategory"><i class="octicon octicon-x"></i>Architekturzerstörungen</label>
-                            </li>
-                            <li>
-                                <input type="checkbox" class="mainBox" id="asym_box" onclick="optionClicked(this)" name="phe_asymmetries" {% if phe_asymmetries %} checked {% endif %}><label for="asym_box" class="mainCategory"><i class="octicon octicon-chevron-right"></i>Asymetrien</label>
+                                <input type="checkbox" class="mainBox" id="calcBox" onclick="optionClicked(this)" name="phe_calc" {% if phe_calc %} checked {% endif %}><label for="calcBox" class="mainCategory"><i class="octicon octicon-chevron-right"></i>Verkalkungen / Calcifications</label>
                                 <ul class="subList">
-                                    <li class="category">Typ</li>
-                                    <li><label><input type="checkbox" class="subOption" onclick="updateSuboptionIcon(this)" name="phe_asymetry_global" {% if phe_asymetry_global %} checked {% endif %}><i class="octicon octicon-x"></i>Global</label></li>
-                                    <li><label><input type="checkbox" class="subOption" onclick="updateSuboptionIcon(this)"name="phe_asymetry_focal" {% if phe_asymetry_focal %} checked {% endif %}><i class="octicon octicon-x"></i>Fokal</label></li>
+                                    <li class="category">Typisch benigne / Typically benign</li>
+                                    <li><label><input type="checkbox" class="subOption" onclick="updateSuboptionIcon(this)" name="phe_type_skin" {% if phe_type_skin %} checked {% endif %}><i class="octicon octicon-x"></i>Haut / Skin</label></li>
+                                    <li><label><input type="checkbox" class="subOption" onclick="updateSuboptionIcon(this)" name="phe_type_vascular" {% if phe_type_vascular %} checked {% endif %}><i class="octicon octicon-x"></i>Vaskulär / Vascular</label></li>
+                                    <li><label><input type="checkbox" class="subOption" onclick="updateSuboptionIcon(this)" name="phe_type_popcorn" {% if phe_type_popcorn %} checked {% endif %}><i class="octicon octicon-x"></i>Grob oder "popcornartig" / Coarse or “popcorn-like”</label></li>
+                                    <li><label><input type="checkbox" class="subOption" onclick="updateSuboptionIcon(this)" name="phe_type_rod-like" {% if phe_type_rod-like %} checked {% endif %}><i class="octicon octicon-x"></i>Groß stäbchenförmig / Large rod-like</label></li>
+                                    <li><label><input type="checkbox" class="subOption" onclick="updateSuboptionIcon(this)" name="phe_type_round" {% if phe_type_round %} checked {% endif %}><i class="octicon octicon-x"></i>Rund / Round</label></li>
+                                    <li><label><input type="checkbox" class="subOption" onclick="updateSuboptionIcon(this)" name="phe_type_rim" {% if phe_type_rim %} checked {% endif %}><i class="octicon octicon-x"></i>Randverkalkungen / Rim</label></li>
+                                    <li><label><input type="checkbox" class="subOption" onclick="updateSuboptionIcon(this)" name="phe_type_dystrophic" {% if phe_type_dystrophic %} checked {% endif %}><i class="octicon octicon-x"></i>Dystroph / Dystrophic</label></li>
+                                    <li><label><input type="checkbox" class="subOption" onclick="updateSuboptionIcon(this)" name="phe_type_calcium" {% if phe_type_calcium %} checked {% endif %}><i class="octicon octicon-x"></i>Kalkmilch / Milk of calcium</label></li>
+                                    <li><label><input type="checkbox" class="subOption" onclick="updateSuboptionIcon(this)" name="phe_type_suture" {% if phe_type_suture %} checked {% endif %}><i class="octicon octicon-x"></i>Nahtmaterial / Suture</label></li>
+                                </ul>
+                                <ul class="subList">
+                                    <li class="category">Verdächtige Morphe / Suspicious morphology</li>
+                                    <li><label><input type="checkbox" class="subOption" onclick="updateSuboptionIcon(this)" name="phe_distribution_diffuse" {% if phe_distribution_diffuse %} checked {% endif %}><i class="octicon octicon-x"></i>Amorph / Amorphous</label></li>
+                                    <li><label><input type="checkbox" class="subOption" onclick="updateSuboptionIcon(this)" name="phe_distribution_regional" {% if phe_distribution_regional %} checked {% endif %}><i class="octicon octicon-x"></i>Grob heterogene / Coarse heterogeneous </label></li>
+                                    <li><label><input type="checkbox" class="subOption" onclick="updateSuboptionIcon(this)" name="phe_distribution_grouped" {% if phe_distribution_grouped %} checked {% endif %}><i class="octicon octicon-x"></i>Fein pleomorph / Fine pleomorphic </label></li>
+                                    <li><label><input type="checkbox" class="subOption" onclick="updateSuboptionIcon(this)" name="phe_distribution_linear" {% if phe_distribution_linear %} checked {% endif %}><i class="octicon octicon-x"></i>Fein linear oder fein linear, sich verzweigend / Fine linear or fine-linear branching </label></li>
+                                </ul>
+                                <ul class="subList">
+                                    <li class="category">Verteilung / Distribution</li>
+                                    <li><label><input type="checkbox" class="subOption" onclick="updateSuboptionIcon(this)" name="phe_distribution_diffuse" {% if phe_distribution_diffuse %} checked {% endif %}><i class="octicon octicon-x"></i>Diffus / Diffuse</label></li>
+                                    <li><label><input type="checkbox" class="subOption" onclick="updateSuboptionIcon(this)" name="phe_distribution_regional" {% if phe_distribution_regional %} checked {% endif %}><i class="octicon octicon-x"></i>Regional / Regional</label></li>
+                                    <li><label><input type="checkbox" class="subOption" onclick="updateSuboptionIcon(this)" name="phe_distribution_grouped" {% if phe_distribution_grouped %} checked {% endif %}><i class="octicon octicon-x"></i>Gruppiert / Grouped</label></li>
+                                    <li><label><input type="checkbox" class="subOption" onclick="updateSuboptionIcon(this)" name="phe_distribution_linear" {% if phe_distribution_linear %} checked {% endif %}><i class="octicon octicon-x"></i>Linear / Linear</label></li>
+                                    <li><label><input type="checkbox" class="subOption" onclick="updateSuboptionIcon(this)" name="phe_distribution_segmental" {% if phe_distribution_segmental %} checked {% endif %}><i class="octicon octicon-x"></i>Segmental / Segmental</label></li>
                                 </ul>
                             </li>
                             <li>
-                                <input type="checkbox" class="mainBox" id="skinlesion_box" onclick="optionClicked(this)" name="phe_skinlesion" {% if phe_skinlesion %} checked {% endif %}><label for="skinlesion_box" class="mainCategory"><i class="octicon octicon-x"></i>Hautläsion</label>
+                                <input type="checkbox" class="mainBox" id="distorsion_box" onclick="optionClicked(this)" name="phe_architectural_distorsion" {% if phe_architectural_distorsion %} checked {% endif %}><label for="distorsion_box" class="mainCategory"><i class="octicon octicon-x"></i>Architekturstörung / Architectural distortion</label>
                             </li>
                             <li>
-                                <input type="checkbox" class="mainBox" id="milkduct_box" onclick="optionClicked(this)" name="phe_milkduct" {% if phe_milkduct %} checked {% endif %}><label for="milkduct_box" class="mainCategory"><i class="octicon octicon-x"></i>Einzelner erweiterter Milchgang</label>
-                            </li>
-                            <li>
-                                <input type="checkbox" class="mainBox" id="lymphnode_box" onclick="optionClicked(this)" name="phe_intramammarylymphnode" {% if phe_intramammarylymphnode %} checked {% endif %}><label for="lymphnode_box" class="mainCategory"><i class="octicon octicon-x"></i>Intramammärer Lymphknoten</label>
-                            </li>
-                            <li>
-                                <input type="checkbox" class="mainBox" id="epi_box" onclick="optionClicked(this)" name="phe_epiphenomenon" {% if phe_epiphenomenon %} checked {% endif %}><label for="epi_box" class="mainCategory"><i class="octicon octicon-chevron-right"></i>Begleiterscheinungen</label>
+                                <input type="checkbox" class="mainBox" id="asym_box" onclick="optionClicked(this)" name="phe_asymmetries" {% if phe_asymmetries %} checked {% endif %}><label for="asym_box" class="mainCategory"><i class="octicon octicon-chevron-right"></i>Asymmetrien / Asymmetries</label>
                                 <ul class="subList">
-                                    <li><label><input type="checkbox" class="subOption" onclick="updateSuboptionIcon(this)" name="phe_skinretraction" {% if phe_skinretraction %} checked {% endif %}><i class="octicon octicon-x"></i>Hautretraktion</label></li>
-                                    <li><label><input type="checkbox" class="subOption" onclick="updateSuboptionIcon(this)" name="phe_mamillaryretraction" {% if phe_mamillaryretraction %} checked {% endif %}><i class="octicon octicon-x"></i>Mamillenretraktion</label></li>
-                                    <li><label><input type="checkbox" class="subOption" onclick="updateSuboptionIcon(this)" name="phe_skinthickening" {% if phe_skinthickening %} checked {% endif %}><i class="octicon octicon-x"></i>Hautverdickung</label></li>
-                                    <li><label><input type="checkbox" class="subOption" onclick="updateSuboptionIcon(this)" name="phe_trabeculary" {% if phe_trabeculary %} checked {% endif %}><i class="octicon octicon-x"></i>Trabekuläre Verdichtung</label></li>
-                                    <li><label><input type="checkbox" class="subOption" onclick="updateSuboptionIcon(this)" name="phe_axillary" {% if phe_axillary %} checked {% endif %}><i class="octicon octicon-x"></i>Auxiläre Verdichtung</label></li>
+                                    <li><label><input type="checkbox" class="subOption" onclick="updateSuboptionIcon(this)"name="phe_asymetry" {% if phe_asymetry %} checked {% endif %}><i class="octicon octicon-x"></i>Asymmetrie / Asymmetry</label></li>
+                                    <li><label><input type="checkbox" class="subOption" onclick="updateSuboptionIcon(this)"name="phe_asymetry_global" {% if phe_asymetry_global %} checked {% endif %}><i class="octicon octicon-x"></i>Globale Asymmetrie / Global asymmetry</label></li>
+                                    <li><label><input type="checkbox" class="subOption" onclick="updateSuboptionIcon(this)"name="phe_asymetry_focal" {% if phe_asymetry_focal %} checked {% endif %}><i class="octicon octicon-x"></i>Fokale Asymmetrie / Focal asymmetry</label></li>
+                                    <li><label><input type="checkbox" class="subOption" onclick="updateSuboptionIcon(this)"name="phe_asymetry_developing" {% if phe_asymetry_developing %} checked {% endif %}><i class="octicon octicon-x"></i>Sich entwickelnde Asymmetrie / Developing asymmetry</label></li>
+                                </ul>
+                            </li>
+                            <li>
+                                <input type="checkbox" class="mainBox" id="lymphnode_box" onclick="optionClicked(this)" name="phe_intramammarylymphnode" {% if phe_intramammarylymphnode %} checked {% endif %}><label for="lymphnode_box" class="mainCategory"><i class="octicon octicon-x"></i>Intramammärer Lymphknoten / Intramammary lymph node</label>
+                            </li>
+                            <li>
+                                <input type="checkbox" class="mainBox" id="skinlesion_box" onclick="optionClicked(this)" name="phe_skinlesion" {% if phe_skinlesion %} checked {% endif %}><label for="skinlesion_box" class="mainCategory"><i class="octicon octicon-x"></i>Hautläsion / Skin lesion</label>
+                            </li>
+                            <li>
+                                <input type="checkbox" class="mainBox" id="milkduct_box" onclick="optionClicked(this)" name="phe_milkduct" {% if phe_milkduct %} checked {% endif %}><label for="milkduct_box" class="mainCategory"><i class="octicon octicon-x"></i>Solitärer dilatierter Gang / Solitary dilated duct</label>
+                            </li>
+                            <li>
+                                <input type="checkbox" class="mainBox" id="epi_box" onclick="optionClicked(this)" name="phe_epiphenomenon" {% if phe_epiphenomenon %} checked {% endif %}><label for="epi_box" class="mainCategory"><i class="octicon octicon-chevron-right"></i>Begleitmerkmale / Associated features</label>
+                                <ul class="subList">
+                                    <li><label><input type="checkbox" class="subOption" onclick="updateSuboptionIcon(this)" name="phe_skinretraction" {% if phe_skinretraction %} checked {% endif %}><i class="octicon octicon-x"></i>Hauteinziehung / Skin retraction</label></li>
+                                    <li><label><input type="checkbox" class="subOption" onclick="updateSuboptionIcon(this)" name="phe_mamillaryretraction" {% if phe_mamillaryretraction %} checked {% endif %}><i class="octicon octicon-x"></i>Mamillenretraktion / Nipple retraction</label></li>
+                                    <li><label><input type="checkbox" class="subOption" onclick="updateSuboptionIcon(this)" name="phe_skinthickening" {% if phe_skinthickening %} checked {% endif %}><i class="octicon octicon-x"></i>Hautverdickung / Skin thickening</label></li>
+                                    <li><label><input type="checkbox" class="subOption" onclick="updateSuboptionIcon(this)" name="phe_trabeculary" {% if phe_trabeculary %} checked {% endif %}><i class="octicon octicon-x"></i>Trabekuläre Verdichtung / Trabecular thickening</label></li>
+                                    <li><label><input type="checkbox" class="subOption" onclick="updateSuboptionIcon(this)" name="phe_axillary" {% if phe_axillary %} checked {% endif %}><i class="octicon octicon-x"></i>Axilläre Lymphadenopathie / Axillary adenopathy</label></li>
+                                    <li><label><input type="checkbox" class="subOption" onclick="updateSuboptionIcon(this)" name="phe_architectural" {% if phe_architectural %} checked {% endif %}><i class="octicon octicon-x"></i>Architekturstörung / Architectural distortion  / </label></li>
+                                    <li><label><input type="checkbox" class="subOption" onclick="updateSuboptionIcon(this)" name="phe_calcifications" {% if phe_calcifications %} checked {% endif %}><i class="octicon octicon-x"></i>Verkalkungen / Calcifications</label></li>
                                 </ul>
                             </li>
                         </ul>
