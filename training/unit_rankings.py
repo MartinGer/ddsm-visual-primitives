@@ -78,6 +78,7 @@ def get_top_units_ranked():
                 scores[unit_id] = scores.get(unit_id, 0) - 5
 
     sorted_scores = sorted(scores, key=scores.get, reverse=True)  # list of unit_ids
+    global cached_unit_rankings
     cached_unit_rankings = sorted_scores
     return sorted_scores
 
