@@ -57,6 +57,20 @@ CREATE TABLE IF NOT EXISTS image_classification (
   PRIMARY KEY(net_id, image_id)
 );
 
+CREATE TABLE IF NOT EXISTS patch_unit_activation (
+  net_id TEXT NOT NULL,
+  patch_filename INTEGER NOT NULL,
+  unit_id INTEGER NOT NULL,
+  class_id INTEGER NOT NULL,
+  activation REAL NOT NULL,
+  rank INTEGER NOT NULL,
+  FOREIGN KEY(net_id) REFERENCES net(id),
+  FOREIGN KEY(class_id) REFERENCES class(id),
+  PRIMARY KEY(net_id, patch_filename, unit_id, class_id)
+);
+
+CREATE INDEX patch_unit_activation_unit_ids ON patch_unit_activation (unit_id);
+
 INSERT INTO class (
   id,
   description

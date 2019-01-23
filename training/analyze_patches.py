@@ -1,8 +1,7 @@
-# do a forward pass on all full images in validation set and store results in DB
+# do a forward pass on all patches in validation set and store results in DB
 
 import argparse
 import os
-import pickle
 import hashlib
 
 import numpy as np
@@ -13,7 +12,7 @@ from munch import Munch
 from torch.autograd import Variable
 from tqdm import tqdm as tqdm
 
-from common.dataset import DDSM
+from common.dataset_patches import DDSM
 from common.model import get_model_from_config
 from db.database import DB
 
@@ -76,15 +75,6 @@ def create_unit_ranking(model, max_activation_per_unit_per_input):
     return unit_id_and_count_per_class, ranked_units, weighted_max_activations
 
 
-def save_rankings_to_file(unit_id_and_count_per_class, args, cfg):
-    unit_rankings_dir = os.path.join(args.output_dir, 'unit_rankings', cfg.training.experiment_name,
-                                     args.final_layer_name)
-    if not os.path.exists(unit_rankings_dir):
-        os.makedirs(unit_rankings_dir)
-    with open(os.path.join(unit_rankings_dir, 'rankings.pkl'), 'wb') as f:
-        pickle.dump(unit_id_and_count_per_class, f)
-
-
 def save_activations_to_db(weighted_max_activations, classifications, val_dataset, checkpoint_path):
     db = DB()
     conn = db.get_connection()
@@ -97,37 +87,20 @@ def save_activations_to_db(weighted_max_activations, classifications, val_datase
     insert_statement_net = "INSERT OR REPLACE INTO net (id, net, filename) VALUES (?, ?, ?)"
     conn.execute(insert_statement_net, (network_hash, 'resnet152', checkpoint_path))
 
-    image_ids = []
-
-    for image_index, classification in enumerate(classifications):
-        image_name = image_names[image_index]
-        select_stmt_img = "SELECT id FROM image WHERE image_path = ?"
-        c = conn.cursor()
-        c.execute(select_stmt_img, (image_name,))
-        row = c.fetchone()
-        if row is None:
-            print("Error: Image is not in database: %s" % image_name)
-            break
-        img_id = row[0]
-        image_ids.append(img_id)
-
-        insert_statement = "INSERT OR REPLACE INTO image_classification (net_id, image_id, class_id) VALUES (?, ?, ?)"
-        conn.execute(insert_statement, (network_hash, img_id, classification))
-
     for class_index in range(num_classes):
-        for image_index in range(len(image_names)):
+        for image_index in range(len(val_dataset.shuffled_indices)):
+            patch_filename = val_dataset.image_names[val_dataset.shuffled_indices[image_index]]
             max_activation_per_unit = weighted_max_activations[image_index, class_index]
             temp = max_activation_per_unit.argsort()
             ranks = np.empty_like(temp)
             ranks[temp] = np.arange(len(max_activation_per_unit))
-            img_id = image_ids[image_index]
 
             for unit_index in range(len(max_activation_per_unit)):
                 activation = max_activation_per_unit[unit_index]
                 rank = ranks[unit_index]
 
-                insert_statement = "INSERT OR REPLACE INTO image_unit_activation (net_id, image_id, unit_id, class_id, activation, rank) VALUES (?, ?, ?, ?, ?, ?)"
-                conn.execute(insert_statement, (network_hash, img_id, unit_index + 1, class_index, float(activation), int(rank)))
+                insert_statement = "INSERT OR REPLACE INTO patch_unit_activation (net_id, patch_filename, unit_id, class_id, activation, rank) VALUES (?, ?, ?, ?, ?, ?)"
+                conn.execute(insert_statement, (network_hash, patch_filename, unit_index + 1, class_index, float(activation), int(rank)))
 
     conn.commit()
 
@@ -156,15 +129,14 @@ def print_statistics(ranked_units, max_activation_per_unit_per_input):
         print('')
 
 
-def analyze_full_images(args, cfg):
+def analyze_patches(args, cfg):
     model, features_layer, checkpoint_path = get_model_from_config(cfg, args.epoch)
-    val_dataset = DDSM.create_full_image_dataset('val')
+    val_dataset = DDSM.create_patch_dataset('val')
 
     max_activation_per_unit_per_input, classifications = run_model_on_all_images(model, features_layer, val_dataset)
     unit_id_and_count_per_class, ranked_units, weighted_max_activations = create_unit_ranking(model, max_activation_per_unit_per_input)
 
-    save_rankings_to_file(unit_id_and_count_per_class, args, cfg)
-    save_activations_to_db(weighted_max_activations, classifications, val_dataset checkpoint_path)
+    save_activations_to_db(weighted_max_activations, classifications, val_dataset, checkpoint_path)
 
     print_statistics(ranked_units, max_activation_per_unit_per_input)
 
@@ -180,4 +152,4 @@ if __name__ == "__main__":
     with open(args.config_path, 'r') as f:
         cfg = Munch.fromYAML(f)
 
-    analyze_full_images(args, cfg)
+    analyze_patches(args, cfg)

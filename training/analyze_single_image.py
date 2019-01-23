@@ -7,6 +7,7 @@ import torch.nn as nn
 from munch import Munch
 from torch.autograd import Variable
 from training.common.dataset import preprocess_image_default
+from training.common.dataset_patches import preprocess_image_default as preprocess_patch_default
 from training.common.model import get_model_from_config
 
 import sys
@@ -55,10 +56,17 @@ class SingleImageAnalysis(object):
 
     def analyze_one_image(self, image_path):
         image = preprocess_image_default(image_path, augmentation=False)
+        print("run image through model")
+        return self._analyze(image, image_path)
+
+    def analyze_one_patch(self, image_path):
+        image = preprocess_patch_default(image_path, augmentation=False)
+        print("run patch through model")
+        return self._analyze(image, image_path)
+
+    def _analyze(self, image, image_path):
         image_batch = image.unsqueeze(0)  # unsqueeze: (3, ~1500, 896) -> (1, 3, ~1500, 896)
         result = AnalysisResult(image_path, self.checkpoint_path, self.model)
-
-        print("run image through model")
         # extract features and max activations
 
         def feature_hook(_, __, layer_output):  # args: module, input, output
