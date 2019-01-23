@@ -8,7 +8,7 @@ from munch import Munch
 from torch.autograd import Variable
 from training.common.dataset import preprocess_image_default
 from training.common.dataset_patches import preprocess_image_default as preprocess_patch_default
-from training.common.model import get_model_from_config
+from training.common.model import get_resnet_3class_model
 
 import sys
 sys.path.insert(0, '..')
@@ -46,13 +46,14 @@ class AnalysisResult(object):
 
 class SingleImageAnalysis(object):
 
-    def __init__(self, cfg=None):
+    def __init__(self, checkpoint_path, cfg=None):
         self.cfg = cfg
         if not self.cfg:
-            config_path = "/home/mp1819/ddsm-visual-primitives-python3/training/logs/2019-01-21_18-00-21.564862_resnet152/config.yml"
+            config_path = "/home/mp1819/ddsm-visual-primitives-python3/training/logs/2019-01-21_13-38-54.718746_resnet152/config.yml"
             with open(config_path, 'r') as f:
                 self.cfg = Munch.fromYAML(f)
-        self.model, self.features_layer, self.checkpoint_path = get_model_from_config(self.cfg)
+        self.model, _, _, self.features_layer = get_resnet_3class_model(checkpoint_path)
+        self.checkpoint_path = checkpoint_path
 
     def analyze_one_image(self, image_path):
         image = preprocess_image_default(image_path, augmentation=False)
@@ -79,6 +80,7 @@ class SingleImageAnalysis(object):
         self.features_layer.register_forward_hook(feature_hook)
 
         with torch.no_grad():
+
             input_var = Variable(image_batch)
             output = self.model(input_var)  # forward pass with hooks
             class_probs = nn.Softmax(dim=1)(output).squeeze(0)  # shape: [3], i.e. [0.9457, 0.0301, 0.0242]
@@ -87,6 +89,9 @@ class SingleImageAnalysis(object):
             result.class_probs = class_probs
 
         return result
+
+    def get_model(self):
+        return self.model
 
 
 def test():

@@ -28,16 +28,6 @@ def index(name=None):
     return render_template('index.html', name=name)
 
 
-@app.route('/summary')
-def summary():
-    response_summary = backend.get_summary()
-    summary2 = []
-    for (name, responded_units) in response_summary:
-        unquote_name = urllib.parse.unquote_plus(name)
-        summary2.append((name, unquote_name, responded_units))
-    return render_template('summary.html', summary=summary2)
-
-
 @app.route('/handle_login', methods=['POST'])
 def handle_login():
     name = request.form['name']
@@ -52,25 +42,7 @@ def home(name):
     return render_template('home.html', name=name, unquote_name=unquote_name, responded_units=responded_units)
 
 
-@app.route('/overview/<name>/<model>/<layer>')
-def overview(name, model, layer, full=False, ranked=False):
-    unquote_name = urllib.parse.unquote_plus(name)
-    units = backend.get_units(name, model, layer, full=full, ranked=ranked)
-    num_responses = backend.get_num_responses(name)
-    if ranked:
-        full = False
-    return render_template('overview.html', name=name, unquote_name=unquote_name, num_responses=num_responses,
-                           full=full, ranked=ranked, model=model, layer=layer, units=units)
-
-
-@app.route('/overview/full/<name>/<model>/<layer>')
-def overview_full(name, model, layer):
-    return overview(name, model, layer, full=True)
-
-
-@app.route('/overview/ranked/<name>/<model>/<layer>')
-def overview_ranked(name, model, layer):
-    return overview(name, model, layer, full=True, ranked=True)
+######################################################################################TODO: fix survey routes
 
 
 @app.route('/survey/<name>/<model>/<layer>/<unit>')
@@ -133,6 +105,8 @@ def handle_survey_full():
 def handle_survey_ranked():
     return handle_survey(ranked=True)
 
+######################################################################################
+
 
 @app.route('/upload', methods=['POST'])
 def upload_file():
@@ -148,8 +122,8 @@ def single_image(training_session, checkpoint_name):
     return render_template('single_image.html', success=False, processed=False)
 
 
-@app.route('/image_/<image_filename>')
-def image_(image_filename):
+@app.route('/_image/<image_filename>')
+def _image(image_filename):
     image_path = os.path.join(app.config['UPLOAD_FOLDER'], image_filename)
 
     preprocessed_full_image_path = backend.get_preprocessed_image_path(image_filename, app.config['UPLOAD_FOLDER'])
@@ -220,7 +194,7 @@ def unit(unit_id):
 
 @app.route('/unit_ranking_by_weights')
 def unit_ranking_by_weights():
-    sessions = sorted(os.listdir(os.path.join('..', 'training', 'checkpoints_full_images')))
+    sessions = sorted(os.listdir(os.path.join('..', 'training', 'checkpoints')))
     return render_template('unit_ranking_by_weights.html',
                            session=False,
                            links=sessions)
@@ -228,7 +202,7 @@ def unit_ranking_by_weights():
 
 @app.route('/unit_ranking_by_weights/<training_session>')
 def unit_ranking_by_weights_for_session(training_session):
-    checkpoints = sorted(os.listdir(os.path.join('..', 'training', 'checkpoints_full_images', training_session)))
+    checkpoints = sorted(os.listdir(os.path.join('..', 'training', 'checkpoints', training_session)))
     return render_template('unit_ranking_by_weights.html',
                            session=training_session,
                            links=checkpoints)
@@ -236,8 +210,9 @@ def unit_ranking_by_weights_for_session(training_session):
 
 @app.route('/unit_ranking_by_weights/<training_session>/<checkpoint_name>')
 def unit_ranking_by_weights_for_checkpoint(training_session, checkpoint_name):
-    checkpoint_path = os.path.join('..', 'training', 'checkpoints_full_images', training_session, checkpoint_name)
-    sorted_weights_class_0, sorted_weights_class_1, sorted_weights_class_2 = get_class_influences_for_class(checkpoint_path)
+    checkpoint_path = os.path.join('..', 'training', 'checkpoints', training_session, checkpoint_name)
+    model = backend.init_single_image_analysis(checkpoint_path)  # load network
+    sorted_weights_class_0, sorted_weights_class_1, sorted_weights_class_2 = get_class_influences_for_class(model)
     return render_template('unit_ranking_by_weights_for_checkpoint.html',
                            session=training_session,
                            link=checkpoint_name,

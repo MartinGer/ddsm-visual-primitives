@@ -23,7 +23,15 @@ HEATMAPS_FOLDER = os.path.join(STATIC_DIR, 'heatmaps')
 PREPROCESSED_IMAGES_FOLDER = os.path.join(STATIC_DIR, 'preprocessed_images')
 PREPROCESSED_MASKS_FOLDER = os.path.join(STATIC_DIR, 'preprocessed_masks')
 
-single_image_analysis = SingleImageAnalysis()
+DB_FILENAME = os.environ['DB_FILENAME'] if 'DB_FILENAME' in os.environ else 'test.db'
+single_image_analysis = None
+
+
+def init_single_image_analysis(checkpoint_path):
+    global single_image_analysis
+    single_image_analysis = SingleImageAnalysis(checkpoint_path)
+    model = single_image_analysis.get_model()
+    return model
 
 
 def get_models_and_layers(full=False, ranked=False):
@@ -275,7 +283,7 @@ def get_top_images_and_heatmaps_for_unit(unit_id, count):
         if not os.path.exists(heatmap_path):
             # -> at least one heatmap is missing, regenerate all:
             model_results = [single_image_analysis.analyze_one_image(os.path.join("../data/ddsm_raw/", full_image_name)) for full_image_name in top_images]
-            activation_maps = np.asarray([result.feature_maps[unit_id] for result in model_results])
+            activation_maps = np.asarray([result.feature_maps[unit_id - 1] for result in model_results])
             preprocessed_size = get_preview_of_preprocessed_image(os.path.join("../data/ddsm_raw/", top_images[0])).size
 
             for i, full_image_name in enumerate(top_images):
@@ -317,7 +325,7 @@ def get_top_patches_and_heatmaps_for_unit(unit_id, count):
         if not os.path.exists(heatmap_path):
             # -> at least one heatmap is missing, regenerate all:
             model_results = [single_image_analysis.analyze_one_patch(os.path.join("../data/ddsm_3class/", patch_filename)) for patch_filename in top_patches]
-            activation_maps = np.asarray([result.feature_maps[unit_id] for result in model_results])
+            activation_maps = np.asarray([result.feature_maps[unit_id - 1] for result in model_results])
             patch_size = Image.open(os.path.join("../data/ddsm_3class/", top_patches[0])).size
 
             for i, full_image_name in enumerate(top_patches):
@@ -332,9 +340,10 @@ def get_top_patches_and_heatmaps_for_unit(unit_id, count):
 def _get_top_patches_for_unit(unit_id, count):
     db = DB()
     conn = db.get_connection()
-    c = conn.cursor()  # FIXME: only looks for malignant activations
-    select_stmt = "SELECT patch_filename FROM patch_unit_activation " \
-                  "WHERE unit_id = ? AND class_id = 2 ORDER BY activation DESC " \
+    c = conn.cursor()
+    # get highest activations regardless for which class on patches that aren't normal
+    select_stmt = "SELECT DISTINCT patch_filename FROM patch_unit_activation " \
+                  "WHERE unit_id = ? AND ground_truth != 0 ORDER BY activation DESC " \
                   "LIMIT ?"
     print("Query database for top patches...")
     result = c.execute(select_stmt, (unit_id, count))
