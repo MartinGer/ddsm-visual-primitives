@@ -23,8 +23,6 @@ HEATMAPS_FOLDER = os.path.join(STATIC_DIR, 'heatmaps')
 PREPROCESSED_IMAGES_FOLDER = os.path.join(STATIC_DIR, 'preprocessed_images')
 PREPROCESSED_MASKS_FOLDER = os.path.join(STATIC_DIR, 'preprocessed_masks')
 
-DB_FILENAME = os.environ['DB_FILENAME'] if 'DB_FILENAME' in os.environ else 'test.db'
-
 single_image_analysis = SingleImageAnalysis()
 
 
@@ -162,7 +160,7 @@ def get_num_responses(name):
 
 
 def get_survey(name, model, layer, unit):
-    db = DB(DB_FILENAME, '../db/')
+    db = DB()
     conn = db.get_connection()
 
     select_unit = int(unit.split("_")[1])  # looks like: unit_0076
@@ -187,7 +185,7 @@ def get_survey(name, model, layer, unit):
 
 
 def store_survey(name, model, layer, unit, shows_phenomena, phenomena):
-    db = DB(DB_FILENAME, '../db/')
+    db = DB()
     conn = db.get_connection()
 
     phenomena_description = '\n'.join(phenomena)
@@ -232,7 +230,7 @@ def get_summary():
 
 
 def register_doctor_if_not_exists(name):
-    insert_doctor_into_db_if_not_exists(name, DB_FILENAME, '../db/')
+    insert_doctor_into_db_if_not_exists(name)
 
 
 def resize_activation_map(img, activation_map):
@@ -290,7 +288,7 @@ def get_top_images_and_heatmaps_for_unit(unit_id, count):
 
 
 def _get_top_images_for_unit(unit_id, count):
-    db = DB(DB_FILENAME, '../db/')
+    db = DB()
     conn = db.get_connection()
     c = conn.cursor()
     select_stmt = "SELECT image.image_path FROM image_unit_activation " \
@@ -332,7 +330,7 @@ def get_top_patches_and_heatmaps_for_unit(unit_id, count):
 
 
 def _get_top_patches_for_unit(unit_id, count):
-    db = DB(DB_FILENAME, '../db/')
+    db = DB()
     conn = db.get_connection()
     c = conn.cursor()  # FIXME: only looks for malignant activations
     select_stmt = "SELECT patch_filename FROM patch_unit_activation " \
