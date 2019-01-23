@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<body>
+<p>
+    This is a list of all checkpoints listed in the <tt>&ltproject-home&gt/training/checkpoints_full_images</tt> directory.
+</p>
+<p>
+    <i>
+        Only checkpoints for the Resnet152 architecture are supported.<br />
+        Please note that loading the checkpoints will take some time.
+    </i>
+</p>
+<ul>
+{% for unit in units %}
+    <li><a href="/unit/{{ unit }}">Unit {{ unit }}</a></li>
+{% endfor %}
+</ul>
+</body>
+</html>
