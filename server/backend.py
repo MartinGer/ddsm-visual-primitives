@@ -166,7 +166,7 @@ def get_num_responses(name):
     return len(get_responses(name).keys())
 
 
-def get_survey(name, model, layer, unit):
+def get_survey(name, model, unit):
     db = DB()
     conn = db.get_connection()
 
@@ -191,7 +191,7 @@ def get_survey(name, model, layer, unit):
         return None
 
 
-def store_survey(name, model, layer, unit, shows_phenomena, phenomena):
+def store_survey(name, model, unit, shows_phenomena, phenomena):
     db = DB()
     conn = db.get_connection()
 
