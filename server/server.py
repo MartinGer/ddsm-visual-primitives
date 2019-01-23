@@ -193,7 +193,7 @@ def unit(unit_id):
 
 @app.route('/unit_ranking_by_weights')
 def unit_ranking_by_weights():
-    sessions = sorted(os.listdir(os.path.join('..', 'training', 'checkpoints_full_images')))
+    sessions = sorted(os.listdir(os.path.join('..', 'training', 'checkpoints')))
     return render_template('unit_ranking_by_weights.html',
                            session=False,
                            links=sessions)
@@ -201,7 +201,7 @@ def unit_ranking_by_weights():
 
 @app.route('/unit_ranking_by_weights/<training_session>')
 def unit_ranking_by_weights_for_session(training_session):
-    checkpoints = sorted(os.listdir(os.path.join('..', 'training', 'checkpoints_full_images', training_session)))
+    checkpoints = sorted(os.listdir(os.path.join('..', 'training', 'checkpoints', training_session)))
     return render_template('unit_ranking_by_weights.html',
                            session=training_session,
                            links=checkpoints)
@@ -209,7 +209,7 @@ def unit_ranking_by_weights_for_session(training_session):
 
 @app.route('/unit_ranking_by_weights/<training_session>/<checkpoint_name>')
 def unit_ranking_by_weights_for_checkpoint(training_session, checkpoint_name):
-    checkpoint_path = os.path.join('..', 'training', 'checkpoints_full_images', training_session, checkpoint_name)
+    checkpoint_path = os.path.join('..', 'training', 'checkpoints', training_session, checkpoint_name)
     model = backend.init_single_image_analysis(checkpoint_path)  # load network
     sorted_weights_class_0, sorted_weights_class_1, sorted_weights_class_2 = get_class_influences_for_class(model)
     return render_template('unit_ranking_by_weights_for_checkpoint.html',
