@@ -87,8 +87,12 @@ def save_activations_to_db(weighted_max_activations, classifications, val_datase
     conn.execute(insert_statement_net, (network_hash, 'resnet152', checkpoint_path))
 
     for class_index in range(num_classes):
+        print("Inserting activations for class {} into DB...".format(class_index))
         for image_index in tqdm(range(len(val_dataset))):
             patch_filename, ground_truth = val_dataset.images[val_dataset.shuffled_indices[image_index]]
+            if ground_truth == 0:
+                # we don't need to store the activations for normal patches
+                continue
             max_activation_per_unit = weighted_max_activations[image_index, class_index]
             temp = max_activation_per_unit.argsort()
             ranks = np.empty_like(temp)

@@ -67,9 +67,9 @@
                 <div class="col-md-3 mt-3">
                     <div class="card">
                         <div class="card-header">
-                            {{ rank + 1 }}: Unit {{ top_units_and_activations[rank][0] }}
+                            {{ rank + 1 }}: Unit {{ top_units_and_activations[rank][0] + 1 }}
                         </div>
-                        <a href="/unit/{{ top_units_and_activations[rank][0] }}"><div class="zoom-on-hover" style="
+                        <a href="/unit/{{ top_units_and_activations[rank][0] + 1 }}"><div class="zoom-on-hover" style="
                             height: 300px; width: 100%;
                             background-image: url({{ "/" + preprocessed_full_image_path }}), url({{ "/" + heatmap_paths[rank] }});
                             background-blend-mode: screen;
