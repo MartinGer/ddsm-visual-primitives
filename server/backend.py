@@ -181,7 +181,7 @@ def _get_top_patches_for_unit(unit_id, count):
     conn = db.get_connection()
     c = conn.cursor()
     # get highest activations regardless for which class on patches that aren't normal
-    select_stmt = "SELECT patch_filename FROM patch_unit_activation " \
+    select_stmt = "SELECT DISTINCT patch_filename, activation FROM patch_unit_activation " \
                   "WHERE unit_id = ? AND ground_truth != 0 ORDER BY activation DESC " \
                   "LIMIT ?"
     print("Query database for top patches...")
