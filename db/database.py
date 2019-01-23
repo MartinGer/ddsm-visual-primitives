@@ -4,41 +4,34 @@ import os
 import sys
 sys.path.insert(0,'../db')
 from populate_images import populate_db_with_images
+from flask import g
+
 
 class DB(object):
-    class __DB:
-        def __init__(self, filename, db_root="../db/"):
-            self._db_root = db_root
-            db_file_path = os.path.join(self._db_root, filename)
-            if os.path.isfile(db_file_path):
-                self.__conn = lite.connect(db_file_path)
-            else:
-                self.__conn = lite.connect(db_file_path)
-                self.__generate_tables()
-                self.__populate_tables()
-
-        def get_connection(self):
-            return self.__conn
-
-        def __generate_tables(self):
-            with open(os.path.join(self._db_root, "init.sql"), "r") as generation_script:
-                self.__conn.execute("PRAGMA foreign_keys=on;")
-                self.__conn.commit()
-                self.__conn.executescript(generation_script.read())
-                self.__conn.commit()
-
-        def __populate_tables(self):
-            # populate images
-            image_list_path = os.path.join(self._db_root, "..", "data", "ddsm_raw_image_lists")
-            populate_db_with_images(self.__conn, image_list_path)
-
-            self.__conn.commit()
-
-    _instance = None
+    DB_ROOT = os.path.join("..", "db")
+    DATABASE = os.path.join(DB_ROOT, "test.db")
 
     def __init__(self):
-        if not DB._instance:
-            DB._instance = DB.__DB("test.db")
+        if not os.path.isfile(self.DATABASE):
+            conn = self.get_connection()
+            self.__generate_tables(conn)
+            self.__populate_tables(conn)
 
-    def __getattr__(self, name):
-        return getattr(self._instance, name)
+    def get_connection(self):
+        db = getattr(g, '_database', None)
+        if db is None:
+            db = g._database = lite.connect(self.DATABASE)
+        return db
+
+    def __generate_tables(self, conn):
+        with open(os.path.join(self.DB_ROOT, "init.sql"), "r") as generation_script:
+            conn.execute("PRAGMA foreign_keys=on;")
+            conn.commit()
+            conn.executescript(generation_script.read())
+            conn.commit()
+
+    def __populate_tables(self, conn):
+        # populate images
+        image_list_path = os.path.join(self.DB_ROOT, "..", "data", "ddsm_raw_image_lists")
+        populate_db_with_images(conn, image_list_path)
+        conn.commit()

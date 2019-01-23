@@ -11,8 +11,15 @@ import backend
 from common import dataset
 from training.unit_rankings import get_class_influences_for_class, get_top_units_ranked
 from db.database import DB
+from flask import g
 
 app = Flask(__name__)
+
+@app.teardown_appcontext
+def close_connection(exception):
+    db = getattr(g, '_database', None)
+    if db is not None:
+        db.close()
 
 STATIC_DIR = 'static'
 UPLOAD_FOLDER = os.path.join(STATIC_DIR, 'uploads')
