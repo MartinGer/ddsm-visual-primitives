@@ -75,8 +75,8 @@ def create_unit_ranking(model, max_activation_per_unit_per_input):
     return unit_id_and_count_per_class, ranked_units, weighted_max_activations
 
 
-def save_activations_to_db(weighted_max_activations, classifications, val_dataset, db_filename, checkpoint_path):
-    db = DB(db_filename, "../db/")
+def save_activations_to_db(weighted_max_activations, classifications, val_dataset, checkpoint_path):
+    db = DB()
     conn = db.get_connection()
     num_classes = 3
 
@@ -132,20 +132,19 @@ def print_statistics(ranked_units, max_activation_per_unit_per_input):
         print('')
 
 
-def analyze_patches(args, cfg, db_path):
+def analyze_patches(args, cfg):
     model, features_layer, checkpoint_path = get_model_from_config(cfg, args.epoch)
     val_dataset = DDSM.create_patch_dataset('val')
 
     max_activation_per_unit_per_input, classifications = run_model_on_all_images(model, features_layer, val_dataset)
     unit_id_and_count_per_class, ranked_units, weighted_max_activations = create_unit_ranking(model, max_activation_per_unit_per_input)
 
-    save_activations_to_db(weighted_max_activations, classifications, val_dataset, db_path, checkpoint_path)
+    save_activations_to_db(weighted_max_activations, classifications, val_dataset, checkpoint_path)
 
     print_statistics(ranked_units, max_activation_per_unit_per_input)
 
 
 if __name__ == "__main__":
-    DB_FILENAME = os.environ['DB_FILENAME'] if 'DB_FILENAME' in os.environ else 'test.db'
     parser = argparse.ArgumentParser()
     parser.add_argument('--config_path')
     parser.add_argument('--epoch', type=int)
@@ -156,4 +155,4 @@ if __name__ == "__main__":
     with open(args.config_path, 'r') as f:
         cfg = Munch.fromYAML(f)
 
-    analyze_patches(args, cfg, DB_FILENAME)
+    analyze_patches(args, cfg)

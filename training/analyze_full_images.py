@@ -85,8 +85,8 @@ def save_rankings_to_file(unit_id_and_count_per_class, args, cfg):
         pickle.dump(unit_id_and_count_per_class, f)
 
 
-def save_activations_to_db(weighted_max_activations, classifications, val_dataset, db_filename, checkpoint_path):
-    db = DB(db_filename, "../db/")
+def save_activations_to_db(weighted_max_activations, classifications, val_dataset, checkpoint_path):
+    db = DB()
     conn = db.get_connection()
     num_classes = 3
     image_names = val_dataset.image_names
@@ -156,7 +156,7 @@ def print_statistics(ranked_units, max_activation_per_unit_per_input):
         print('')
 
 
-def analyze_full_images(args, cfg, db_path):
+def analyze_full_images(args, cfg):
     model, features_layer, checkpoint_path = get_model_from_config(cfg, args.epoch)
     val_dataset = DDSM.create_full_image_dataset('val')
 
@@ -164,13 +164,12 @@ def analyze_full_images(args, cfg, db_path):
     unit_id_and_count_per_class, ranked_units, weighted_max_activations = create_unit_ranking(model, max_activation_per_unit_per_input)
 
     save_rankings_to_file(unit_id_and_count_per_class, args, cfg)
-    save_activations_to_db(weighted_max_activations, classifications, val_dataset, db_path, checkpoint_path)
+    save_activations_to_db(weighted_max_activations, classifications, val_dataset checkpoint_path)
 
     print_statistics(ranked_units, max_activation_per_unit_per_input)
 
 
 if __name__ == "__main__":
-    DB_FILENAME = os.environ['DB_FILENAME'] if 'DB_FILENAME' in os.environ else 'test.db'
     parser = argparse.ArgumentParser()
     parser.add_argument('--config_path')
     parser.add_argument('--epoch', type=int)
@@ -181,4 +180,4 @@ if __name__ == "__main__":
     with open(args.config_path, 'r') as f:
         cfg = Munch.fromYAML(f)
 
-    analyze_full_images(args, cfg, DB_FILENAME)
+    analyze_full_images(args, cfg)
