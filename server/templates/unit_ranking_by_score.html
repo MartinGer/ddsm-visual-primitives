@@ -1,18 +1,23 @@
 <!DOCTYPE html>
-<body>
-<p>
-    This is a list of all checkpoints listed in the <tt>&ltproject-home&gt/training/checkpoints_full_images</tt> directory.
-</p>
-<p>
-    <i>
-        Only checkpoints for the Resnet152 architecture are supported.<br />
-        Please note that loading the checkpoints will take some time.
-    </i>
-</p>
+<head>
+    <meta charset="UTF-8">
+    <title>Mammogram Diagnosis Survey</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js"
+            integrity="sha384-B0UglyR+jN6CkvvICOB2joaf5I4l3gm9GU6Hc1og6Ls7i6U/mkkaduKaBhlAXv9k"
+            crossorigin="anonymous"></script>
+
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"
+            integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
+            crossorigin="anonymous"></script>
+</head>
+
+<body class="container mt-3">
+<h1>All units sorted by custom scoring</h1>
 <ul>
 {% for unit in units %}
     <li><a href="/unit/{{ unit }}">Unit {{ unit }}</a></li>
 {% endfor %}
 </ul>
 </body>
-</html>

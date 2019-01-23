@@ -23,6 +23,8 @@ def get_class_influences_for_class(model):
     return class_influence_weights_sorted[0], class_influence_weights_sorted[1], class_influence_weights_sorted[2]
 
 
+cached_unit_rankings = None
+
 def get_top_units_ranked():
     db = DB()
     conn = db.get_connection()
@@ -58,6 +60,8 @@ def get_top_units_ranked():
         ground_truth, min_act, max_act = image_info[image_id]
 
         bucket_size = (max_act - min_act) / 3
+        if class_id == 0:  # does not make sense to take normal class into consideration
+            continue
         if class_id == ground_truth:  # given activation value is for the correct class
             if activation <= min_act + bucket_size:  # low activation value
                 scores[unit_id] = scores.get(unit_id, 0) + 1
@@ -74,5 +78,6 @@ def get_top_units_ranked():
                 scores[unit_id] = scores.get(unit_id, 0) - 5
 
     sorted_scores = sorted(scores, key=scores.get, reverse=True)  # list of unit_ids
+    cached_unit_rankings = sorted_scores
     return sorted_scores
 
