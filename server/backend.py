@@ -138,7 +138,7 @@ def _get_top_images_for_unit(unit_id, count):
     db = DB()
     conn = db.get_connection()
     c = conn.cursor()
-    select_stmt = "SELECT image.image_path FROM image_unit_activation " \
+    select_stmt = "SELECT image.image_path, image_unit_activation.activation FROM image_unit_activation " \
                   "INNER JOIN image ON image_unit_activation.image_id = image.id " \
                   "WHERE image_unit_activation.unit_id = ? ORDER BY image_unit_activation.activation DESC " \
                   "LIMIT ?"
@@ -181,7 +181,7 @@ def _get_top_patches_for_unit(unit_id, count):
     conn = db.get_connection()
     c = conn.cursor()
     # get highest activations regardless for which class on patches that aren't normal
-    select_stmt = "SELECT DISTINCT patch_filename FROM patch_unit_activation " \
+    select_stmt = "SELECT patch_filename FROM patch_unit_activation " \
                   "WHERE unit_id = ? AND ground_truth != 0 ORDER BY activation DESC " \
                   "LIMIT ?"
     print("Query database for top patches...")
