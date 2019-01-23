@@ -16,18 +16,19 @@
 
 <body class="container mt-3">
 
-  <h1>Welcome {{ name }}!</h1>
+<h1>Welcome {{ name }}!</h1>
 
-    <p><a href="/checkpoints">Load a Checkpoint</a></p>
+<p><a href="/checkpoints">Load a Checkpoint</a></p>
 
-    <p><a href="/top_units">Top Units (by custom scoring)</a></p>
+<p><a href="/top_units">Top Units (by custom scoring)</a></p>
 
-    <p><a href="/top_units_by_weights">Top Units (by weights)</a></p>
+<p><a href="/top_units_by_weights">Top Units (by weights)</a></p>
 
-    <p>You may view your previously submitted survey responses below:</p>
-  <ul>
+<p>You may view your previously submitted survey responses below:</p>
+<ul>
     {% for key, units in responded_units %}
-    <li>{{ key }}:{% for unit in units %} <a href="/survey/full/{{ name }}/{{ key }}/{{ unit }}">[{{ unit }}]</a>{% endfor %}</li>
+        <li>{{ key }}:{% for unit in units %}
+            <a href="/survey/full/{{ name }}/{{ key }}/{{ unit }}">[{{ unit }}]</a>{% endfor %}</li>
     {% endfor %}
-  </ul>
+</ul>
 </body>

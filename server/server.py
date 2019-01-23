@@ -126,14 +126,11 @@ def image(image_filename):
                            heatmap_paths=heatmap_paths)
 
 
-######################################################################################TODO: fix survey routes
-
-
-@app.route('/survey/<name>/<model>/<layer>/<unit>')
-def survey(name, model, layer, unit, full=False, ranked=False):
+@app.route('/survey/<name>/<model>/<unit>')
+def survey(name, model, unit):
     unquote_name = urllib.parse.unquote_plus(name)
     unit_id = int(unit.split("_")[1])  # looks like: unit_0076
-    previous_survey = backend.get_survey(unquote_name, model, layer, unit)
+    previous_survey = backend.get_survey(unquote_name, model, unit)
     if previous_survey:
         shows_phenomena, description = previous_survey
         if shows_phenomena:
@@ -147,49 +144,20 @@ def survey(name, model, layer, unit, full=False, ranked=False):
         previous_annotations = {}
     result = backend.get_top_images_and_heatmaps_for_unit(unit_id, 8)
     top_images, preprocessed_top_images, activation_maps = result
-    return render_template('survey.html', name=name, unquote_name=unquote_name, full=full,
-                           ranked=ranked, model=model, layer=layer, unit=unit, top_images=top_images,
-                           preprocessed_top_images=preprocessed_top_images, activation_maps=activation_maps,
+    return render_template('survey.html', name=name, unquote_name=unquote_name, model=model, unit=unit,
+                           top_images=top_images, preprocessed_top_images=preprocessed_top_images, activation_maps=activation_maps,
                            shows_phenomena=shows_phenomena, **previous_annotations)
 
 
-@app.route('/survey/full/<name>/<model>/<layer>/<unit>')
-def survey_full(name, model, layer, unit):
-    return survey(name, model, layer, unit, full=True)
-
-
-@app.route('/survey/ranked/<name>/<model>/<layer>/<unit>')
-def survey_ranked(name, model, layer, unit):
-    return survey(name, model, layer, unit, ranked=True)
-
-
 @app.route('/handle_survey', methods=['POST'])
-def handle_survey(full=False, ranked=False):
+def handle_survey():
     name = urllib.parse.unquote_plus(request.form['name'])  # doctor username
     model = request.form['model']  # resnet152
-    layer = request.form['layer']  # layer4
     unit = request.form['unit']   # unit_0076
     shows_phenomena = request.form['shows_phenomena']
     phenomena = [p for p in request.form if p.startswith('phe')]
-    backend.store_survey(name, model, layer, unit, shows_phenomena, phenomena)
-    if ranked:
-        return redirect('/overview/ranked/{}/{}/{}#{}'.format(name, model, layer, unit))
-    elif full:
-        return redirect('/overview/full/{}/{}/{}#{}'.format(name, model, layer, unit))
-    else:
-        return redirect('/overview/{}/{}/{}#{}'.format(name, model, layer, unit))
-
-
-@app.route('/handle_survey/full', methods=['POST'])
-def handle_survey_full():
-    return handle_survey(full=True)
-
-
-@app.route('/handle_survey/ranked', methods=['POST'])
-def handle_survey_ranked():
-    return handle_survey(ranked=True)
-
-######################################################################################
+    backend.store_survey(name, model, unit, shows_phenomena, phenomena)
+    return redirect('/home/{}'.format(name))
 
 
 @app.route('/upload', methods=['POST'])
