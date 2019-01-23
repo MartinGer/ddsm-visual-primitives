@@ -32,8 +32,6 @@ class DB(object):
             image_list_path = os.path.join(self._db_root, "..", "data", "ddsm_raw_image_lists")
             populate_db_with_images(self.__conn, image_list_path)
 
-            # TODO: development only, populate with real nets later
-            self.__conn.execute("INSERT INTO net(id, net, filename) VALUES('id_placeholder', 'resnet152', 'filename_placeholder');")
             self.__conn.commit()
 
     _instance = None

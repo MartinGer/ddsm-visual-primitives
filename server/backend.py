@@ -23,7 +23,6 @@ HEATMAPS_FOLDER = os.path.join(STATIC_DIR, 'heatmaps')
 PREPROCESSED_IMAGES_FOLDER = os.path.join(STATIC_DIR, 'preprocessed_images')
 PREPROCESSED_MASKS_FOLDER = os.path.join(STATIC_DIR, 'preprocessed_masks')
 
-DB_FILENAME = os.environ['DB_FILENAME'] if 'DB_FILENAME' in os.environ else 'test.db'
 single_image_analysis = None
 
 

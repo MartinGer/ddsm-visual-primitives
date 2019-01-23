@@ -10,6 +10,7 @@ sys.path.insert(0, '../training')
 import backend
 from common import dataset
 from training.unit_rankings import get_class_influences_for_class
+from training.unit_rankings import get_top_units_ranked
 
 app = Flask(__name__)
 
@@ -218,3 +219,12 @@ def unit_ranking_by_weights_for_checkpoint(training_session, checkpoint_name):
                            sorted_weights_class_0=sorted_weights_class_0,
                            sorted_weights_class_1=sorted_weights_class_1,
                            sorted_weights_class_2=sorted_weights_class_2)
+
+@app.route('/top_units')
+def top_units():
+    unit_ids = get_top_units_ranked()
+    return render_template('unit_ranking_by_score.html', units=unit_ids)
+
+
+
+
