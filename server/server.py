@@ -91,6 +91,8 @@ def unit_ranking_by_weights_for_checkpoint():
 
 @app.route('/unit/<unit_id>')
 def unit(unit_id):
+    if not backend.single_image_analysis:
+        return redirect('/checkpoints')
     result = backend.get_top_images_and_heatmaps_for_unit(unit_id, 4)
     top_images, preprocessed_top_images, heatmaps = result
     top_patches, patch_heatmaps = backend.get_top_patches_and_heatmaps_for_unit(unit_id, 8)
@@ -105,6 +107,8 @@ def unit(unit_id):
 
 @app.route('/image/<image_filename>')
 def image(image_filename):
+    if not backend.single_image_analysis:
+        return redirect('/checkpoints')
     image_path = os.path.join('../data/ddsm_raw/', image_filename)
     preprocessed_full_image_path = backend.get_preprocessed_image_path(image_filename)
     preprocessed_mask_path = backend.get_preprocessed_mask_path(image_filename)
