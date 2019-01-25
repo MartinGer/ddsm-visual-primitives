@@ -1,7 +1,7 @@
 <!doctype html>
 <head>
     <meta charset="UTF-8">
-    <title>Mammogram Diagnosis Survey</title>
+    <title>Mammogram Diagnosis Survey - Login</title>
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" rel="stylesheet"
           integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js"
@@ -17,10 +17,15 @@
 
 <h1>Mammogram Diagnosis Survey</h1>
 
-<form action="{{ url_for('handle_login') }}" method="post">
-    Please enter your name:
-    <input type="text" name="name" required>
-    <input type="submit">
+<p>Please enter your name to begin the survey.</p>
+
+<form class="form-inline" action="{{ url_for('handle_login') }}" method="post">
+
+    <div class="form-group mx-sm-3 mb-2">
+        <input type="text" class="form-control" name="name" placeholder="Your Name">
+    </div>
+    <button type="submit" class="btn btn-primary mb-2">Begin Survey</button>
+
 </form>
 
 </body>

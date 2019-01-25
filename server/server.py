@@ -110,6 +110,7 @@ def image(image_filename):
     if not backend.single_image_analysis:
         return redirect('/checkpoints')
     image_path = os.path.join('../data/ddsm_raw/', image_filename)
+    image_name = image_filename[:-4]
     preprocessed_full_image_path = backend.get_preprocessed_image_path(image_filename)
     preprocessed_mask_path = backend.get_preprocessed_mask_path(image_filename)
     preprocessing_descr = dataset.preprocessing_description()
@@ -122,6 +123,7 @@ def image(image_filename):
 
     return render_template('image.html',
                            image_path=result.image_path,
+                           image_name=image_name,
                            preprocessed_full_image_path=preprocessed_full_image_path,
                            preprocessed_mask_path=preprocessed_mask_path,
                            checkpoint_path=result.checkpoint_path,
@@ -208,6 +210,8 @@ def _image(image_filename):
 
 @app.route('/example_analysis')
 def example_analysis():
+    # good examples:
+    # cancer_15-B_3504_1.RIGHT_CC.LJPEG.1.jpg -> 99% cancer, two spots
     return image('cancer_09-B_3134_1.RIGHT_CC.LJPEG.1.jpg')
 
 

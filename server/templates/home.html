@@ -2,7 +2,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Home</title>
+    <title>Mammogram Diagnosis Survey - Home</title>
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" rel="stylesheet"
           integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js"
@@ -16,15 +16,23 @@
 
 <body class="container mt-3">
 
-<h1>Welcome {{ name }}!</h1>
+<h1>Mammogram Diagnosis Survey</h1>
 
-<p><a href="/checkpoints">Load a Checkpoint</a></p>
+<h3>Welcome {{ name }}!</h3>
+
+<p>Please annotate the top units of this Neural Network after selecting a checkpoint:</p>
+
+<p><a href="/checkpoints">Checkpoint Selection</a></p>
 
 <p><a href="/top_units">Top Units (by custom scoring)</a></p>
 
 <p><a href="/top_units_by_weights">Top Units (by weights)</a></p>
 
-<p>You may view your previously submitted survey responses below:</p>
-<p>TODO: get from DB</p>
+
+<p>Previously submitted surveys:</p>
+
+<ul>
+    <li>TODO: get from DB</li>
+</ul>
 
 </body>

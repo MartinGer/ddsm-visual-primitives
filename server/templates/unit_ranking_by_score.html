@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <head>
     <meta charset="UTF-8">
-    <title>Mammogram Diagnosis Survey</title>
+    <title>Top Units (Custom Scoring)</title>
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" rel="stylesheet"
           integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js"
@@ -14,7 +14,8 @@
 </head>
 
 <body class="container mt-3">
-<h1>All units sorted by custom scoring</h1>
+<h1>Top Units</h1>
+<h3>Ranked by Custom Scoring</h3>
 <ul>
 {% for unit in units %}
     <li><a href="/unit/{{ unit }}">Unit {{ unit }}</a></li>
