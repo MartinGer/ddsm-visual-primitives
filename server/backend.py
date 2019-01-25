@@ -149,7 +149,7 @@ def _get_top_images_for_unit(unit_id, count):
 
 def get_top_patches_and_heatmaps_for_unit(unit_id, count):
     unit_id = int(unit_id)
-    top_patches = _get_top_patches_for_unit(unit_id, count)
+    top_patches = get_top_patches_for_unit(unit_id, count)
     if len(top_patches) < 1:
         print("No top patches for unit found, is the database populated?")
         return [], [], []
@@ -176,7 +176,7 @@ def get_top_patches_and_heatmaps_for_unit(unit_id, count):
     return top_patches, heatmap_paths
 
 
-def _get_top_patches_for_unit(unit_id, count):
+def get_top_patches_for_unit(unit_id, count):
     db = DB()
     conn = db.get_connection()
     c = conn.cursor()
@@ -184,10 +184,9 @@ def _get_top_patches_for_unit(unit_id, count):
     select_stmt = "SELECT DISTINCT patch_filename, activation FROM patch_unit_activation " \
                   "WHERE unit_id = ? AND ground_truth != 0 ORDER BY activation DESC " \
                   "LIMIT ?"
-    print("Query database for top patches...")
+    print("Query database for top patches of unit {}...".format(unit_id))
     result = c.execute(select_stmt, (unit_id, count))
     top_patches = [row[0] for row in result]
-    print("Query finished.")
     return top_patches
 
 

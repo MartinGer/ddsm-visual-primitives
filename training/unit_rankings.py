@@ -1,7 +1,7 @@
 from db.database import DB
 
 
-def get_class_influences_for_class(model):
+def get_class_influences(model):
     """
     Loads a checkpoint for a resnet152_3class architecture and returns last hidden layer unit to class activation
     weights. These can be used as an influence ranking of all units for each individual outcome class.
@@ -9,10 +9,12 @@ def get_class_influences_for_class(model):
     :return: Three, one for each class outcome, rankings (sorted lists) of (unit, weight)-pairs in sorted order
     """
 
+    fc_weights = model._modules['module'].fc.weight.data.cpu().numpy()
+
     class_influence_weights = {
-        0: enumerate(model._modules['module'].fc.weight.data[0], 1),
-        1: enumerate(model._modules['module'].fc.weight.data[1], 1),
-        2: enumerate(model._modules['module'].fc.weight.data[2], 1)
+        0: enumerate(fc_weights[0], 1),
+        1: enumerate(fc_weights[1], 1),
+        2: enumerate(fc_weights[2], 1)
     }
     class_influence_weights_sorted = {
         0: sorted(class_influence_weights[0], key=lambda x:-x[1]),

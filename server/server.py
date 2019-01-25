@@ -8,7 +8,7 @@ sys.path.insert(0, '../training')
 
 import backend
 from common import dataset
-from training.unit_rankings import get_class_influences_for_class, get_top_units_ranked, cached_unit_rankings
+from training.unit_rankings import get_class_influences, get_top_units_ranked, cached_unit_rankings
 from db.database import DB
 
 app = Flask(__name__)
@@ -78,15 +78,22 @@ def top_units():
 
 
 @app.route('/top_units_by_weights')
-def unit_ranking_by_weights_for_checkpoint():
+def unit_ranking_by_weights_for_checkpoint(unit_count=20, patch_count=6):
     if not backend.single_image_analysis:
         return redirect('/checkpoints')
     model = backend.single_image_analysis.get_model()
-    sorted_weights_class_0, sorted_weights_class_1, sorted_weights_class_2 = get_class_influences_for_class(model)
+    sorted_influences = get_class_influences(model)
+    top_patches = {}
+
+    for class_id, count in ((0, 4), (1, unit_count), (2, unit_count)):
+        for unit_id, influence in sorted_influences[class_id][:count]:
+            top_patches[unit_id] = backend.get_top_patches_for_unit(unit_id, patch_count)
+
     return render_template('unit_ranking_by_weights_for_checkpoint.html',
-                           sorted_weights_class_0=sorted_weights_class_0[:20],
-                           sorted_weights_class_1=sorted_weights_class_1[:20],
-                           sorted_weights_class_2=sorted_weights_class_2[:20])
+                           sorted_weights_class_0=sorted_influences[0][:4],
+                           sorted_weights_class_1=sorted_influences[1][:unit_count],
+                           sorted_weights_class_2=sorted_influences[2][:unit_count],
+                           top_patches=top_patches)
 
 
 @app.route('/unit/<unit_id>')
