@@ -107,6 +107,24 @@ def save_activations_to_db(weighted_max_activations, classifications, val_datase
 
     conn.commit()
 
+    return network_hash
+
+
+def save_influences_to_db(unit_id_and_count_per_class, model, network_hash):
+    # not used, doing it on full images instead
+    fc_weights = model._modules['module'].fc.weight.data.cpu().numpy()
+    db = DB()
+    conn = db.get_connection()
+
+    for class_index in range(3):
+        print("Inserting unit influences on class {} into DB...".format(class_index))
+        for unit_id, appearances_in_top_units in tqdm(unit_id_and_count_per_class[class_index]):
+            influence = fc_weights[class_index][unit_id]
+            insert_statement = "INSERT OR REPLACE INTO unit_class_influence (net_id, unit_id, class_id, influence, appearances_in_top_units) VALUES (?, ?, ?, ?, ?)"
+            conn.execute(insert_statement, (network_hash, int(unit_id + 1), class_index, float(influence), int(appearances_in_top_units)))
+
+    conn.commit()
+
 
 def print_statistics(ranked_units, max_activation_per_unit_per_input):
 

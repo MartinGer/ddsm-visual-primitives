@@ -131,6 +131,23 @@ def save_activations_to_db(weighted_max_activations, classifications, val_datase
 
     conn.commit()
 
+    return network_hash
+
+
+def save_influences_to_db(unit_id_and_count_per_class, model, network_hash):
+    fc_weights = model._modules['module'].fc.weight.data.cpu().numpy()
+    db = DB()
+    conn = db.get_connection()
+
+    for class_index in range(3):
+        print("Inserting unit influences on class {} into DB...".format(class_index))
+        for unit_id, appearances_in_top_units in unit_id_and_count_per_class[class_index]:
+            influence = fc_weights[class_index][unit_id]
+            insert_statement = "INSERT OR REPLACE INTO unit_class_influence (net_id, unit_id, class_id, influence, appearances_in_top_units) VALUES (?, ?, ?, ?, ?)"
+            conn.execute(insert_statement, (network_hash, int(unit_id + 1), class_index, float(influence), int(appearances_in_top_units)))
+
+    conn.commit()
+
 
 def print_statistics(ranked_units, max_activation_per_unit_per_input):
 
@@ -164,7 +181,8 @@ def analyze_full_images(args, cfg):
     unit_id_and_count_per_class, ranked_units, weighted_max_activations = create_unit_ranking(model, max_activation_per_unit_per_input)
 
     save_rankings_to_file(unit_id_and_count_per_class, args, cfg)
-    save_activations_to_db(weighted_max_activations, classifications, val_dataset, checkpoint_path)
+    network_hash = save_activations_to_db(weighted_max_activations, classifications, val_dataset, checkpoint_path)
+    save_influences_to_db(unit_id_and_count_per_class, model, network_hash)
 
     print_statistics(ranked_units, max_activation_per_unit_per_input)
 

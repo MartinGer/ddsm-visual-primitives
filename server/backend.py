@@ -190,6 +190,20 @@ def get_top_patches_for_unit(unit_id, count):
     return top_patches
 
 
+def get_appearances_in_top_units(unit_id, class_id):
+    db = DB()
+    conn = db.get_connection()
+    c = conn.cursor()
+    select_stmt = "SELECT appearances_in_top_units FROM unit_class_influence " \
+                  "WHERE unit_id = ? AND class_id = ?"
+    print("Query database for appearances_in_top_units of unit {}...".format(unit_id))
+    result = c.execute(select_stmt, (unit_id, class_id))
+    result = [row[0] for row in result]
+    if not result:
+        return 0
+    return result[0]
+
+
 def get_preprocessed_image_path(full_image_name, root="../data/ddsm_raw/"):
     path = os.path.join(PREPROCESSED_IMAGES_FOLDER, '{}.jpg'.format(full_image_name[:-4]))
     if not os.path.exists(path):

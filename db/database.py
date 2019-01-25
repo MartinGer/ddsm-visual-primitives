@@ -18,9 +18,13 @@ class DB(object):
             self.__populate_tables(conn)
 
     def get_connection(self):
-        db = getattr(g, '_database', None)
-        if db is None:
-            db = g._database = lite.connect(self.DATABASE)
+        try:
+            db = getattr(g, '_database', None)
+            if db is None:
+                db = g._database = lite.connect(self.DATABASE)
+        except RuntimeError:
+            # not in flask context:
+            db = lite.connect(self.DATABASE)
         return db
 
     def __generate_tables(self, conn):
