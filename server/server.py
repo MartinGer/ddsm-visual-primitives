@@ -177,24 +177,18 @@ def image(image_filename):
     top_units_and_activations = result.get_top_units(result.classification, units_to_show)
     heatmap_paths = backend.get_heatmap_paths_for_top_units(image_filename, top_units_and_activations, units_to_show)
 
-    image_annotation = []
+    clinical_findings = []
     unit_annotations = {}
     for unit_index, influence_per_class, activation_map in top_units_and_activations:
         survey = backend.get_survey(CURRENT_USER, CURRENT_MODEL, unit_index + 1)
-        if survey:
-            shows_phenomena, descriptions = survey
-            if not shows_phenomena:
-                descriptions = ["No phenomena"]
-            else:
-                for description in descriptions:
-                    if description not in image_annotation:
-                        image_annotation.append(description)
-        else:
-            descriptions = ["Not annotated"]
-        unit_annotations[unit_index + 1] = descriptions
+        unit_annotations[unit_index + 1] = backend.survey2unit_annotations_ui(survey, 'german')
+        if survey and survey[0]:
+            for annotation in unit_annotations[unit_index + 1]:
+                if annotation not in clinical_findings:
+                    clinical_findings.append(annotation)
 
-    if not image_annotation:
-        image_annotation = ["None"]
+    if not clinical_findings:
+        clinical_findings = ["None"]
 
     return render_template('image.html',
                            image_path=result.image_path,
@@ -208,7 +202,7 @@ def image(image_filename):
                            top_units_and_activations=top_units_and_activations,
                            heatmap_paths=heatmap_paths,
                            unit_annotations=unit_annotations,
-                           image_annotation=image_annotation,
+                           clinical_findings=clinical_findings,
                            ground_truth=ground_truth,
                            is_correct=is_correct)
 
