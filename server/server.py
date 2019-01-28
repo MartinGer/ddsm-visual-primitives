@@ -170,29 +170,6 @@ def image(image_filename):
                            heatmap_paths=heatmap_paths)
 
 
-@app.route('/survey/<name>/<model>/<unit>')
-def survey(name, model, unit):
-    unquote_name = urllib.parse.unquote_plus(name)
-    unit_id = int(unit.split("_")[1])  # looks like: unit_0076
-    previous_survey = backend.get_survey(unquote_name, model, unit)
-    if previous_survey:
-        shows_phenomena, description = previous_survey
-        if shows_phenomena:
-            shows_phenomena = 'true'
-            previous_annotations = {a: a for a in description}  # turn into dict for flask
-        else:
-            shows_phenomena = 'false'
-            previous_annotations = {}
-    else:
-        shows_phenomena = 'true'
-        previous_annotations = {}
-    result = backend.get_top_images_and_heatmaps_for_unit(unit_id, 8)
-    top_images, preprocessed_top_images, activation_maps = result
-    return render_template('survey.html', name=name, unquote_name=unquote_name, model=model, unit=unit,
-                           top_images=top_images, preprocessed_top_images=preprocessed_top_images, activation_maps=activation_maps,
-                           shows_phenomena=shows_phenomena, **previous_annotations)
-
-
 @app.route('/handle_survey', methods=['POST'])
 def handle_survey():
     name = urllib.parse.unquote_plus(request.form['name'])  # doctor username
