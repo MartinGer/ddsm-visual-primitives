@@ -81,17 +81,21 @@ def top_units():
 def unit_ranking_by_weights(unit_count=20, patch_count=6):
     sorted_influences = get_top_units_by_class_influences(unit_count)
     top_patches = {}
+    unit_annotations = {}
 
     for class_id, count in ((0, 4), (1, unit_count), (2, unit_count)):
         for unit_id, influence, appearances in sorted_influences[class_id][:count]:
             top_patches[unit_id] = backend.get_top_patches_for_unit(unit_id, patch_count, include_normal=class_id == 0)
+            survey = backend.get_survey(CURRENT_USER, CURRENT_MODEL, unit_id)
+            unit_annotations[unit_id] = backend.survey2unit_annotations_ui(survey, 'german')
 
     return render_template('unit_ranking_by_weights_for_checkpoint.html',
                            sorted_weights_class_0=sorted_influences[0][:4],
                            sorted_weights_class_1=sorted_influences[1][:unit_count],
                            sorted_weights_class_2=sorted_influences[2][:unit_count],
                            top_patches=top_patches,
-                           ranking_type="Weights")
+                           ranking_type="Weights",
+                           unit_annotations=unit_annotations)
 
 
 @app.route('/top_units_by_appearances')
@@ -103,15 +107,8 @@ def unit_ranking_by_appearances(unit_count=20, patch_count=6):
     for class_id, count in ((0, 4), (1, unit_count), (2, unit_count)):
         for unit_id, influence, appearances in sorted_influences[class_id][:count]:
             top_patches[unit_id] = backend.get_top_patches_for_unit(unit_id, patch_count, include_normal=class_id == 0)
-
             survey = backend.get_survey(CURRENT_USER, CURRENT_MODEL, unit_id)
-            if survey:
-                shows_phenomena, descriptions = survey
-                if not shows_phenomena:
-                    descriptions = ["No phenomena"]
-            else:
-                descriptions = ["Not annotated"]
-            unit_annotations[unit_id] = descriptions
+            unit_annotations[unit_id] = backend.survey2unit_annotations_ui(survey, 'german')
 
 
     return render_template('unit_ranking_by_weights_for_checkpoint.html',
