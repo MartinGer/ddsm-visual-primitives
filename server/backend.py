@@ -33,7 +33,7 @@ def get_survey(name, model, unit):
     db = DB()
     conn = db.get_connection()
 
-    select_unit = int(unit.split("_")[1])  # looks like: unit_0076
+    select_unit = unit
     select_net = "(SELECT id FROM net WHERE net = '{}')".format(model)
     select_doctor = "(SELECT id FROM doctor WHERE name = '{}')".format(name)
 
@@ -59,7 +59,7 @@ def store_survey(name, model, unit, shows_phenomena, phenomena):
     conn = db.get_connection()
 
     phenomena_description = '\n'.join(phenomena)
-    select_unit = int(unit.split("_")[1])  # looks like: unit_0076
+    select_unit = int(unit)
     select_net = "(SELECT id FROM net WHERE net = '{}')".format(model)
     select_doctor = "(SELECT id FROM doctor WHERE name = '{}')".format(name)
 

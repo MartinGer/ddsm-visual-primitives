@@ -114,13 +114,31 @@ def unit(unit_id):
     result = backend.get_top_images_and_heatmaps_for_unit(unit_id, 4)
     top_images, preprocessed_top_images, heatmaps = result
     top_patches, patch_heatmaps = backend.get_top_patches_and_heatmaps_for_unit(unit_id, 8)
+
+    previous_survey = backend.get_survey(CURRENT_USER, 'resnet152', int(unit_id))
+    if previous_survey:
+        shows_phenomena, description = previous_survey
+        if shows_phenomena:
+            shows_phenomena = 'true'
+            previous_annotations = {a: a for a in description}  # turn into dict for flask
+        else:
+            shows_phenomena = 'false'
+            previous_annotations = {}
+    else:
+        shows_phenomena = 'true'
+        previous_annotations = {}
+
     return render_template('unit.html',
                            unit_id=unit_id,
+                           name=CURRENT_USER,
+                           model='resnet152',
                            top_images=top_images,
                            preprocessed_top_images=preprocessed_top_images,
                            heatmaps=heatmaps,
                            top_patches=top_patches,
-                           patch_heatmaps=patch_heatmaps)
+                           patch_heatmaps=patch_heatmaps,
+                           shows_phenomena=shows_phenomena,
+                           **previous_annotations)
 
 
 @app.route('/image/<image_filename>')
@@ -183,7 +201,7 @@ def handle_survey():
     shows_phenomena = request.form['shows_phenomena']
     phenomena = [p for p in request.form if p.startswith('phe')]
     backend.store_survey(name, model, unit, shows_phenomena, phenomena)
-    return redirect('/home/{}'.format(name))
+    return redirect('/home')
 
 
 @app.route('/upload', methods=['POST'])
