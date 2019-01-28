@@ -1,33 +1,68 @@
 from db.database import DB
 
 
-def get_class_influences(model):
+_cached_unit_rankings_by_weights = None
+
+
+def get_top_units_by_class_influences(count):
     """
-    Loads a checkpoint for a resnet152_3class architecture and returns last hidden layer unit to class activation
-    weights. These can be used as an influence ranking of all units for each individual outcome class.
+    Returns last hidden layer unit to class activation weights from database.
+    These can be used as an influence ranking of all units for each individual outcome class.
 
     :return: Three, one for each class outcome, rankings (sorted lists) of (unit, weight)-pairs in sorted order
     """
+    global _cached_unit_rankings_by_weights
+    if _cached_unit_rankings_by_weights:
+        return _cached_unit_rankings_by_weights
 
-    fc_weights = model._modules['module'].fc.weight.data.cpu().numpy()
+    db = DB()
+    conn = db.get_connection()
+    c = conn.cursor()
+    class_influences = []
+    for class_id in range(3):
+        select_stmt = "SELECT unit_id, influence, appearances_in_top_units FROM unit_class_influence " \
+                      "WHERE class_id = ? ORDER BY influence DESC " \
+                      "LIMIT ?;"
+        c.execute(select_stmt, (class_id, count))
+        result = [(row[0], row[1], row[2]) for row in c.fetchall()]
+        class_influences.append(result)
 
-    class_influence_weights = {
-        0: enumerate(fc_weights[0], 1),
-        1: enumerate(fc_weights[1], 1),
-        2: enumerate(fc_weights[2], 1)
-    }
-    class_influence_weights_sorted = {
-        0: sorted(class_influence_weights[0], key=lambda x:-x[1]),
-        1: sorted(class_influence_weights[1], key=lambda x:-x[1]),
-        2: sorted(class_influence_weights[2], key=lambda x:-x[1])
-    }
-
-    return class_influence_weights_sorted[0], class_influence_weights_sorted[1], class_influence_weights_sorted[2]
+    _cached_unit_rankings_by_weights = class_influences
+    return class_influences
 
 
-cached_unit_rankings = None
+_cached_unit_rankings_by_appearances_in_top_units = None
+
+
+def get_top_units_by_appearances_in_top_units(count):
+    global _cached_unit_rankings_by_appearances_in_top_units
+    if _cached_unit_rankings_by_appearances_in_top_units:
+        return _cached_unit_rankings_by_appearances_in_top_units
+
+    db = DB()
+    conn = db.get_connection()
+    c = conn.cursor()
+    ranked_units = []
+    for class_id in range(3):
+        select_stmt = "SELECT unit_id, influence, appearances_in_top_units FROM unit_class_influence " \
+                      "WHERE class_id = ? ORDER BY appearances_in_top_units DESC " \
+                      "LIMIT ?;"
+        c.execute(select_stmt, (class_id, count))
+        result = [(row[0], row[1], row[2]) for row in c.fetchall()]
+        ranked_units.append(result)
+
+    _cached_unit_rankings_by_appearances_in_top_units = ranked_units
+    return ranked_units
+
+
+_cached_unit_rankings_custom_score = None
+
 
 def get_top_units_ranked():
+    global _cached_unit_rankings_custom_score
+    if _cached_unit_rankings_custom_score:
+        return _cached_unit_rankings_custom_score
+
     db = DB()
     conn = db.get_connection()
     c = conn.cursor()
@@ -80,7 +115,6 @@ def get_top_units_ranked():
                 scores[unit_id] = scores.get(unit_id, 0) - 5
 
     sorted_scores = sorted(scores, key=scores.get, reverse=True)  # list of unit_ids
-    global cached_unit_rankings
-    cached_unit_rankings = sorted_scores
+    _cached_unit_rankings_custom_score = sorted_scores
     return sorted_scores
 

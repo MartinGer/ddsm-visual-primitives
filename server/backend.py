@@ -176,14 +176,22 @@ def get_top_patches_and_heatmaps_for_unit(unit_id, count):
     return top_patches, heatmap_paths
 
 
-def get_top_patches_for_unit(unit_id, count):
+def get_top_patches_for_unit(unit_id, count, include_normal=False):
     db = DB()
     conn = db.get_connection()
     c = conn.cursor()
-    # get highest activations regardless for which class on patches that aren't normal
-    select_stmt = "SELECT DISTINCT patch_filename, activation FROM patch_unit_activation " \
-                  "WHERE unit_id = ? AND ground_truth != 0 ORDER BY activation DESC " \
-                  "LIMIT ?"
+    if include_normal:
+        # get highest activations regardless for which class on patches, including normal ones
+        # NOTE: doesn't make a difference at the moment because there are no normal patches in DB
+        select_stmt = "SELECT DISTINCT patch_filename, activation FROM patch_unit_activation " \
+                      "WHERE unit_id = ? ORDER BY activation DESC " \
+                      "LIMIT ?"
+    else:
+        # get highest activations regardless for which class on patches that show a tumor
+        select_stmt = "SELECT DISTINCT patch_filename, activation FROM patch_unit_activation " \
+                      "WHERE unit_id = ? AND ground_truth != 0 ORDER BY activation DESC " \
+                      "LIMIT ?"
+
     print("Query database for top patches of unit {}...".format(unit_id))
     result = c.execute(select_stmt, (unit_id, count))
     top_patches = [row[0] for row in result]
