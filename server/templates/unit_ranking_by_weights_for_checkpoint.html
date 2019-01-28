@@ -15,13 +15,13 @@
 
 <body class="container mt-3">
 <h1>Top Units</h1>
-<h3>Ranked by their Weights per Class</h3>
+<h3>Ranked by their {{ ranking_type }} per Class</h3>
 <br>
 <br>
 
 <h2>Highest Influence on Normal:</h2>
 
-{% for weight in sorted_weights_class_0 %}
+{% for unit_data in sorted_weights_class_0 %}
 
     <div class="row mb-2">
         <div class="col-md-12">
@@ -30,14 +30,25 @@
                 <div class="row">
                     <div class="col-md-2">
                         <div class="ml-2 mt-2">
-                            <p><a href="/unit/{{ weight[0] }}">Unit {{ weight[0] }}</a></p>
-                            <p>Weight: {{ weight[1] }}</p>
-                            <p>Appearances in Top 8: {{ weight[2] }}</p>
+                            <ul>
+                                <li><a href="/unit/{{ unit_data[0] }}">Unit {{ unit_data[0] }}</a></li>
+                                <li>Weight: {{ unit_data[1]|round(3) }}</li>
+                                <li>{{ unit_data[2] }}x in Top 8</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="mt-2">
+                            <ul>
+                                {% for annotation in unit_annotations[unit_data[0]] %}
+                                    <li>{{ annotation }}</li>
+                                {% endfor %}
+                            </ul>
                         </div>
                     </div>
 
-                    <div class="col-md-10">
-                        {% for patch_filename in top_patches[weight[0]] %}
+                    <div class="col-md-8">
+                        {% for patch_filename in top_patches[unit_data[0]] %}
 
                             <img src="{{ "/static/ddsm_3class/" + patch_filename }}" style="
                             height: 100px; width: 100px;
@@ -59,7 +70,7 @@
 
 <h2>Highest Influence on Benign:</h2>
 
-{% for weight in sorted_weights_class_1 %}
+{% for unit_data in sorted_weights_class_1 %}
 
     <div class="row mb-2">
         <div class="col-md-12">
@@ -68,14 +79,25 @@
                 <div class="row">
                     <div class="col-md-2">
                         <div class="ml-2 mt-2">
-                            <p><a href="/unit/{{ weight[0] }}">Unit {{ weight[0] }}</a></p>
-                            <p>Weight: {{ weight[1] }}</p>
-                            <p>Appearances in Top 8: {{ weight[2] }}</p>
+                            <ul>
+                                <li><a href="/unit/{{ unit_data[0] }}">Unit {{ unit_data[0] }}</a></li>
+                                <li>Weight: {{ unit_data[1]|round(3) }}</li>
+                                <li>{{ unit_data[2] }}x in Top 8</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="mt-2">
+                            <ul>
+                                {% for annotation in unit_annotations[unit_data[0]] %}
+                                    <li>{{ annotation }}</li>
+                                {% endfor %}
+                            </ul>
                         </div>
                     </div>
 
-                    <div class="col-md-10">
-                        {% for patch_filename in top_patches[weight[0]] %}
+                    <div class="col-md-8">
+                        {% for patch_filename in top_patches[unit_data[0]] %}
 
                             <img src="{{ "/static/ddsm_3class/" + patch_filename }}" style="
                             height: 100px; width: 100px;
@@ -97,7 +119,7 @@
 
 <h2>Highest Influence on Malignant:</h2>
 
-{% for weight in sorted_weights_class_2 %}
+{% for unit_data in sorted_weights_class_2 %}
 
     <div class="row mb-2">
         <div class="col-md-12">
@@ -106,14 +128,25 @@
                 <div class="row">
                     <div class="col-md-2">
                         <div class="ml-2 mt-2">
-                            <p><a href="/unit/{{ weight[0] }}">Unit {{ weight[0] }}</a></p>
-                            <p>Weight: {{ weight[1] }}</p>
-                            <p>Appearances in Top 8: {{ weight[2] }}</p>
+                            <ul>
+                                <li><a href="/unit/{{ unit_data[0] }}">Unit {{ unit_data[0] }}</a></li>
+                                <li>Weight: {{ unit_data[1]|round(3) }}</li>
+                                <li>{{ unit_data[2] }}x in Top 8</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="mt-2">
+                            <ul>
+                                {% for annotation in unit_annotations[unit_data[0]] %}
+                                    <li>{{ annotation }}</li>
+                                {% endfor %}
+                            </ul>
                         </div>
                     </div>
 
-                    <div class="col-md-10">
-                        {% for patch_filename in top_patches[weight[0]] %}
+                    <div class="col-md-8">
+                        {% for patch_filename in top_patches[unit_data[0]] %}
 
                             <img src="{{ "/static/ddsm_3class/" + patch_filename }}" style="
                             height: 100px; width: 100px;
