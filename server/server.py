@@ -138,6 +138,7 @@ def unit(unit_id):
                            top_patches=top_patches,
                            patch_heatmaps=patch_heatmaps,
                            shows_phenomena=shows_phenomena,
+                           referrer_url=request.referrer,
                            **previous_annotations)
 
 
@@ -175,10 +176,11 @@ def handle_survey():
     name = urllib.parse.unquote_plus(request.form['name'])  # doctor username
     model = request.form['model']  # resnet152
     unit = request.form['unit']   # unit_0076
+    referrer_url = request.form['referrer_url']   # unit_0076
     shows_phenomena = request.form['shows_phenomena']
     phenomena = [p for p in request.form if p.startswith('phe')]
     backend.store_survey(name, model, unit, shows_phenomena, phenomena)
-    return redirect('/home')
+    return redirect(referrer_url)
 
 
 @app.route('/upload', methods=['POST'])
