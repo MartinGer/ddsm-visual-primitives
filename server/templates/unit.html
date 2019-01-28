@@ -326,13 +326,14 @@
                                 </div>
                                 <div style="
                                         height: 150px; width: 150px;
-                                        background-image: url({{ "/static/ddsm_3class/" + top_patches[i] }}), url({{ "/" + patch_heatmaps[i] }});
+                                        background-image: url({{ "/static/ddsm_3class/" + top_patches[i] }});
                                         background-blend-mode: screen;
                                         background-size: contain;
-                                        background-repeat: no-repeat;
-                                        "></div>
+                                        background-repeat: no-repeat;"
+                                    onMouseOver="this.style.backgroundImage = 'url({{ "/static/ddsm_3class/" + top_patches[i] }}), url({{ "/" + patch_heatmaps[i] }})'"
+                                    onMouseOut="this.style.backgroundImage = 'url({{ "/static/ddsm_3class/" + top_patches[i] }})'"></div>
                                 <div class="card-body">
-                                    <p class="card-text">{{ top_patches[i] }}</p>
+                                    <p class="card-text"><a href="{{ "/image/" + patch_full_images[i] }}">{{ patch_full_images[i] }}</a></p>
                                 </div>
                             </div>
                         </div>
