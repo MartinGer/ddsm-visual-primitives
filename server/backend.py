@@ -10,6 +10,7 @@ from db.doctor import insert_doctor_into_db_if_not_exists
 from db.database import DB
 from training.analyze_single_image import SingleImageAnalysis
 from training.common.dataset import get_preview_of_preprocessed_image
+from annotations import annotations
 
 STATIC_DIR = 'static'
 DATA_DIR = 'data'
@@ -311,3 +312,22 @@ def get_heatmap_paths_for_top_units(image_filename, top_units_and_activations, u
         heatmap_paths.append(heatmap_path)
 
     return heatmap_paths
+
+
+def survey2unit_annotations_ui(survey, language):
+    if survey:
+        shows_phenomena, descriptions = survey
+        if not shows_phenomena:
+            descriptions = ["No phenomena"]
+    else:
+        descriptions = ["Not annotated"]
+
+    localized_descriptions = []
+    for description in descriptions:
+        localized_ann = annotations[language].get(description)
+        if localized_ann:
+            localized_descriptions.append(localized_ann)
+        else:
+            localized_descriptions.append(description)
+
+    return localized_descriptions
