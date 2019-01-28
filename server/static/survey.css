@@ -17,3 +17,11 @@ input.mainBox {
 input.subOption {
   display: none;
 }
+
+.mainBox:checked + label {
+  color: darkgreen;
+}
+
+.label-checked {
+  color: darkgreen;
+}

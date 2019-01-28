@@ -51,6 +51,17 @@ function optionClicked(elem) {
     }
 }
 
+function updateSuboptionText(elem) {
+    var label = elem.parentElement;
+    if (elem.checked === true) {
+        label.classList.add("label-checked");
+    } else {
+        if (label.classList.contains("label-checked")) {
+            label.classList.remove("label-checked");
+        }
+    }
+}
+
 function updateOptionIcon(elem) {
     var siblings = getSiblings(elem);
     for (s of siblings) {
@@ -73,6 +84,7 @@ function updateSuboptionIcon(elem) {
         var octicons = elem.parentElement.getElementsByClassName('octicon');
         setOcticonsUnchecked(octicons);
     }
+    updateSuboptionText(elem);
 }
 
 function setOcticonsChecked(octicons) {
