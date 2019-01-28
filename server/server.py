@@ -169,10 +169,31 @@ def image(image_filename):
     preprocessing_descr = dataset.preprocessing_description()
 
     result = backend.single_image_analysis.analyze_one_image(image_path)
+    ground_truth = dataset.get_ground_truth_from_filename(image_filename)
+    is_correct = ground_truth == result.classification
 
     units_to_show = 10
     top_units_and_activations = result.get_top_units(result.classification, units_to_show)
     heatmap_paths = backend.get_heatmap_paths_for_top_units(image_filename, top_units_and_activations, units_to_show)
+
+    image_annotation = []
+    unit_annotations = {}
+    for unit_index, influence_per_class, activation_map in top_units_and_activations:
+        survey = backend.get_survey(CURRENT_USER, CURRENT_MODEL, unit_index + 1)
+        if survey:
+            shows_phenomena, descriptions = survey
+            if not shows_phenomena:
+                descriptions = ["No phenomena"]
+            else:
+                for description in descriptions:
+                    if description not in image_annotation:
+                        image_annotation.append(description)
+        else:
+            descriptions = ["Not annotated"]
+        unit_annotations[unit_index + 1] = descriptions
+
+    if not image_annotation:
+        image_annotation = ["None"]
 
     return render_template('image.html',
                            image_path=result.image_path,
@@ -184,7 +205,11 @@ def image(image_filename):
                            classification=result.classification,
                            class_probs=result.class_probs,
                            top_units_and_activations=top_units_and_activations,
-                           heatmap_paths=heatmap_paths)
+                           heatmap_paths=heatmap_paths,
+                           unit_annotations=unit_annotations,
+                           image_annotation=image_annotation,
+                           ground_truth=ground_truth,
+                           is_correct=is_correct)
 
 
 @app.route('/handle_survey', methods=['POST'])

@@ -30,7 +30,7 @@
     <li><button onclick="
             $.get('/load_checkpoint/{{ checkpoint }}').always(()=>{
                 $('#loading_label').display = 'none';
-                window.location.href = '{{ referrer_url }}';
+                window.location.href = '{{ referrer_url if referrer_url else 'home' }}';
             });
 
             $('#checkpoint_list').hide();
