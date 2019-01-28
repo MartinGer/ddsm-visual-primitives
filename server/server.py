@@ -59,7 +59,8 @@ def checkpoints():
     result = conn.execute(select_stmt)
     checkpoints = ["/".join(r[0].split("/")[-2:]) for r in result]
     return render_template('checkpoints.html',
-                           checkpoints=checkpoints)
+                           checkpoints=checkpoints,
+                           referrer_url=request.referrer)
 
 
 @app.route('/load_checkpoint/<training_session>/<checkpoint_name>')

@@ -25,10 +25,24 @@
         Please note that loading a checkpoint will take some time.
     </i>
 </p>
-<ul>
+<ul id="checkpoint_list">
 {% for checkpoint in checkpoints %}
-    <li><a href="/load_checkpoint/{{ checkpoint }}">{{ checkpoint }}</a></li>
+    <li><button onclick="
+            $.get('/load_checkpoint/{{ checkpoint }}').always(()=>{
+                $('#loading_label').display = 'none';
+                window.location.href = '{{ referrer_url }}';
+            });
+
+            $('#checkpoint_list').hide();
+            $('#spinner').show();
+
+            ">{{ checkpoint }}</button></li>
 {% endfor %}
 </ul>
+
+<div class="spinner-border" id="spinner" role="status" style="display: none;">
+  <span class="sr-only">Loading...</span>
+</div>
+
 </body>
 </html>
