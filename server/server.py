@@ -88,7 +88,7 @@ def unit_ranking_by_weights_for_checkpoint(unit_count=20, patch_count=6):
 
     for class_id, count in ((0, 4), (1, unit_count), (2, unit_count)):
         for unit_id, influence in sorted_influences[class_id][:count]:
-            top_patches[unit_id] = backend.get_top_patches_for_unit(unit_id, patch_count)
+            top_patches[unit_id] = backend.get_top_patches_for_unit(unit_id, patch_count, include_normal=class_id == 0)
             appearances_in_top_units[unit_id] = backend.get_appearances_in_top_units(unit_id, class_id)
 
     return render_template('unit_ranking_by_weights_for_checkpoint.html',
