@@ -1,19 +1,23 @@
 <head>
     <meta charset="UTF-8">
     <title>Image {{ image_name }}</title>
-    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js" integrity="sha384-B0UglyR+jN6CkvvICOB2joaf5I4l3gm9GU6Hc1og6Ls7i6U/mkkaduKaBhlAXv9k" crossorigin="anonymous"></script>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js"
+            integrity="sha384-B0UglyR+jN6CkvvICOB2joaf5I4l3gm9GU6Hc1og6Ls7i6U/mkkaduKaBhlAXv9k"
+            crossorigin="anonymous"></script>
 
     <script
-  src="https://code.jquery.com/jquery-3.3.1.min.js"
-  integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
-  crossorigin="anonymous"></script>
+            src="https://code.jquery.com/jquery-3.3.1.min.js"
+            integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
+            crossorigin="anonymous"></script>
 
     <style>
 
-      .zoom-on-hover {
-        transition: transform .2s;
-      }
+        .zoom-on-hover {
+            transition: transform .2s;
+        }
+
         .zoom-on-hover:hover {
             transform: scale(2);
             z-index: 9999;
@@ -22,72 +26,91 @@
 </head>
 <body>
 
-    <div class="container mt-3">
+<div class="container mt-3">
 
-        <h1 class="my-2">Image Analysis</h1>
+    <h1 class="my-2">Image Analysis</h1>
 
-        <div class="row">
-            <div class="col-md-6">
-                <div class="card top-on-hover">
-                    <div class="card-header">
-                        <h4 class="m-0">Prediction: {{ ('Normal', 'Benign', 'Cancer')[classification] }}</h4>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card top-on-hover">
+                <div class="card-header">
+                    <div class="float-left">
+                        <h4 class="m-0" style="display: inline;">
+                            Prediction: {{ ('Normal', 'Benign', 'Cancer')[classification] }}</h4>
                     </div>
-                    <div class="card-body">
-                        <p>Input file: {{ image_path }}</p>
+                    <div class="float-right">
+                        <h4 style="display: {{ 'inline' if is_correct else 'none' }}; color: green;">Correct ✓</h4>
+                        <h4 class="text-right" style="display: {{ 'none' if is_correct else 'inline' }}; color: red;">Incorrect ✗</h4>
+                    </div>
+                    <div class="clearfix"></div>
+                </div>
+                <div class="card-body">
+                    <p><b>Ground Truth:</b> {{ ('Normal', 'Benign', 'Cancer')[ground_truth] }}</p>
+                    <p><b>Image:</b> {{ image_name }}</p>
+                    <p><b>Checkpoint used:</b> {{ checkpoint_path }}</p>
 
-                        <p>{{ preprocessing_descr }}</p>
-                        <p>Checkpoint used: {{ checkpoint_path }}</p>
-                        <p>Class probabilities:</p>
+                    <p><b>Class probabilities:</b></p>
+                    <ul>
+                        <li>Normal: {{ (class_probs[0] * 100)|int }}%</li>
+                        <li>Benign: {{ (class_probs[1] * 100)|int }}%</li>
+                        <li>Cancer: {{ (class_probs[2] * 100)|int }}%</li>
+                    </ul>
+                    <p><b>Our clinical findings:</b></p>
+                    <ul>
+                        {% for annotation in image_annotation %}
+                            <li>{{ annotation }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 card">
+            <div class="card-image">
+
+                <div class="zoom-on-hover" style="
+                        height: 500px; width: 100%;
+                        background-image: url({{ "/" + preprocessed_full_image_path }}), url({{ "/" + preprocessed_mask_path }});
+                        background-blend-mode: screen;
+                        background-size: contain;
+                        background-repeat: no-repeat;
+                        "></div>
+            </div>
+        </div>
+    </div>
+
+    <h4 class="mt-4">Activation maps for top units that activated for this image:</h4>
+
+    <div class="row">
+        {% for rank in range(10) %}
+            <div class="col-md-3 mt-3">
+                <div class="card">
+                    <div class="card-header">
+                        {{ rank + 1 }}: Unit {{ top_units_and_activations[rank][0] + 1 }}
+                    </div>
+                    <a href="/unit/{{ top_units_and_activations[rank][0] + 1 }}">
+                        <div class="zoom-on-hover" style="
+                                height: 300px; width: 100%;
+                                background-image: url({{ "/" + preprocessed_full_image_path }}), url({{ "/" + heatmap_paths[rank] }});
+                                background-blend-mode: screen;
+                                background-size: contain;
+                                background-repeat: no-repeat;
+                                "></div>
+                    </a>
+                    <div class="card-body">
                         <ul>
-                            <li>Normal: {{ (class_probs[0] * 100)|int }}%</li>
-                            <li>Benign: {{ (class_probs[1] * 100)|int }}%</li>
-                            <li>Cancer: {{ (class_probs[2] * 100)|int }}%</li>
+                            <li>Normal: {{ top_units_and_activations[rank][1][0]|round(3) }}</li>
+                            <li>Benign: {{ top_units_and_activations[rank][1][1]|round(3) }}</li>
+                            <li>Cancer: {{ top_units_and_activations[rank][1][2]|round(3) }}</li>
+                        </ul>
+                        <ul>
+                            {% for annotation in unit_annotations[top_units_and_activations[rank][0] + 1] %}
+                                <li>{{ annotation }}</li>
+                            {% endfor %}
                         </ul>
                     </div>
                 </div>
             </div>
-            <div class="col-md-6 card">
-                <div class="card-image">
-
-                    <div class="zoom-on-hover" style="
-                            height: 500px; width: 100%;
-                            background-image: url({{ "/" + preprocessed_full_image_path }}), url({{ "/" + preprocessed_mask_path }});
-                            background-blend-mode: screen;
-                            background-size: contain;
-                            background-repeat: no-repeat;
-                            "></div>
-                </div>
-            </div>
-        </div>
-
-        <h4 class="mt-4">Activation maps for top units that activated for this image:</h4>
-
-        <div class="row">
-            {% for rank in range(10) %}
-                <div class="col-md-3 mt-3">
-                    <div class="card">
-                        <div class="card-header">
-                            {{ rank + 1 }}: Unit {{ top_units_and_activations[rank][0] + 1 }}
-                        </div>
-                        <a href="/unit/{{ top_units_and_activations[rank][0] + 1 }}"><div class="zoom-on-hover" style="
-                            height: 300px; width: 100%;
-                            background-image: url({{ "/" + preprocessed_full_image_path }}), url({{ "/" + heatmap_paths[rank] }});
-                            background-blend-mode: screen;
-                            background-size: contain;
-                            background-repeat: no-repeat;
-                            "></div>
-                        </a>
-                        <div class="card-body">
-                            <p>Influence per class:</p>
-                            <ul>
-                                <li>Normal: {{ top_units_and_activations[rank][1][0] }}</li>
-                                <li>Benign: {{ top_units_and_activations[rank][1][1] }}</li>
-                                <li>Cancer: {{ top_units_and_activations[rank][1][2] }}</li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-            {% endfor %}
-        </div>
+        {% endfor %}
     </div>
+</div>
 </body>

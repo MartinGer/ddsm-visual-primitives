@@ -85,16 +85,20 @@ def preprocessing_description():
         str((IMAGE_SIZE_TO_ANALYZE, TARGET_ASPECT_RATIO, TOP_CROP, BOTTOM_CROP, LEFT_CROP, RIGHT_CROP, CROP_VARIATION, BLACK_LEVEL, MAX_ROTATION))
 
 
+def get_ground_truth_from_filename(filename):
+    name2class = {
+        'normal': 0,
+        'benign': 1,
+        'cancer': 2,
+    }
+    return name2class[filename[:6]]
+
+
 class DDSM(torch.utils.data.Dataset):
     def __init__(self, root, image_list_path, target_size, transform, augmentation):
         self.root = root
-        name2class = {
-            'normal': 0,
-            'benign': 1,
-            'cancer': 2,
-        }
         with open(image_list_path, 'r') as f:
-            self.images = [(line.strip(), name2class[line.strip()[:6]]) for line in f.readlines()]
+            self.images = [(line.strip(), get_ground_truth_from_filename(line.strip())) for line in f.readlines()]
         self.image_names = [filename for filename, ground_truth in self.images]
         self.target_size = target_size
         self.transform = transform
