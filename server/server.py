@@ -30,6 +30,7 @@ PROCESSED_FOLDER = os.path.join(STATIC_DIR, 'activation_maps')
 app.config['ACTIVATIONS_FOLDER'] = PROCESSED_FOLDER
 
 CURRENT_USER = "default"
+CURRENT_MODEL = 'resnet152'
 
 
 @app.route('/')
@@ -89,23 +90,37 @@ def unit_ranking_by_weights(unit_count=20, patch_count=6):
                            sorted_weights_class_0=sorted_influences[0][:4],
                            sorted_weights_class_1=sorted_influences[1][:unit_count],
                            sorted_weights_class_2=sorted_influences[2][:unit_count],
-                           top_patches=top_patches)
+                           top_patches=top_patches,
+                           ranking_type="Weights")
 
 
 @app.route('/top_units_by_appearances')
 def unit_ranking_by_appearances(unit_count=20, patch_count=6):
     sorted_influences = get_top_units_by_appearances_in_top_units(unit_count)
     top_patches = {}
+    unit_annotations = {}
 
     for class_id, count in ((0, 4), (1, unit_count), (2, unit_count)):
         for unit_id, influence, appearances in sorted_influences[class_id][:count]:
             top_patches[unit_id] = backend.get_top_patches_for_unit(unit_id, patch_count, include_normal=class_id == 0)
 
+            survey = backend.get_survey(CURRENT_USER, CURRENT_MODEL, unit_id)
+            if survey:
+                shows_phenomena, descriptions = survey
+                if not shows_phenomena:
+                    descriptions = ["No phenomena"]
+            else:
+                descriptions = ["Not annotated"]
+            unit_annotations[unit_id] = descriptions
+
+
     return render_template('unit_ranking_by_weights_for_checkpoint.html',
                            sorted_weights_class_0=sorted_influences[0][:4],
                            sorted_weights_class_1=sorted_influences[1][:unit_count],
                            sorted_weights_class_2=sorted_influences[2][:unit_count],
-                           top_patches=top_patches)
+                           top_patches=top_patches,
+                           ranking_type="Appearances in Top Units",
+                           unit_annotations=unit_annotations)
 
 
 @app.route('/unit/<unit_id>')
@@ -116,7 +131,7 @@ def unit(unit_id):
     top_images, preprocessed_top_images, heatmaps = result
     top_patches, patch_heatmaps = backend.get_top_patches_and_heatmaps_for_unit(unit_id, 8)
 
-    previous_survey = backend.get_survey(CURRENT_USER, 'resnet152', int(unit_id))
+    previous_survey = backend.get_survey(CURRENT_USER, CURRENT_MODEL, int(unit_id))
     if previous_survey:
         shows_phenomena, description = previous_survey
         if shows_phenomena:
