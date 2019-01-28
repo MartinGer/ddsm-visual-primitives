@@ -72,9 +72,18 @@ def load_checkpoint(training_session, checkpoint_name):
 
 
 @app.route('/top_units')
-def top_units():
-    unit_ids = get_top_units_ranked()
-    return render_template('unit_ranking_by_score.html', units=unit_ids[:60])
+def top_units(patch_count=6):
+    unit_ids = get_top_units_ranked()[:60]
+    top_patches = {}
+    unit_annotations = {}
+    for unit_id in unit_ids:
+        top_patches[unit_id] = backend.get_top_patches_for_unit(unit_id, patch_count, include_normal=False)
+        survey = backend.get_survey(CURRENT_USER, CURRENT_MODEL, unit_id)
+        unit_annotations[unit_id] = backend.survey2unit_annotations_ui(survey, 'german')
+    return render_template('unit_ranking_by_score.html',
+                           unit_ids=unit_ids,
+                           top_patches=top_patches,
+                           unit_annotations=unit_annotations)
 
 
 @app.route('/top_units_by_weights')
@@ -109,7 +118,6 @@ def unit_ranking_by_appearances(unit_count=20, patch_count=6):
             top_patches[unit_id] = backend.get_top_patches_for_unit(unit_id, patch_count, include_normal=class_id == 0)
             survey = backend.get_survey(CURRENT_USER, CURRENT_MODEL, unit_id)
             unit_annotations[unit_id] = backend.survey2unit_annotations_ui(survey, 'german')
-
 
     return render_template('unit_ranking_by_weights_for_checkpoint.html',
                            sorted_weights_class_0=sorted_influences[0][:4],

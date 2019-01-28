@@ -16,9 +16,48 @@
 <body class="container mt-3">
 <h1>Top Units</h1>
 <h3>Ranked by Custom Scoring</h3>
-<ul>
-{% for unit in units %}
-    <li><a href="/unit/{{ unit }}">Unit {{ unit }}</a></li>
+<br>
+<br>
+
+
+
+{% for unit_id in unit_ids %}
+
+    <div class="row mb-2">
+        <div class="col-md-12">
+
+            <div class="card">
+                <div class="row">
+                    <div class="col-md-2">
+                        <div class="ml-2 mt-2">
+                            <ul>
+                                <li><a href="/unit/{{ unit_id }}">Unit {{ unit_id }}</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="mt-2">
+                            <ul>
+                                {% for annotation in unit_annotations[unit_id] %}
+                                    <li>{{ annotation }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="col-md-8">
+                        {% for patch_filename in top_patches[unit_id] %}
+                            <img src="{{ "/static/ddsm_3class/" + patch_filename }}" style="
+                            height: 100px; width: 100px;
+                            display: inline;
+                    ">
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
 {% endfor %}
-</ul>
+
 </body>
