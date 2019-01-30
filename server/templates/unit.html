@@ -15,9 +15,7 @@
 </head>
 <body>
 
-<div class="container mt-3">
-    <h1>Unit {{ unit_id }}</h1>
-
+<div class="container-fluid mt-3 px-5"> <h1>Unit {{ unit_id }}</h1>
     <h2>Instructions</h2>
     <p>
         1. Please inspect the highlighted areas within the images on this page, then answer the survey questions
@@ -55,7 +53,7 @@
                     </p>
                     <div id="phenomena_desc" class="phenomena_desc">
                         <ul>
-                            <li>
+                            <li class="mainList">
                                 <input type="checkbox" class="mainBox" id="mass_box" onclick="optionClicked(this)"
                                        name="phe_mass" {% if phe_mass %} checked {% endif %}><label for="mass_box"
                                                                                                     class="mainCategory"><i
@@ -120,7 +118,7 @@
                                             class="octicon octicon-x"></i>Fett enthaltend / Fat-containing</label></li>
                                 </ul>
                             </li>
-                            <li>
+                            <li class="mainList">
                                 <input type="checkbox" class="mainBox" id="calcBox" onclick="optionClicked(this)"
                                        name="phe_calc" {% if phe_calc %} checked {% endif %}><label for="calcBox"
                                                                                                     class="mainCategory"><i
@@ -218,13 +216,13 @@
                                             class="octicon octicon-x"></i>Segmental / Segmental</label></li>
                                 </ul>
                             </li>
-                            <li>
+                            <li class="mainList">
                                 <input type="checkbox" class="mainBox" id="distorsion_box" onclick="optionClicked(this)"
                                        name="phe_architectural_distorsion" {% if phe_architectural_distorsion %}
                                        checked {% endif %}><label for="distorsion_box" class="mainCategory"><i
                                     class="octicon octicon-x"></i>Architekturstörung / Architectural distortion</label>
                             </li>
-                            <li>
+                            <li class="mainList">
                                 <input type="checkbox" class="mainBox" id="asym_box" onclick="optionClicked(this)"
                                        name="phe_asymmetries" {% if phe_asymmetries %} checked {% endif %}><label
                                     for="asym_box" class="mainCategory"><i class="octicon octicon-chevron-right"></i>Asymmetrien
@@ -251,26 +249,26 @@
                                         asymmetry</label></li>
                                 </ul>
                             </li>
-                            <li>
+                            <li class="mainList">
                                 <input type="checkbox" class="mainBox" id="lymphnode_box" onclick="optionClicked(this)"
                                        name="phe_intramammarylymphnode" {% if phe_intramammarylymphnode %}
                                        checked {% endif %}><label for="lymphnode_box" class="mainCategory"><i
                                     class="octicon octicon-x"></i>Intramammärer Lymphknoten / Intramammary lymph
                                 node</label>
                             </li>
-                            <li>
+                            <li class="mainList">
                                 <input type="checkbox" class="mainBox" id="skinlesion_box" onclick="optionClicked(this)"
                                        name="phe_skinlesion" {% if phe_skinlesion %} checked {% endif %}><label
                                     for="skinlesion_box" class="mainCategory"><i class="octicon octicon-x"></i>Hautläsion
                                 / Skin lesion</label>
                             </li>
-                            <li>
+                            <li class="mainList">
                                 <input type="checkbox" class="mainBox" id="milkduct_box" onclick="optionClicked(this)"
                                        name="phe_milkduct" {% if phe_milkduct %} checked {% endif %}><label
                                     for="milkduct_box" class="mainCategory"><i class="octicon octicon-x"></i>Solitärer
                                 dilatierter Gang / Solitary dilated duct</label>
                             </li>
-                            <li>
+                            <li class="mainList">
                                 <input type="checkbox" class="mainBox" id="epi_box" onclick="optionClicked(this)"
                                        name="phe_epiphenomenon" {% if phe_epiphenomenon %} checked {% endif %}><label
                                     for="epi_box" class="mainCategory"><i class="octicon octicon-chevron-right"></i>Begleitmerkmale
@@ -324,17 +322,18 @@
                                 <div class="card-header">
                                     Rank {{ i + 1 }}
                                 </div>
-                                <div style="
-                                        height: 150px; width: 150px;
-                                        background-image: url({{ "/static/ddsm_3class/" + top_patches[i] }});
-                                        background-blend-mode: screen;
-                                        background-size: contain;
-                                        background-repeat: no-repeat;"
-                                     onMouseOver="this.style.backgroundImage = 'url({{ "/static/ddsm_3class/" + top_patches[i] }}), url({{ "/" + patch_heatmaps[i] }})'; showttip('{{ "/static/ddsm_raw/" + top_patches[i].split('/')[-1].split('LJPEG.1')[0] + "LJPEG.1.jpg" }}', {{ top_patches[i].split("LJPEG.1-x")[1].split("_")[0]|int }}, {{ top_patches[i].split("_y")[1].split("_")[0]|int }}, {{ top_patches[i].split("_w")[1].split("_")[0]|int }}, {{ top_patches[i].split("_h")[1].split("_")[0]|int }});"
-                                     onMouseOut="this.style.backgroundImage = 'url({{ "/static/ddsm_3class/" + top_patches[i] }})'; hidettip();">
-                                </div>
                                 <div class="card-body">
-                                    <p class="card-text"><a href="{{ "/image/" + patch_full_images[i] }}">{{ patch_full_images[i] }}</a></p>
+                                    <div style="
+                                            height: 150px;
+                                            background-image: url({{ "/static/ddsm_3class/" + top_patches[i] }});
+                                            background-blend-mode: screen;
+                                            background-size: contain;
+                                            background-repeat: no-repeat;
+                                            width: 70%;
+                                            margin: 0 auto;"
+                                         onMouseOver="this.style.backgroundImage = 'url({{ "/static/ddsm_3class/" + top_patches[i] }}), url({{ "/" + patch_heatmaps[i] }})'; showttip('{{ "/static/ddsm_raw/" + top_patches[i].split('/')[-1].split('LJPEG.1')[0] + "LJPEG.1.jpg" }}', {{ top_patches[i].split("LJPEG.1-x")[1].split("_")[0]|int }}, {{ top_patches[i].split("_y")[1].split("_")[0]|int }}, {{ top_patches[i].split("_w")[1].split("_")[0]|int }}, {{ top_patches[i].split("_h")[1].split("_")[0]|int }});"
+                                         onMouseOut="this.style.backgroundImage = 'url({{ "/static/ddsm_3class/" + top_patches[i] }})'; hidettip();">
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -343,6 +342,7 @@
                 <div id="ttip">
                     <canvas id="ttip-canvas"></canvas>
                 </div>
+                <br />
                 <h4>Images where this unit activated highest:</h4>
                 <div class="row">
                     {% for i in range(top_images|length) %}
@@ -351,17 +351,16 @@
                                 <div class="card-header">
                                     Rank {{ i + 1 }}
                                 </div>
-                                <a href="/image/{{ top_images[i] }}">
+                                <div class="card-body">
+                                    <a href="/image/{{ top_images[i] }}">
                                     <div style="
-                                            height: 300px; width: 230px;
+                                            height: 300px;
                                             background-image: url({{ "/" + preprocessed_top_images[i] }}), url({{ "/" + heatmaps[i] }});
                                             background-blend-mode: screen;
                                             background-size: contain;
                                             background-repeat: no-repeat;
                                             "></div>
-                                </a>
-                                <div class="card-body">
-                                    <p class="card-text">{{ top_images[i] }}</p>
+                                    </a>
                                 </div>
                             </div>
                         </div>

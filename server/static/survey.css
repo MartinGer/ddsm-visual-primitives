@@ -20,10 +20,12 @@ input.subOption {
 
 .mainBox:checked + label {
   color: darkgreen;
+  font-weight: bold;
 }
 
 .label-checked {
   color: darkgreen;
+  font-weight: bold;
 }
 
 #ttip {

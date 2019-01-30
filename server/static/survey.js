@@ -6,23 +6,23 @@ window.onload = function() {
         updateOptionIcon(option);
     }
 
-    var subLists = document.querySelectorAll('ul.subList');
-    subLists.forEach(subList => {
-        var shouldBeVisible = false;
-        var subOptionChildren = subList.querySelectorAll('input.subOption');
-        for (subOption of subOptionChildren) {
-            updateSuboptionIcon(subOption);
-        }
-        for (subOption of subOptionChildren) {
-            if (subOption.checked == true) {
-                shouldBeVisible = true;
-                break; //return from inner loop
-            }
-        }
-        if (!shouldBeVisible) {
-            subList.style.display = 'none';
-        }
-    });
+    var mainLists = document.getElementsByClassName('mainList');
+    for (mainList of mainLists) {
+       var subLists = mainList.querySelectorAll('ul.subList');
+       var shouldBeVisible = false;
+       for (subList of subLists) {
+           var subOptionChildren = subList.querySelectorAll('input.subOption');
+           for (subOption of subOptionChildren) {
+               updateSuboptionIcon(subOption);
+               if (subOption.checked == true) {
+                   shouldBeVisible = true;
+               }
+           }
+       }
+       if (!shouldBeVisible) {
+           subLists.forEach(subList => subList.style.display='none');
+       }
+    }
 
     var ttip = document.getElementById("ttip");
     var canvas = document.getElementById("ttip-canvas");

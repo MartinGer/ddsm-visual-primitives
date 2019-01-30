@@ -184,13 +184,17 @@ def get_top_patches_for_unit(unit_id, count, include_normal=False):
     if include_normal:
         # get highest activations regardless for which class on patches, including normal ones
         # NOTE: doesn't make a difference at the moment because there are no normal patches in DB
-        select_stmt = "SELECT DISTINCT patch_filename, activation FROM patch_unit_activation " \
-                      "WHERE unit_id = ? ORDER BY activation DESC " \
+        select_stmt = "SELECT patch_filename, activation FROM patch_unit_activation " \
+                      "WHERE unit_id = ? " \
+                      "GROUP BY patch_filename " \
+                      "ORDER BY activation DESC " \
                       "LIMIT ?"
     else:
         # get highest activations regardless for which class on patches that show a tumor
-        select_stmt = "SELECT DISTINCT patch_filename, activation FROM patch_unit_activation " \
-                      "WHERE unit_id = ? AND ground_truth != 0 ORDER BY activation DESC " \
+        select_stmt = "SELECT patch_filename, activation FROM patch_unit_activation " \
+                      "WHERE unit_id = ? AND ground_truth != 0 " \
+                      "GROUP BY patch_filename " \
+                      "ORDER BY activation DESC " \
                       "LIMIT ?"
 
     print("Query database for top patches of unit {}...".format(unit_id))
@@ -254,30 +258,6 @@ def _get_highest_activations_in_percentage(activation_map, percentage):
     return activation_map
 
 
-# after resize WIP
-def _get_highest_activations_in_percentage_after_resize(activation_map, percentage):
-    no_of_elements_in_matrix = activation_map.size[0] * activation_map.size[1]
-    no_of_elements_in_percentage_range = math.ceil((no_of_elements_in_matrix/100) * percentage)
-    print(no_of_elements_in_matrix)
-    flat = np.array(activation_map)
-    flat.sort()
-    threshold = flat[-no_of_elements_in_percentage_range:][0]
-
-    print("threshold")
-    print(threshold)
-    print("activation map")
-    print(activation_map[50][50])
-
-    for x in range(activation_map.size[0]):
-        for y in range(activation_map.size[1]):
-            if activation_map[x, y] < threshold:
-                activation_map[x, y] = 0
-
-    print('Showing top', percentage, 'percent of activations in activation map. That`s'
-          , no_of_elements_in_percentage_range, 'of', no_of_elements_in_matrix, 'elements.')
-    return activation_map
-
-
 def get_preprocessed_mask_path(image_filename):
     mask_dirs = ["benigns", "benign_without_callbacks", "cancers"]
     for mask_dir in mask_dirs:
@@ -318,7 +298,7 @@ def survey2unit_annotations_ui(survey, language):
     if survey:
         shows_phenomena, descriptions = survey
         if not shows_phenomena:
-            descriptions = ["No phenomena"]
+            descriptions = ["✗ No phenomena"]
     else:
         descriptions = ["Not annotated"]
 
@@ -331,3 +311,17 @@ def survey2unit_annotations_ui(survey, language):
             localized_descriptions.append(description)
 
     return localized_descriptions
+
+
+def get_correct_classified_images(class_id, count):
+    db = DB()
+    conn = db.get_connection()
+    c = conn.cursor()
+    select_stmt = "SELECT image.image_path FROM image " \
+                  "INNER JOIN image_classification ON image_classification.image_id = image.id " \
+                  "WHERE image.ground_truth = image_classification.class_id AND image.ground_truth = ? " \
+                  "ORDER BY image.image_path ASC " \
+                  "LIMIT ?"
+    result = c.execute(select_stmt, (class_id, count))
+    images = [row[0].split("/")[-1] for row in result]
+    return images

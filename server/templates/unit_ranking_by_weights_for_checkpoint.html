@@ -1,7 +1,7 @@
 <!doctype html>
 <head>
     <meta charset="UTF-8">
-    <title>Top Units (Class Weights)</title>
+    <title>Top Units ({{ ranking_type }})</title>
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" rel="stylesheet"
           integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js"
@@ -39,7 +39,7 @@
                     </div>
                     <div class="col-md-2">
                         <div class="mt-2">
-                            <ul>
+                            <ul class="list-unstyled">
                                 {% for annotation in unit_annotations[unit_data[0]] %}
                                     <li>{{ annotation }}</li>
                                 {% endfor %}
@@ -88,7 +88,7 @@
                     </div>
                     <div class="col-md-2">
                         <div class="mt-2">
-                            <ul>
+                            <ul class="list-unstyled">
                                 {% for annotation in unit_annotations[unit_data[0]] %}
                                     <li>{{ annotation }}</li>
                                 {% endfor %}
@@ -137,7 +137,7 @@
                     </div>
                     <div class="col-md-2">
                         <div class="mt-2">
-                            <ul>
+                            <ul class="list-unstyled">
                                 {% for annotation in unit_annotations[unit_data[0]] %}
                                     <li>{{ annotation }}</li>
                                 {% endfor %}

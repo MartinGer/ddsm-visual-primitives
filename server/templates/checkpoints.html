@@ -25,9 +25,9 @@
         Please note that loading a checkpoint will take some time.
     </i>
 </p>
-<ul id="checkpoint_list">
+<ul id="checkpoint_list" class="list-unstyled">
 {% for checkpoint in checkpoints %}
-    <li><button onclick="
+    <li><button type="button" class="btn btn-primary" onclick="
             $.get('/load_checkpoint/{{ checkpoint }}').always(()=>{
                 $('#loading_label').display = 'none';
                 window.location.href = '{{ referrer_url if referrer_url else 'home' }}';
