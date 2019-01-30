@@ -33,3 +33,7 @@ input.subOption {
   position: fixed;
   z-index: 1;
 }
+
+.card-body {
+  padding: 0;
+}
