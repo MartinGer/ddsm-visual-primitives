@@ -98,6 +98,8 @@ def unit_ranking_by_weights(unit_count=20, patch_count=6):
             survey = backend.get_survey(CURRENT_USER, CURRENT_MODEL, unit_id)
             unit_annotations[unit_id] = backend.survey2unit_annotations_ui(survey, 'german')
 
+    for i in sorted_influences[1]:
+        print(i[0])
     return render_template('unit_ranking_by_weights_for_checkpoint.html',
                            sorted_weights_class_0=sorted_influences[0][:4],
                            sorted_weights_class_1=sorted_influences[1][:unit_count],
