@@ -20,6 +20,7 @@
 
 <button onclick="location.href = '/home';" class="btn btn-primary mb-2" style='top: 1%; right: 1%; position: fixed;'>Home</button>
 <div class="container-fluid mt-3 px-5"> <h1>Unit {{ unit_id }}</h1>
+<div class="container-fluid mt-3 mb-5 px-5"> <h1>Unit {{ unit_id }}</h1>
     <h2>Instructions</h2>
     <p>
         1. Please inspect the highlighted areas within the images on this page, then answer the survey questions
@@ -346,30 +347,6 @@
                 </div>
                 <div id="ttip">
                     <canvas id="ttip-canvas"></canvas>
-                </div>
-                <br />
-                <h4>Images where this unit activated highest:</h4>
-                <div class="row">
-                    {% for i in range(top_images|length) %}
-                        <div class="col-3 mt-3">
-                            <div class="card">
-                                <div class="card-header">
-                                    Rank {{ i + 1 }}
-                                </div>
-                                <div class="card-body">
-                                    <a href="/image/{{ top_images[i] }}">
-                                    <div style="
-                                            height: 300px;
-                                            background-image: url({{ "/" + preprocessed_top_images[i] }}), url({{ "/" + heatmaps[i] }});
-                                            background-blend-mode: screen;
-                                            background-size: contain;
-                                            background-repeat: no-repeat;
-                                            "></div>
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-                    {% endfor %}
                 </div>
             </div>
         </div>

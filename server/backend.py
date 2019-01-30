@@ -181,20 +181,23 @@ def get_top_patches_for_unit(unit_id, count, include_normal=False):
     db = DB()
     conn = db.get_connection()
     c = conn.cursor()
+    # example patch_filename: images/115/cancer_09-B_3134_1.RIGHT_MLO.LJPEG.1-x1750_y1750_w700_h700_imgfrac0.25_stridefrac0.5.jpg
+    # patient id is most of the time characters 12-17
+    # FIXME: GROUP BY currently only works for images in folders with same amount of digits (images/xxx)
     if include_normal:
         # get highest activations regardless for which class on patches, including normal ones
         # NOTE: doesn't make a difference at the moment because there are no normal patches in DB
-        select_stmt = "SELECT patch_filename, activation FROM patch_unit_activation " \
+        select_stmt = "SELECT patch_filename, activation, SUBSTR(patch_filename, 11, 16) AS patient FROM patch_unit_activation " \
                       "WHERE unit_id = ? " \
-                      "GROUP BY patch_filename " \
-                      "ORDER BY activation DESC " \
+                      "GROUP BY patient " \
+                      "ORDER BY MAX(activation) DESC " \
                       "LIMIT ?"
     else:
         # get highest activations regardless for which class on patches that show a tumor
-        select_stmt = "SELECT patch_filename, activation FROM patch_unit_activation " \
+        select_stmt = "SELECT patch_filename, activation, SUBSTR(patch_filename, 11, 16) AS patient  FROM patch_unit_activation " \
                       "WHERE unit_id = ? AND ground_truth != 0 " \
-                      "GROUP BY patch_filename " \
-                      "ORDER BY activation DESC " \
+                      "GROUP BY patient " \
+                      "ORDER BY MAX(activation) DESC " \
                       "LIMIT ?"
 
     print("Query database for top patches of unit {}...".format(unit_id))
