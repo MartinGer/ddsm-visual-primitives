@@ -267,6 +267,15 @@ def _image(image_filename):
                            heatmap_paths=heatmap_paths)
 
 
+@app.route('/correct_classified_images')
+def correct_classified_images():
+    images = {0: backend.get_correct_classified_images(class_id=0, count=6),
+              1: backend.get_correct_classified_images(class_id=1, count=12),
+              2: backend.get_correct_classified_images(class_id=2, count=24)}
+    return render_template('correct_classified_images.html',
+                           images=images)
+
+
 @app.route('/example_analysis')
 def example_analysis():
     # good examples:

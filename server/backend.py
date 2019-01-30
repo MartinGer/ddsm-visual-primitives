@@ -331,3 +331,17 @@ def survey2unit_annotations_ui(survey, language):
             localized_descriptions.append(description)
 
     return localized_descriptions
+
+
+def get_correct_classified_images(class_id, count):
+    db = DB()
+    conn = db.get_connection()
+    c = conn.cursor()
+    select_stmt = "SELECT image.image_path FROM image " \
+                  "INNER JOIN image_classification ON image_classification.image_id = image.id " \
+                  "WHERE image.ground_truth = image_classification.class_id AND image.ground_truth = ? " \
+                  "ORDER BY image.image_path ASC " \
+                  "LIMIT ?"
+    result = c.execute(select_stmt, (class_id, count))
+    images = [row[0].split("/")[-1] for row in result]
+    return images

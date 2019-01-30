@@ -1,0 +1,71 @@
+<!doctype html>
+<head>
+    <meta charset="UTF-8">
+    <title>Correct Classified Images</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js"
+            integrity="sha384-B0UglyR+jN6CkvvICOB2joaf5I4l3gm9GU6Hc1og6Ls7i6U/mkkaduKaBhlAXv9k"
+            crossorigin="anonymous"></script>
+
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"
+            integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
+            crossorigin="anonymous"></script>
+</head>
+
+<body class="container mt-3">
+<h1>Correct Classified Images</h1>
+<h3>(from Validation Set)</h3>
+<br>
+<br>
+
+<h2>Normal:</h2>
+
+<div class="row">
+    {% for image_filename in images[0] %}
+        <div class="col-2 mt-3">
+            <div class="card">
+                  <img class="card-img-top" src="{{ "/static/ddsm_raw/" + image_filename }}" alt="Card image cap">
+                  <div class="card-body">
+                      <p class="card-text"><a href="/image/{{ image_filename }}">{{ image_filename }}</a></p>
+                  </div>
+            </div>
+        </div>
+    {% endfor %}
+</div>
+<br>
+
+<h2>Benign:</h2>
+
+<div class="row">
+    {% for image_filename in images[1] %}
+        <div class="col-2 mt-3">
+            <div class="card">
+                  <img class="card-img-top" src="{{ "/static/ddsm_raw/" + image_filename }}" alt="Card image cap">
+                  <div class="card-body">
+                      <p class="card-text"><a href="/image/{{ image_filename }}">{{ image_filename }}</a></p>
+                  </div>
+            </div>
+        </div>
+    {% endfor %}
+</div>
+<br>
+
+<h2>Malignant:</h2>
+
+<div class="row">
+    {% for image_filename in images[2] %}
+        <div class="col-2 mt-3">
+            <div class="card">
+                  <img class="card-img-top" src="{{ "/static/ddsm_raw/" + image_filename }}" alt="Card image cap">
+                  <div class="card-body">
+                      <p class="card-text"><a href="/image/{{ image_filename }}">{{ image_filename }}</a></p>
+                  </div>
+            </div>
+        </div>
+    {% endfor %}
+</div>
+
+<br>
+
+</body>
