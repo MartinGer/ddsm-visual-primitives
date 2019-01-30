@@ -38,7 +38,6 @@ window.onload = function() {
         var factor = 400 / ttipImage.height;
         canvas.width = ttipImage.width * factor;
         canvas.height = 400;
-        console.log(canvas.style.height);
         canvasContext.drawImage(ttipImage, 0, 0, ttipImage.width * factor, 400);
         // draw rectangle
         canvasContext.rect(_rectX * factor, _rectY * factor , _rectWidth * factor, _rectHeight * factor);
@@ -52,11 +51,9 @@ window.onload = function() {
         var y = (e.clientY + 20) + 'px';
         ttip.style.left = x;
         ttip.style.top = y;
-        console.log('moved');
     };
 
     showttip = function(imglink, rectX, rectY, rectWidth, rectHeight) {
-        console.log("x: " + rectX + ", y: " + rectY + ", width: " +rectWidth + ", height: " +rectHeight);
         _rectY = rectX;
         _rectX = rectY;
         _rectWidth = rectWidth;
