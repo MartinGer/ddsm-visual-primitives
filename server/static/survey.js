@@ -24,18 +24,55 @@ window.onload = function() {
         }
     });
 
-    var tooltips = document.querySelectorAll('.tooltip-parent span');
+    var ttip = document.getElementById("ttip");
+    var canvas = document.getElementById("ttip-canvas");
+    var canvasContext = canvas.getContext("2d");
 
-    window.onmousemove = function (e) {
-        var x = (e.clientX + 20) + 'px',
-            y = (e.clientY + 20) + 'px';
-        for (var i = 0; i < tooltips.length; i++) {
-            tooltips[i].style.top = y;
-            tooltips[i].style.left = x;
-        }
+    var ttipImage = new Image();
+    var _rectX = 0;
+    var _rectY = 0;
+    var _rectWidth = 0;
+    var _rectHeight = 0;
+
+    ttipImage.onload = function() {
+        var factor = 400 / ttipImage.height;
+        canvas.width = ttipImage.width * factor;
+        canvas.height = 400;
+        console.log(canvas.style.height);
+        canvasContext.drawImage(ttipImage, 0, 0, ttipImage.width * factor, 400);
+        // draw rectangle
+        canvasContext.rect(_rectX * factor, _rectY * factor , _rectWidth * factor, _rectHeight * factor);
+        canvasContext.lineWidth = 3;
+        canvasContext.strokeStyle = "yellow";
+        canvasContext.stroke();
     };
 
+    window.onmousemove = function (e) {
+        var x = (e.clientX + 20) + 'px';
+        var y = (e.clientY + 20) + 'px';
+        ttip.style.left = x;
+        ttip.style.top = y;
+        console.log('moved');
+    };
+
+    showttip = function(imglink, rectX, rectY, rectWidth, rectHeight) {
+        console.log("x: " + rectX + ", y: " + rectY + ", width: " +rectWidth + ", height: " +rectHeight);
+        _rectY = rectX;
+        _rectX = rectY;
+        _rectWidth = rectWidth;
+        _rectHeight = rectHeight;
+        ttip.style.display = "block";
+        ttipImage.setAttribute("src", imglink);
+    };
+
+    hidettip = function() {
+        canvasContext.clearRect(0, 0, canvas.width, canvas.height);
+        ttip.style.display = "none";
+    }
 };
+
+showttip = function() {}
+hidettip = function() {}
 
 function updateShowPhenomena() {
     if (document.getElementById('shows_phenomena_true').checked) {
