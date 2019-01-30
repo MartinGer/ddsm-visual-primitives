@@ -332,7 +332,8 @@
                                             width: 70%;
                                             margin: 0 auto;"
                                          onMouseOver="this.style.backgroundImage = 'url({{ "/static/ddsm_3class/" + top_patches[i] }}), url({{ "/" + patch_heatmaps[i] }})'; showttip('{{ "/static/ddsm_raw/" + top_patches[i].split('/')[-1].split('LJPEG.1')[0] + "LJPEG.1.jpg" }}', {{ top_patches[i].split("LJPEG.1-x")[1].split("_")[0]|int }}, {{ top_patches[i].split("_y")[1].split("_")[0]|int }}, {{ top_patches[i].split("_w")[1].split("_")[0]|int }}, {{ top_patches[i].split("_h")[1].split("_")[0]|int }});"
-                                         onMouseOut="this.style.backgroundImage = 'url({{ "/static/ddsm_3class/" + top_patches[i] }})'; hidettip();">
+                                         onMouseOut="this.style.backgroundImage = 'url({{ "/static/ddsm_3class/" + top_patches[i] }})'; hidettip();"
+                                         onclick="window.location='{{ "/image/" + patch_full_images[i] }}'">
                                     </div>
                                 </div>
                             </div>
