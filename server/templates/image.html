@@ -13,7 +13,6 @@
             crossorigin="anonymous"></script>
 
     <style>
-
         .zoom-on-hover {
             transition: transform .2s;
         }
@@ -21,6 +20,18 @@
         .zoom-on-hover:hover {
             transform: scale(2);
             z-index: 9999;
+        }
+
+        #full-image {
+            height: 600px; width: 100%;
+            background-image: url({{ "/" + preprocessed_full_image_path }}), url({{ "/" + preprocessed_mask_path }});
+            background-blend-mode: screen;
+            background-size: contain;
+            background-repeat: no-repeat;
+        }
+
+        #full-image:hover {
+            background-image: url({{ "/" + preprocessed_full_image_path }});
         }
     </style>
 </head>
@@ -67,18 +78,12 @@
         <div class="col-md-6 card">
             <div class="card-image">
 
-                <div class="zoom-on-hover" style="
-                        height: 500px; width: 100%;
-                        background-image: url({{ "/" + preprocessed_full_image_path }}), url({{ "/" + preprocessed_mask_path }});
-                        background-blend-mode: screen;
-                        background-size: contain;
-                        background-repeat: no-repeat;
-                        "></div>
+                <div id="full-image"></div>
             </div>
         </div>
     </div>
 
-    <h4 class="mt-4">Activation maps for top units that activated for this image:</h4>
+    <h4 class="mt-4">Units that activated highest on this image:</h4>
 
     <div class="row">
         {% for rank in range(10) %}
@@ -88,13 +93,15 @@
                         {{ rank + 1 }}: Unit {{ top_units_and_activations[rank][0] + 1 }}
                     </div>
                     <a href="/unit/{{ top_units_and_activations[rank][0] + 1 }}">
-                        <div class="zoom-on-hover" style="
-                                height: 300px; width: 100%;
+                        <div style="
+                                height: 330px; width: 100%;
                                 background-image: url({{ "/" + preprocessed_full_image_path }}), url({{ "/" + heatmap_paths[rank] }});
                                 background-blend-mode: screen;
                                 background-size: contain;
                                 background-repeat: no-repeat;
-                                "></div>
+                                "
+                             onMouseOver="this.style.backgroundImage = 'url({{ "/" + preprocessed_full_image_path }})'"
+                             onMouseOut="this.style.backgroundImage = 'url({{ "/" + preprocessed_full_image_path }}), url({{ "/" + heatmap_paths[rank] }})'"></div>
                     </a>
                     <div class="card-body">
                         <ul>
@@ -102,7 +109,7 @@
                             <li>Benign: {{ top_units_and_activations[rank][1][1]|round(3) }}</li>
                             <li>Cancer: {{ top_units_and_activations[rank][1][2]|round(3) }}</li>
                         </ul>
-                        <ul>
+                        <ul class="list-unstyled">
                             {% for annotation in unit_annotations[top_units_and_activations[rank][0] + 1] %}
                                 <li>{{ annotation }}</li>
                             {% endfor %}
