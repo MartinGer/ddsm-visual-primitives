@@ -15,7 +15,7 @@
 </head>
 <body>
 
-<div class="container mt-3">
+<div class="container-fluid mt-3 px-5">
     <h1>Unit {{ unit_id }}</h1>
 
     <h2>Instructions</h2>
@@ -324,20 +324,22 @@
                                 <div class="card-header">
                                     Rank {{ i + 1 }}
                                 </div>
-                                <div class="tooltip-parent">
+                                <div class="card-body">
+                                    <div class="tooltip-parent">
                                     <div style="
-                                            height: 150px; width: 150px;
+                                            height: 150px;
                                             background-image: url({{ "/static/ddsm_3class/" + top_patches[i] }});
                                             background-blend-mode: screen;
                                             background-size: contain;
-                                            background-repeat: no-repeat;"
+                                            background-repeat: no-repeat;
+                                            width: 70%;
+                                            margin: 0 auto;"
                                          onMouseOver="this.style.backgroundImage = 'url({{ "/static/ddsm_3class/" + top_patches[i] }}), url({{ "/" + patch_heatmaps[i] }})'"
                                          onMouseOut="this.style.backgroundImage = 'url({{ "/static/ddsm_3class/" + top_patches[i] }})'"></div>
                                     <span>
                                         <img alt="" src="{{ "/static/ddsm_raw/" + top_patches[i].split('/')[-1].split('LJPEG.1')[0] + "LJPEG.1.jpg" }}"/>
                                     </span>
                                 </div>
-                                <div class="card-body">
                                     <p class="card-text"><a href="{{ "/image/" + patch_full_images[i] }}">{{ patch_full_images[i] }}</a></p>
                                 </div>
                             </div>
@@ -352,7 +354,8 @@
                                 <div class="card-header">
                                     Rank {{ i + 1 }}
                                 </div>
-                                <a href="/image/{{ top_images[i] }}">
+                                <div class="card-body">
+                                    <a href="/image/{{ top_images[i] }}">
                                     <div style="
                                             height: 300px; width: 230px;
                                             background-image: url({{ "/" + preprocessed_top_images[i] }}), url({{ "/" + heatmaps[i] }});
@@ -360,8 +363,7 @@
                                             background-size: contain;
                                             background-repeat: no-repeat;
                                             "></div>
-                                </a>
-                                <div class="card-body">
+                                    </a>
                                     <p class="card-text">{{ top_images[i] }}</p>
                                 </div>
                             </div>
