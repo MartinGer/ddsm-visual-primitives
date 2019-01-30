@@ -28,17 +28,8 @@ input.subOption {
   font-weight: bold;
 }
 
-.tooltip-parent span {
+#ttip {
   display: none;
-}
-
-.tooltip-parent:hover span {
-  display: block;
   position: fixed;
-  overflow: hidden;
   z-index: 1;
-}
-
-.tooltip-parent img {
-  height: 420px;
 }
