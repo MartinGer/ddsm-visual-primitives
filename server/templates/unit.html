@@ -325,7 +325,7 @@
                                     Rank {{ i + 1 }}
                                 </div>
                                 <div class="card-body">
-                                    <div class="tooltip-parent">
+                                    <div class="tooltip-parent" onclick="window.location='{{ "/image/" + patch_full_images[i] }}'">
                                     <div style="
                                             height: 150px;
                                             background-image: url({{ "/static/ddsm_3class/" + top_patches[i] }});
@@ -340,12 +340,12 @@
                                         <img alt="" src="{{ "/static/ddsm_raw/" + top_patches[i].split('/')[-1].split('LJPEG.1')[0] + "LJPEG.1.jpg" }}"/>
                                     </span>
                                 </div>
-                                    <p class="card-text"><a href="{{ "/image/" + patch_full_images[i] }}">{{ patch_full_images[i] }}</a></p>
                                 </div>
                             </div>
                         </div>
                     {% endfor %}
                 </div>
+            <br>
                 <h4>Images where this unit activated highest:</h4>
                 <div class="row">
                     {% for i in range(top_images|length) %}
@@ -364,7 +364,6 @@
                                             background-repeat: no-repeat;
                                             "></div>
                                     </a>
-                                    <p class="card-text">{{ top_images[i] }}</p>
                                 </div>
                             </div>
                         </div>
