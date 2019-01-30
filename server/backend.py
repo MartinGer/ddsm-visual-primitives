@@ -184,13 +184,17 @@ def get_top_patches_for_unit(unit_id, count, include_normal=False):
     if include_normal:
         # get highest activations regardless for which class on patches, including normal ones
         # NOTE: doesn't make a difference at the moment because there are no normal patches in DB
-        select_stmt = "SELECT DISTINCT patch_filename, activation FROM patch_unit_activation " \
-                      "WHERE unit_id = ? ORDER BY activation DESC " \
+        select_stmt = "SELECT patch_filename, activation FROM patch_unit_activation " \
+                      "WHERE unit_id = ? " \
+                      "GROUP BY patch_filename " \
+                      "ORDER BY activation DESC " \
                       "LIMIT ?"
     else:
         # get highest activations regardless for which class on patches that show a tumor
-        select_stmt = "SELECT DISTINCT patch_filename, activation FROM patch_unit_activation " \
-                      "WHERE unit_id = ? AND ground_truth != 0 ORDER BY activation DESC " \
+        select_stmt = "SELECT patch_filename, activation FROM patch_unit_activation " \
+                      "WHERE unit_id = ? AND ground_truth != 0 " \
+                      "GROUP BY patch_filename " \
+                      "ORDER BY activation DESC " \
                       "LIMIT ?"
 
     print("Query database for top patches of unit {}...".format(unit_id))
