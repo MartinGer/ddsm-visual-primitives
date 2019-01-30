@@ -175,8 +175,7 @@ def get_top_patches_and_heatmaps_for_unit(unit_id, count):
             break
 
     return top_patches, heatmap_paths
-#images/24/cancer_03-A_1035_1.RIGHT_CC.LJPEG.1-x975_y325_w649_h649_imgfrac0.25_stridefrac0.5.jpg
-#images/124/cancer_03-A_1035_1.RIGHT_CC.LJPEG.1-x975_y0_w649_h649_imgfrac0.25_stridefrac0.5.jpg
+
 
 def get_top_patches_for_unit(unit_id, count, include_normal=False):
     db = DB()
