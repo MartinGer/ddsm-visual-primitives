@@ -169,3 +169,12 @@ function getSiblings (elem) {
     }
     return siblings;
 }
+
+$(document).ready(function () {
+    var cardWidth = document.querySelector('.card-header').clientWidth;
+    var images = document.getElementsByClassName('image-parent-size');
+    for(image of images) {
+        image.style.width = cardWidth + 'px';
+        image.style.height = cardWidth + 'px';
+    }
+});

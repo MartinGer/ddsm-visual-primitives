@@ -10,6 +10,9 @@
             crossorigin="anonymous"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/octicons/4.4.0/font/octicons.min.css"
           crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"
+            integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
+            crossorigin="anonymous"></script>
     <link rel="stylesheet" type=text/css href="{{ url_for('static', filename='survey.css') }}">
     <script type="text/javascript" src="{{ url_for('static', filename='survey.js') }}"></script>
 </head>
@@ -323,7 +326,7 @@
                                     Rank {{ i + 1 }}
                                 </div>
                                 <div class="card-body">
-                                    <div style="
+                                    <div class="image-parent-size" style="
                                             height: 150px;
                                             background-image: url({{ "/static/ddsm_3class/" + top_patches[i] }});
                                             background-blend-mode: screen;
