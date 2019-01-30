@@ -25,10 +25,9 @@
     {% for image_filename in images[0] %}
         <div class="col-2 mt-3">
             <div class="card">
-                  <img class="card-img-top" src="{{ "/static/ddsm_raw/" + image_filename }}" alt="Card image cap">
-                  <div class="card-body">
-                      <p class="card-text"><a href="/image/{{ image_filename }}">{{ image_filename }}</a></p>
-                  </div>
+                <a href="/image/{{ image_filename }}">
+                    <img class="card-img-top" src="{{ "/static/ddsm_raw/" + image_filename }}" alt="Card image cap">
+                </a>
             </div>
         </div>
     {% endfor %}
@@ -41,10 +40,9 @@
     {% for image_filename in images[1] %}
         <div class="col-2 mt-3">
             <div class="card">
-                  <img class="card-img-top" src="{{ "/static/ddsm_raw/" + image_filename }}" alt="Card image cap">
-                  <div class="card-body">
-                      <p class="card-text"><a href="/image/{{ image_filename }}">{{ image_filename }}</a></p>
-                  </div>
+                <a href="/image/{{ image_filename }}">
+                    <img class="card-img-top" src="{{ "/static/ddsm_raw/" + image_filename }}" alt="Card image cap">
+                </a>
             </div>
         </div>
     {% endfor %}
@@ -57,10 +55,9 @@
     {% for image_filename in images[2] %}
         <div class="col-2 mt-3">
             <div class="card">
-                  <img class="card-img-top" src="{{ "/static/ddsm_raw/" + image_filename }}" alt="Card image cap">
-                  <div class="card-body">
-                      <p class="card-text"><a href="/image/{{ image_filename }}">{{ image_filename }}</a></p>
-                  </div>
+                <a href="/image/{{ image_filename }}">
+                    <img class="card-img-top" src="{{ "/static/ddsm_raw/" + image_filename }}" alt="Card image cap">
+                </a>
             </div>
         </div>
     {% endfor %}
