@@ -104,11 +104,11 @@
                              onMouseOut="this.style.backgroundImage = 'url({{ "/" + preprocessed_full_image_path }}), url({{ "/" + heatmap_paths[rank] }})'"></div>
                     </a>
                     <div class="card-body">
-                        <ul>
+                        {#<ul>
                             <li>Normal: {{ top_units_and_activations[rank][1][0]|round(3) }}</li>
                             <li>Benign: {{ top_units_and_activations[rank][1][1]|round(3) }}</li>
                             <li>Cancer: {{ top_units_and_activations[rank][1][2]|round(3) }}</li>
-                        </ul>
+                        </ul>#}
                         <ul class="list-unstyled">
                             {% for annotation in unit_annotations[top_units_and_activations[rank][0] + 1] %}
                                 <li>{{ annotation }}</li>

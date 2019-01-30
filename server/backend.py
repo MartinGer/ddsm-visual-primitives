@@ -294,7 +294,7 @@ def survey2unit_annotations_ui(survey, language):
     if survey:
         shows_phenomena, descriptions = survey
         if not shows_phenomena:
-            descriptions = ["No phenomena"]
+            descriptions = ["✗ No phenomena"]
     else:
         descriptions = ["Not annotated"]
 
