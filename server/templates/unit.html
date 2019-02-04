@@ -20,19 +20,19 @@
 
 <button onclick="location.href = '/home';" class="btn btn-primary mb-2" style='top: 1%; right: 1%; position: fixed;'>Home</button>
 <div class="container-fluid mt-3 px-5"> <h1>Unit {{ unit_id }}</h1>
-<div class="container-fluid mt-3 mb-5 px-5"> <h1>Unit {{ unit_id }}</h1>
-    <h2>Instructions</h2>
-    <p>
-        1. Please inspect the highlighted areas within the images on this page, then answer the survey questions
-        below.<br>
-        2. The survey questions pertain only to the images shown on this page.<br>
-        3. The images show different mammography scans.<br>
-        4. <b>You must click on the submit button under the survey questions to save your responses.</b> After your
-        responses are saved, you will be taken back to the previous page.<br>
-    </p>
+    <div class="container-fluid mt-3 mb-5 px-5"> <h1>Unit {{ unit_id }}</h1>
+        <h2>Instructions</h2>
+        <p>
+            1. Please inspect the highlighted areas within the images on this page, then answer the survey questions
+            below.<br>
+            2. The survey questions pertain only to the images shown on this page.<br>
+            3. The images show different mammography scans.<br>
+            4. <b>You must click on the submit button under the survey questions to save your responses.</b> After your
+            responses are saved, you will be taken back to the previous page.<br>
+        </p>
 
-    <h2>Survey</h2>
-    <p>Are there ANY recognizable phenomena among the highlighted parts in the pictures?</p>
+        <h2>Survey</h2>
+        <p>Are there ANY recognizable phenomena among the highlighted parts in the pictures?</p>
         <div class="row">
             <div class="col-4">
                 <form action="{{ url_for('handle_survey') }}" method="post">
@@ -311,7 +311,7 @@
                 </div>
             </div>
         </div>
+    </div>
 </div>
-
 </body>
 </html>
