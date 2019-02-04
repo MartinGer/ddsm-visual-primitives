@@ -7,8 +7,7 @@
             integrity="sha384-B0UglyR+jN6CkvvICOB2joaf5I4l3gm9GU6Hc1og6Ls7i6U/mkkaduKaBhlAXv9k"
             crossorigin="anonymous"></script>
 
-    <script
-            src="https://code.jquery.com/jquery-3.3.1.min.js"
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"
             integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
             crossorigin="anonymous"></script>
 
@@ -110,11 +109,13 @@
                             <li>Benign: {{ top_units_and_activations[rank][1][1]|round(3) }}</li>
                             <li>Cancer: {{ top_units_and_activations[rank][1][2]|round(3) }}</li>
                         </ul>#}
-                        <ul class="list-unstyled">
-                            {% for annotation in unit_annotations[top_units_and_activations[rank][0] + 1] %}
-                                <li>{{ annotation }}</li>
-                            {% endfor %}
-                        </ul>
+                        {% if unit_annotations %}
+                            <ul class="list-unstyled">
+                                {% for annotation in unit_annotations[top_units_and_activations[rank][0] + 1] %}
+                                    <li>{{ annotation }}</li>
+                                {% endfor %}
+                            </ul>
+                        {%  endif %}
                     </div>
                 </div>
             </div>

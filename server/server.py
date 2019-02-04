@@ -164,8 +164,72 @@ def unit(unit_id):
                            **previous_annotations)
 
 
+@app.route('/handle_survey', methods=['POST'])
+def handle_survey():
+    name = urllib.parse.unquote_plus(request.form['name'])  # doctor username
+    model = request.form['model']  # resnet152
+    unit = request.form['unit']   # unit_0076
+    referrer_url = request.form['referrer_url']   # unit_0076
+    shows_phenomena = request.form['shows_phenomena']
+    phenomena = [p for p in request.form if p.startswith('phe')]
+    backend.store_survey(name, model, unit, shows_phenomena, phenomena)
+    return redirect(referrer_url)
+
+
+@app.route('/upload', methods=['POST'])
+def upload_file():
+    file = request.files['image']
+    full_path = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
+    file.save(full_path)
+    return render_template('single_image.html', success=True, full_path=full_path, image_filename=file.filename)
+
+
+@app.route('/upload_image')
+def single_image():
+    if not backend.single_image_analysis:
+        return redirect('/checkpoints')
+    return render_template('single_image.html', success=False, processed=False)
+
+
 @app.route('/image/<image_filename>')
 def image(image_filename):
+    image_path = os.path.join(app.config['UPLOAD_FOLDER'], image_filename)
+
+    preprocessed_full_image_path = backend.get_preprocessed_image_path(image_filename, app.config['UPLOAD_FOLDER'])
+    preprocessed_mask_path = ""  # no mask available for new images
+    preprocessing_descr = dataset.preprocessing_description()
+
+    result = backend.single_image_analysis.analyze_one_image(image_path)
+
+    units_to_show = 10
+    top_units_and_activations = result.get_top_units(result.classification, units_to_show)
+    heatmap_paths = backend.get_heatmap_paths_for_top_units(image_filename, top_units_and_activations, units_to_show, app.config['UPLOAD_FOLDER'])
+
+    return render_template('image.html',
+                           image_path=result.image_path,
+                           image_name=image_name,
+                           preprocessed_full_image_path=preprocessed_full_image_path,
+                           preprocessed_mask_path=preprocessed_mask_path,
+                           checkpoint_path=result.checkpoint_path,
+                           preprocessing_descr=preprocessing_descr,
+                           classification=result.classification,
+                           class_probs=result.class_probs,
+                           top_units_and_activations=top_units_and_activations,
+                           heatmap_paths=heatmap_paths)
+
+
+@app.route('/correct_classified_images')
+def correct_classified_images():
+    images = {0: backend.get_correct_classified_images(class_id=0, count=6),
+              1: backend.get_correct_classified_images(class_id=1, count=12),
+              2: backend.get_correct_classified_images(class_id=2, count=24)}
+    return render_template('correct_classified_images.html',
+                           images=images)
+
+
+# for fast testing
+@app.route('/image/<image_filename>')
+def _image(image_filename):
     if not backend.single_image_analysis:
         return redirect('/checkpoints')
     image_path = os.path.join('../data/ddsm_raw/', image_filename)
@@ -212,71 +276,10 @@ def image(image_filename):
                            is_correct=is_correct)
 
 
-@app.route('/handle_survey', methods=['POST'])
-def handle_survey():
-    name = urllib.parse.unquote_plus(request.form['name'])  # doctor username
-    model = request.form['model']  # resnet152
-    unit = request.form['unit']   # unit_0076
-    referrer_url = request.form['referrer_url']   # unit_0076
-    shows_phenomena = request.form['shows_phenomena']
-    phenomena = [p for p in request.form if p.startswith('phe')]
-    backend.store_survey(name, model, unit, shows_phenomena, phenomena)
-    return redirect(referrer_url)
-
-
-@app.route('/upload', methods=['POST'])
-def upload_file():
-    file = request.files['image']
-    full_path = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
-    file.save(full_path)
-
-    return render_template('single_image.html', success=True, full_path=full_path, image_filename=file.filename)
-
-
-@app.route('/unit_ranking_by_weights/<training_session>/<checkpoint_name>/upload')
-def single_image(training_session, checkpoint_name):
-    return render_template('single_image.html', success=False, processed=False)
-
-
-@app.route('/_image/<image_filename>')
-def _image(image_filename):
-    image_path = os.path.join(app.config['UPLOAD_FOLDER'], image_filename)
-
-    preprocessed_full_image_path = backend.get_preprocessed_image_path(image_filename, app.config['UPLOAD_FOLDER'])
-    preprocessed_mask_path = ""  # no mask available for new images
-    preprocessing_descr = dataset.preprocessing_description()
-
-    result = backend.single_image_analysis.analyze_one_image(image_path)
-
-    units_to_show = 10
-    top_units_and_activations = result.get_top_units(result.classification, units_to_show)
-    heatmap_paths = backend.get_heatmap_paths_for_top_units(image_filename, top_units_and_activations, units_to_show, app.config['UPLOAD_FOLDER'])
-
-    return render_template('image.html',
-                           image_path=result.image_path,
-                           preprocessed_full_image_path=preprocessed_full_image_path,
-                           preprocessed_mask_path=preprocessed_mask_path,
-                           checkpoint_path=result.checkpoint_path,
-                           preprocessing_descr=preprocessing_descr,
-                           classification=result.classification,
-                           class_probs=result.class_probs,
-                           top_units_and_activations=top_units_and_activations,
-                           heatmap_paths=heatmap_paths)
-
-
-@app.route('/correct_classified_images')
-def correct_classified_images():
-    images = {0: backend.get_correct_classified_images(class_id=0, count=6),
-              1: backend.get_correct_classified_images(class_id=1, count=12),
-              2: backend.get_correct_classified_images(class_id=2, count=24)}
-    return render_template('correct_classified_images.html',
-                           images=images)
-
-
 @app.route('/example_analysis')
 def example_analysis():
     # good examples:
     # cancer_15-B_3504_1.RIGHT_CC.LJPEG.1.jpg -> 99% cancer, two spots
-    return image('cancer_09-B_3134_1.RIGHT_CC.LJPEG.1.jpg')
+    return _image('cancer_09-B_3134_1.RIGHT_CC.LJPEG.1.jpg')
 
 
