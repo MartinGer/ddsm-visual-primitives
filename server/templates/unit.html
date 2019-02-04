@@ -103,25 +103,6 @@
                                             {% if phe_margin_spiculated %} checked {% endif %}><i
                                             class="octicon octicon-x"></i>Spikuliert / Spiculated</label></li>
                                 </ul>
-                                <ul class="subList">
-                                    <li class="category">Dichte / Density</li>
-                                    <li><label><input type="checkbox" class="subOption"
-                                                      onclick="updateSuboptionIcon(this)" name="phe_density_high"
-                                            {% if phe_density_high %} checked {% endif %}><i
-                                            class="octicon octicon-x"></i>Vermehrt / High</label></li>
-                                    <li><label><input type="checkbox" class="subOption"
-                                                      onclick="updateSuboptionIcon(this)" name="phe_density_equal"
-                                            {% if phe_density_equal %} checked {% endif %}><i
-                                            class="octicon octicon-x"></i>Gleich / Equal</label></li>
-                                    <li><label><input type="checkbox" class="subOption"
-                                                      onclick="updateSuboptionIcon(this)" name="phe_density_low"
-                                            {% if phe_density_low %} checked {% endif %}><i
-                                            class="octicon octicon-x"></i>Niedrig / Low</label></li>
-                                    <li><label><input type="checkbox" class="subOption"
-                                                      onclick="updateSuboptionIcon(this)" name="phe_density_fat"
-                                            {% if phe_density_fat %} checked {% endif %}><i
-                                            class="octicon octicon-x"></i>Fett enthaltend / Fat-containing</label></li>
-                                </ul>
                             </li>
                             <li class="mainList">
                                 <input type="checkbox" class="mainBox" id="calcBox" onclick="optionClicked(this)"
@@ -193,33 +174,6 @@
                                             class="octicon octicon-x"></i>Fein linear oder fein linear, sich verzweigend
                                         / Fine linear or fine-linear branching </label></li>
                                 </ul>
-                                <ul class="subList">
-                                    <li class="category">Verteilung / Distribution</li>
-                                    <li><label><input type="checkbox" class="subOption"
-                                                      onclick="updateSuboptionIcon(this)"
-                                                      name="phe_distribution_diffuse" {% if phe_distribution_diffuse %}
-                                                      checked {% endif %}><i class="octicon octicon-x"></i>Diffus /
-                                        Diffuse</label></li>
-                                    <li><label><input type="checkbox" class="subOption"
-                                                      onclick="updateSuboptionIcon(this)"
-                                                      name="phe_distribution_regional"
-                                            {% if phe_distribution_regional %} checked {% endif %}><i
-                                            class="octicon octicon-x"></i>Regional / Regional</label></li>
-                                    <li><label><input type="checkbox" class="subOption"
-                                                      onclick="updateSuboptionIcon(this)"
-                                                      name="phe_distribution_grouped" {% if phe_distribution_grouped %}
-                                                      checked {% endif %}><i class="octicon octicon-x"></i>Gruppiert /
-                                        Grouped</label></li>
-                                    <li><label><input type="checkbox" class="subOption"
-                                                      onclick="updateSuboptionIcon(this)" name="phe_distribution_linear"
-                                            {% if phe_distribution_linear %} checked {% endif %}><i
-                                            class="octicon octicon-x"></i>Linear / Linear</label></li>
-                                    <li><label><input type="checkbox" class="subOption"
-                                                      onclick="updateSuboptionIcon(this)"
-                                                      name="phe_distribution_segmental"
-                                            {% if phe_distribution_segmental %} checked {% endif %}><i
-                                            class="octicon octicon-x"></i>Segmental / Segmental</label></li>
-                                </ul>
                             </li>
                             <li class="mainList">
                                 <input type="checkbox" class="mainBox" id="lymphnode_box" onclick="optionClicked(this)"
@@ -227,12 +181,6 @@
                                        checked {% endif %}><label for="lymphnode_box" class="mainCategory"><i
                                     class="octicon octicon-x"></i>Intramammärer Lymphknoten / Intramammary lymph
                                 node</label>
-                            </li>
-                            <li class="mainList">
-                                <input type="checkbox" class="mainBox" id="skinlesion_box" onclick="optionClicked(this)"
-                                       name="phe_skinlesion" {% if phe_skinlesion %} checked {% endif %}><label
-                                    for="skinlesion_box" class="mainCategory"><i class="octicon octicon-x"></i>Hautläsion
-                                / Skin lesion</label>
                             </li>
                             <li class="mainList">
                                 <input type="checkbox" class="mainBox" id="milkduct_box" onclick="optionClicked(this)"
