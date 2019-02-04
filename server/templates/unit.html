@@ -17,17 +17,17 @@
     <script type="text/javascript" src="{{ url_for('static', filename='survey.js') }}"></script>
 
     <script type="text/javascript">
-
         $(document).on('show.bs.modal', '#fullImageModal', function (event) {
             var button = $(event.relatedTarget); // Button that triggered the modal
             var imgsrc = button.attr('imgsrc');
             var modal = $(this);
             var img = document.createElement('img');
+            img.className = 'fullImage';
+            img.id="fullImage";
             img.src = imgsrc;
             var body = modal.find('.modal-body').html(img);
+            $("#fullImage").css("width", "100%")
 })
-
-
 
     </script>
 </head>
@@ -298,7 +298,7 @@
 
 
                                     <div class="modal fade" id="fullImageModal" tabindex="-1" role="dialog" aria-labelledby="fullImageModalLabel" aria-hidden="true">
-                                      <div class="modal-dialog" role="document">
+                                      <div class="modal-dialog modal-xl" role="document">
                                         <div class="modal-content">
                                           <div class="modal-header">
                                             <h5 class="modal-title" id="fullImageModalLabel">Full Image</h5>
