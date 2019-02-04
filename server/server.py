@@ -191,19 +191,36 @@ def single_image():
     return render_template('single_image.html', success=False, processed=False)
 
 
-@app.route('/image/<image_filename>')
-def image(image_filename):
+@app.route('/own_image/<image_filename>')
+def own_image(image_filename):
     image_path = os.path.join(app.config['UPLOAD_FOLDER'], image_filename)
+
+    image_name = image_filename[:-4] #
 
     preprocessed_full_image_path = backend.get_preprocessed_image_path(image_filename, app.config['UPLOAD_FOLDER'])
     preprocessed_mask_path = ""  # no mask available for new images
     preprocessing_descr = dataset.preprocessing_description()
 
     result = backend.single_image_analysis.analyze_one_image(image_path)
+    # ground_truth = dataset.get_ground_truth_from_filename(image_filename)  #
+    is_correct = 'no_ground_truth'
 
     units_to_show = 10
     top_units_and_activations = result.get_top_units(result.classification, units_to_show)
     heatmap_paths = backend.get_heatmap_paths_for_top_units(image_filename, top_units_and_activations, units_to_show, app.config['UPLOAD_FOLDER'])
+
+    clinical_findings = []
+    unit_annotations = {}
+    for unit_index, influence_per_class, activation_map in top_units_and_activations:
+        survey = backend.get_survey(CURRENT_USER, CURRENT_MODEL, unit_index + 1)
+        unit_annotations[unit_index + 1] = backend.survey2unit_annotations_ui(survey, 'german')
+        if survey and survey[0]:
+            for annotation in unit_annotations[unit_index + 1]:
+                if annotation not in clinical_findings:
+                    clinical_findings.append(annotation)
+
+    if not clinical_findings:
+        clinical_findings = ["None"]
 
     return render_template('image.html',
                            image_path=result.image_path,
@@ -215,7 +232,10 @@ def image(image_filename):
                            classification=result.classification,
                            class_probs=result.class_probs,
                            top_units_and_activations=top_units_and_activations,
-                           heatmap_paths=heatmap_paths)
+                           heatmap_paths=heatmap_paths,
+                           unit_annotations=unit_annotations,
+                           clinical_findings=clinical_findings,
+                           is_correct=is_correct)
 
 
 @app.route('/correct_classified_images')
@@ -229,7 +249,7 @@ def correct_classified_images():
 
 # for fast testing
 @app.route('/image/<image_filename>')
-def _image(image_filename):
+def image(image_filename):
     if not backend.single_image_analysis:
         return redirect('/checkpoints')
     image_path = os.path.join('../data/ddsm_raw/', image_filename)

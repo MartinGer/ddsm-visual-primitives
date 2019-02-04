@@ -50,13 +50,17 @@
                             Prediction: {{ ('Normal', 'Benign', 'Cancer')[classification] }}</h4>
                     </div>
                     <div class="float-right">
-                        <h4 style="display: {{ 'inline' if is_correct else 'none' }}; color: green;">Correct ✓</h4>
-                        <h4 class="text-right" style="display: {{ 'none' if is_correct else 'inline' }}; color: red;">Incorrect ✗</h4>
+                        {% if is_correct != 'no_ground_truth' %}
+                            <h4 style="display: {{ 'inline' if is_correct else 'none' }}; color: green;">Correct ✓</h4>
+                            <h4 class="text-right" style="display: {{ 'none' if is_correct else 'inline' }}; color: red;">Incorrect ✗</h4>
+                        {% endif %}
                     </div>
                     <div class="clearfix"></div>
                 </div>
                 <div class="card-body">
-                    <p><b>Ground Truth:</b> {{ ('Normal', 'Benign', 'Cancer')[ground_truth] }}</p>
+                    {% if is_correct != 'no_ground_truth' %}
+                        <p><b>Ground Truth:</b> {{ ('Normal', 'Benign', 'Cancer')[ground_truth] }}</p>
+                    {% endif %}
                     <p><b>Image:</b> {{ image_name }}</p>
                     <p><b>Checkpoint used:</b> {{ checkpoint_path }}</p>
 

@@ -29,7 +29,7 @@
             <div class="alert alert-success" style="margin-top:18px;">
                 <strong>Success!</strong> Your image was uploaded successfully
             </div>
-            <form action="/image/{{ image_filename }}" method="get" enctype="multipart/form-data" >
+            <form action="/own_image/{{ image_filename }}" method="get" enctype="multipart/form-data" >
                 <input type="submit" value="Process Image" class="btn btn-primary">
             </form>
         {% endif %}
