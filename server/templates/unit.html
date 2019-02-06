@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <title>Unit {{ unit_id }}</title>
-   <script src="https://code.jquery.com/jquery-3.3.1.min.js"
-        integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
-        crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"
+            integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
+            crossorigin="anonymous"></script>
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" rel="stylesheet"
           integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js"
@@ -20,237 +20,235 @@
 
 <button onclick="location.href = '/home';" class="btn btn-primary mb-2" style='top: 1%; right: 1%; position: fixed;'>Home</button>
 <div class="container-fluid mt-3 px-5"> <h1>Unit {{ unit_id }}</h1>
-    <div class="container-fluid mt-3 mb-5 px-5"> <h1>Unit {{ unit_id }}</h1>
-        <h2>Instructions</h2>
-        <p>
-            1. Please inspect the highlighted areas within the images on this page, then answer the survey questions
-            below.<br>
-            2. The survey questions pertain only to the images shown on this page.<br>
-            3. The images show different mammography scans.<br>
-            4. <b>You must click on the submit button under the survey questions to save your responses.</b> After your
-            responses are saved, you will be taken back to the previous page.<br>
-        </p>
+    <h2>Instructions</h2>
+    <p>
+        1. Please inspect the highlighted areas within the images on this page, then answer the survey questions
+        below.<br>
+        2. The survey questions pertain only to the images shown on this page.<br>
+        3. The images show different mammography scans.<br>
+        4. <b>You must click on the submit button under the survey questions to save your responses.</b> After your
+        responses are saved, you will be taken back to the previous page.<br>
+    </p>
 
-        <h2>Survey</h2>
-        <p>Are there ANY recognizable phenomena among the highlighted parts in the pictures?</p>
-        <div class="row">
-            <div class="col-4">
-                <form action="{{ url_for('handle_survey') }}" method="post">
-                    <input type="hidden" name="name" value="{{ name }}">
-                    <input type="hidden" name="model" value="{{ model }}">
-                    <input type="hidden" name="unit" value="{{ unit_id }}">
-                    <input type="hidden" name="referrer_url" value="{{ referrer_url }}">
-                    <p>
-                        <label>
-                            <input id="shows_phenomena_false" name="shows_phenomena" type="radio"
-                                   onclick="javascript:updateShowPhenomena();" value="false"
-                                    {% if shows_phenomena == "false" %} checked {% endif %}/>
-                            <span>No recognizable phenomena present</span>
-                        </label>
-                    </p>
-                    <p>
-                        <label>
-                            <input id="shows_phenomena_true" name="shows_phenomena" type="radio"
-                                   onclick="javascript:updateShowPhenomena();" value="true"
-                                    {% if shows_phenomena == "true" %} checked {% endif %}/>
-                            <span>Recognizable phenomena are present</span>
-                        </label>
-                    </p>
-                    <div id="phenomena_desc" class="phenomena_desc">
-                        <ul>
-                            <li class="mainList">
-                                <input type="checkbox" class="mainBox" id="mass_box" onclick="optionClicked(this)"
-                                       name="phe_mass" {% if phe_mass %} checked {% endif %}><label for="mass_box"
-                                                                                                    class="mainCategory"><i
-                                    class="octicon octicon-chevron-right"></i>Herdläsionen / Masses</label>
-                                <ul class="subList">
-                                    <li class="category">Form / Shape</li>
-                                    <li><label><input type="checkbox" class="subOption"
-                                                      onclick="updateSuboptionIcon(this)" name="phe_mass_oval"
-                                            {% if phe_mass_oval %} checked {% endif %}><i class="octicon octicon-x"></i>Oval
-                                        / Oval</label></li>
-                                    <li><label><input type="checkbox" class="subOption"
-                                                      onclick="updateSuboptionIcon(this)" name="phe_mass_round"
-                                            {% if phe_mass_round %} checked {% endif %}><i
-                                            class="octicon octicon-x"></i>Rund / Round</label></li>
-                                    <li><label><input type="checkbox" class="subOption"
-                                                      onclick="updateSuboptionIcon(this)" name="phe_mass_irregular"
-                                            {% if phe_mass_irregular %} checked {% endif %}><i
-                                            class="octicon octicon-x"></i>Irregulär / Irregular</label></li>
-                                </ul>
-                                <ul class="subList">
-                                    <li class="category">Rand / Margin</li>
-                                    <li><label><input type="checkbox" class="subOption"
-                                                      onclick="updateSuboptionIcon(this)"
-                                                      name="phe_margin_circumscribed" {% if phe_margin_circumscribed %}
-                                                      checked {% endif %}><i class="octicon octicon-x"></i>Umschrieben /
-                                        Circumscribed</label></li>
-                                    <li><label><input type="checkbox" class="subOption"
-                                                      onclick="updateSuboptionIcon(this)" name="phe_margin_obscured"
-                                            {% if phe_margin_obscured %} checked {% endif %}><i
-                                            class="octicon octicon-x"></i>Verdeckt / Obscured</label></li>
-                                    <li><label><input type="checkbox" class="subOption"
-                                                      onclick="updateSuboptionIcon(this)"
-                                                      name="phe_margin_microlobulated"
-                                            {% if phe_margin_microlobulated %} checked {% endif %}><i
-                                            class="octicon octicon-x"></i>Mikrolobuliert / Microlobulated</label></li>
-                                    <li><label><input type="checkbox" class="subOption"
-                                                      onclick="updateSuboptionIcon(this)" name="phe_margin_indistinct"
-                                            {% if phe_margin_indistinct %} checked {% endif %}><i
-                                            class="octicon octicon-x"></i>Unscharf / Indistinct</label></li>
-                                    <li><label><input type="checkbox" class="subOption"
-                                                      onclick="updateSuboptionIcon(this)" name="phe_margin_spiculated"
-                                            {% if phe_margin_spiculated %} checked {% endif %}><i
-                                            class="octicon octicon-x"></i>Spikuliert / Spiculated</label></li>
-                                </ul>
-                            </li>
-                            <li class="mainList">
-                                <input type="checkbox" class="mainBox" id="calcBox" onclick="optionClicked(this)"
-                                       name="phe_calc" {% if phe_calc %} checked {% endif %}><label for="calcBox"
-                                                                                                    class="mainCategory"><i
-                                    class="octicon octicon-chevron-right"></i>Verkalkungen / Calcifications</label>
-                                <ul class="subList">
-                                    <li class="category">Typisch benigne / Typically benign</li>
-                                    <li><label><input type="checkbox" class="subOption"
-                                                      onclick="updateSuboptionIcon(this)" name="phe_type_skin"
-                                            {% if phe_type_skin %} checked {% endif %}><i class="octicon octicon-x"></i>Haut
-                                        / Skin</label></li>
-                                    <li><label><input type="checkbox" class="subOption"
-                                                      onclick="updateSuboptionIcon(this)" name="phe_type_vascular"
-                                            {% if phe_type_vascular %} checked {% endif %}><i
-                                            class="octicon octicon-x"></i>Vaskulär / Vascular</label></li>
-                                    <li><label><input type="checkbox" class="subOption"
-                                                      onclick="updateSuboptionIcon(this)" name="phe_type_popcorn"
-                                            {% if phe_type_popcorn %} checked {% endif %}><i
-                                            class="octicon octicon-x"></i>Grob oder "popcornartig" / Coarse or
-                                        “popcorn-like”</label></li>
-                                    <li><label><input type="checkbox" class="subOption"
-                                                      onclick="updateSuboptionIcon(this)" name="phe_type_rod_like"
-                                            {% if phe_type_rod_like %} checked {% endif %}><i
-                                            class="octicon octicon-x"></i>Groß stäbchenförmig / Large rod-like</label>
-                                    </li>
-                                    <li><label><input type="checkbox" class="subOption"
-                                                      onclick="updateSuboptionIcon(this)" name="phe_type_round"
-                                            {% if phe_type_round %} checked {% endif %}><i
-                                            class="octicon octicon-x"></i>Rund / Round</label></li>
-                                    <li><label><input type="checkbox" class="subOption"
-                                                      onclick="updateSuboptionIcon(this)" name="phe_type_rim"
-                                            {% if phe_type_rim %} checked {% endif %}><i class="octicon octicon-x"></i>Randverkalkungen
-                                        / Rim</label></li>
-                                    <li><label><input type="checkbox" class="subOption"
-                                                      onclick="updateSuboptionIcon(this)" name="phe_type_dystrophic"
-                                            {% if phe_type_dystrophic %} checked {% endif %}><i
-                                            class="octicon octicon-x"></i>Dystroph / Dystrophic</label></li>
-                                    <li><label><input type="checkbox" class="subOption"
-                                                      onclick="updateSuboptionIcon(this)" name="phe_type_calcium"
-                                            {% if phe_type_calcium %} checked {% endif %}><i
-                                            class="octicon octicon-x"></i>Kalkmilch / Milk of calcium</label></li>
-                                    <li><label><input type="checkbox" class="subOption"
-                                                      onclick="updateSuboptionIcon(this)" name="phe_type_suture"
-                                            {% if phe_type_suture %} checked {% endif %}><i
-                                            class="octicon octicon-x"></i>Nahtmaterial / Suture</label></li>
-                                </ul>
-                                <ul class="subList">
-                                    <li class="category">Verdächtige Morphe / Suspicious morphology</li>
-                                    <li><label><input type="checkbox" class="subOption"
-                                                      onclick="updateSuboptionIcon(this)"
-                                                      name="phe_distribution_amorph" {% if phe_distribution_amorph %}
-                                                      checked {% endif %}><i class="octicon octicon-x"></i>Amorph /
-                                        Amorphous</label></li>
-                                    <li><label><input type="checkbox" class="subOption"
-                                                      onclick="updateSuboptionIcon(this)"
-                                                      name="phe_distribution_coarse"
-                                            {% if phe_distribution_coarse %} checked {% endif %}><i
-                                            class="octicon octicon-x"></i>Grob heterogene / Coarse heterogeneous
-                                    </label></li>
-                                    <li><label><input type="checkbox" class="subOption"
-                                                      onclick="updateSuboptionIcon(this)"
-                                                      name="phe_distribution_pleo" {% if phe_distribution_pleo %}
-                                                      checked {% endif %}><i class="octicon octicon-x"></i>Fein
-                                        pleomorph / Fine pleomorphic </label></li>
-                                    <li><label><input type="checkbox" class="subOption"
-                                                      onclick="updateSuboptionIcon(this)" name="phe_distribution_finelinear"
-                                            {% if phe_distribution_finelinear %} checked {% endif %}><i
-                                            class="octicon octicon-x"></i>Fein linear oder fein linear, sich verzweigend
-                                        / Fine linear or fine-linear branching </label></li>
-                                </ul>
-                            </li>
-                            <li class="mainList">
-                                <input type="checkbox" class="mainBox" id="lymphnode_box" onclick="optionClicked(this)"
-                                       name="phe_intramammarylymphnode" {% if phe_intramammarylymphnode %}
-                                       checked {% endif %}><label for="lymphnode_box" class="mainCategory"><i
-                                    class="octicon octicon-x"></i>Intramammärer Lymphknoten / Intramammary lymph
-                                node</label>
-                            </li>
-                            <li class="mainList">
-                                <input type="checkbox" class="mainBox" id="milkduct_box" onclick="optionClicked(this)"
-                                       name="phe_milkduct" {% if phe_milkduct %} checked {% endif %}><label
-                                    for="milkduct_box" class="mainCategory"><i class="octicon octicon-x"></i>Solitärer
-                                dilatierter Gang / Solitary dilated duct</label>
-                            </li>
-                        </ul>
-                    </div>
-                    <button type="submit" class="btn btn-primary">Senden</button>
-                </form>
-            </div>
+    <h2>Survey</h2>
+    <p>Are there ANY recognizable phenomena among the highlighted parts in the pictures?</p>
+    <div class="row">
+        <div class="col-4">
+            <form action="{{ url_for('handle_survey') }}" method="post">
+                <input type="hidden" name="name" value="{{ name }}">
+                <input type="hidden" name="model" value="{{ model }}">
+                <input type="hidden" name="unit" value="{{ unit_id }}">
+                <input type="hidden" name="referrer_url" value="{{ referrer_url }}">
+                <p>
+                    <label>
+                        <input id="shows_phenomena_false" name="shows_phenomena" type="radio"
+                               onclick="javascript:updateShowPhenomena();" value="false"
+                                {% if shows_phenomena == "false" %} checked {% endif %}/>
+                        <span>No recognizable phenomena present</span>
+                    </label>
+                </p>
+                <p>
+                    <label>
+                        <input id="shows_phenomena_true" name="shows_phenomena" type="radio"
+                               onclick="javascript:updateShowPhenomena();" value="true"
+                                {% if shows_phenomena == "true" %} checked {% endif %}/>
+                        <span>Recognizable phenomena are present</span>
+                    </label>
+                </p>
+                <div id="phenomena_desc" class="phenomena_desc">
+                    <ul>
+                        <li class="mainList">
+                            <input type="checkbox" class="mainBox" id="mass_box" onclick="optionClicked(this)"
+                                   name="phe_mass" {% if phe_mass %} checked {% endif %}><label for="mass_box"
+                                                                                                class="mainCategory"><i
+                                class="octicon octicon-chevron-right"></i>Herdläsionen / Masses</label>
+                            <ul class="subList">
+                                <li class="category">Form / Shape</li>
+                                <li><label><input type="checkbox" class="subOption"
+                                                  onclick="updateSuboptionIcon(this)" name="phe_mass_oval"
+                                        {% if phe_mass_oval %} checked {% endif %}><i class="octicon octicon-x"></i>Oval
+                                    / Oval</label></li>
+                                <li><label><input type="checkbox" class="subOption"
+                                                  onclick="updateSuboptionIcon(this)" name="phe_mass_round"
+                                        {% if phe_mass_round %} checked {% endif %}><i
+                                        class="octicon octicon-x"></i>Rund / Round</label></li>
+                                <li><label><input type="checkbox" class="subOption"
+                                                  onclick="updateSuboptionIcon(this)" name="phe_mass_irregular"
+                                        {% if phe_mass_irregular %} checked {% endif %}><i
+                                        class="octicon octicon-x"></i>Irregulär / Irregular</label></li>
+                            </ul>
+                            <ul class="subList">
+                                <li class="category">Rand / Margin</li>
+                                <li><label><input type="checkbox" class="subOption"
+                                                  onclick="updateSuboptionIcon(this)"
+                                                  name="phe_margin_circumscribed" {% if phe_margin_circumscribed %}
+                                                  checked {% endif %}><i class="octicon octicon-x"></i>Umschrieben /
+                                    Circumscribed</label></li>
+                                <li><label><input type="checkbox" class="subOption"
+                                                  onclick="updateSuboptionIcon(this)" name="phe_margin_obscured"
+                                        {% if phe_margin_obscured %} checked {% endif %}><i
+                                        class="octicon octicon-x"></i>Verdeckt / Obscured</label></li>
+                                <li><label><input type="checkbox" class="subOption"
+                                                  onclick="updateSuboptionIcon(this)"
+                                                  name="phe_margin_microlobulated"
+                                        {% if phe_margin_microlobulated %} checked {% endif %}><i
+                                        class="octicon octicon-x"></i>Mikrolobuliert / Microlobulated</label></li>
+                                <li><label><input type="checkbox" class="subOption"
+                                                  onclick="updateSuboptionIcon(this)" name="phe_margin_indistinct"
+                                        {% if phe_margin_indistinct %} checked {% endif %}><i
+                                        class="octicon octicon-x"></i>Unscharf / Indistinct</label></li>
+                                <li><label><input type="checkbox" class="subOption"
+                                                  onclick="updateSuboptionIcon(this)" name="phe_margin_spiculated"
+                                        {% if phe_margin_spiculated %} checked {% endif %}><i
+                                        class="octicon octicon-x"></i>Spikuliert / Spiculated</label></li>
+                            </ul>
+                        </li>
+                        <li class="mainList">
+                            <input type="checkbox" class="mainBox" id="calcBox" onclick="optionClicked(this)"
+                                   name="phe_calc" {% if phe_calc %} checked {% endif %}><label for="calcBox"
+                                                                                                class="mainCategory"><i
+                                class="octicon octicon-chevron-right"></i>Verkalkungen / Calcifications</label>
+                            <ul class="subList">
+                                <li class="category">Typisch benigne / Typically benign</li>
+                                <li><label><input type="checkbox" class="subOption"
+                                                  onclick="updateSuboptionIcon(this)" name="phe_type_skin"
+                                        {% if phe_type_skin %} checked {% endif %}><i class="octicon octicon-x"></i>Haut
+                                    / Skin</label></li>
+                                <li><label><input type="checkbox" class="subOption"
+                                                  onclick="updateSuboptionIcon(this)" name="phe_type_vascular"
+                                        {% if phe_type_vascular %} checked {% endif %}><i
+                                        class="octicon octicon-x"></i>Vaskulär / Vascular</label></li>
+                                <li><label><input type="checkbox" class="subOption"
+                                                  onclick="updateSuboptionIcon(this)" name="phe_type_popcorn"
+                                        {% if phe_type_popcorn %} checked {% endif %}><i
+                                        class="octicon octicon-x"></i>Grob oder "popcornartig" / Coarse or
+                                    “popcorn-like”</label></li>
+                                <li><label><input type="checkbox" class="subOption"
+                                                  onclick="updateSuboptionIcon(this)" name="phe_type_rod_like"
+                                        {% if phe_type_rod_like %} checked {% endif %}><i
+                                        class="octicon octicon-x"></i>Groß stäbchenförmig / Large rod-like</label>
+                                </li>
+                                <li><label><input type="checkbox" class="subOption"
+                                                  onclick="updateSuboptionIcon(this)" name="phe_type_round"
+                                        {% if phe_type_round %} checked {% endif %}><i
+                                        class="octicon octicon-x"></i>Rund / Round</label></li>
+                                <li><label><input type="checkbox" class="subOption"
+                                                  onclick="updateSuboptionIcon(this)" name="phe_type_rim"
+                                        {% if phe_type_rim %} checked {% endif %}><i class="octicon octicon-x"></i>Randverkalkungen
+                                    / Rim</label></li>
+                                <li><label><input type="checkbox" class="subOption"
+                                                  onclick="updateSuboptionIcon(this)" name="phe_type_dystrophic"
+                                        {% if phe_type_dystrophic %} checked {% endif %}><i
+                                        class="octicon octicon-x"></i>Dystroph / Dystrophic</label></li>
+                                <li><label><input type="checkbox" class="subOption"
+                                                  onclick="updateSuboptionIcon(this)" name="phe_type_calcium"
+                                        {% if phe_type_calcium %} checked {% endif %}><i
+                                        class="octicon octicon-x"></i>Kalkmilch / Milk of calcium</label></li>
+                                <li><label><input type="checkbox" class="subOption"
+                                                  onclick="updateSuboptionIcon(this)" name="phe_type_suture"
+                                        {% if phe_type_suture %} checked {% endif %}><i
+                                        class="octicon octicon-x"></i>Nahtmaterial / Suture</label></li>
+                            </ul>
+                            <ul class="subList">
+                                <li class="category">Verdächtige Morphe / Suspicious morphology</li>
+                                <li><label><input type="checkbox" class="subOption"
+                                                  onclick="updateSuboptionIcon(this)"
+                                                  name="phe_distribution_amorph" {% if phe_distribution_amorph %}
+                                                  checked {% endif %}><i class="octicon octicon-x"></i>Amorph /
+                                    Amorphous</label></li>
+                                <li><label><input type="checkbox" class="subOption"
+                                                  onclick="updateSuboptionIcon(this)"
+                                                  name="phe_distribution_coarse"
+                                        {% if phe_distribution_coarse %} checked {% endif %}><i
+                                        class="octicon octicon-x"></i>Grob heterogene / Coarse heterogeneous
+                                </label></li>
+                                <li><label><input type="checkbox" class="subOption"
+                                                  onclick="updateSuboptionIcon(this)"
+                                                  name="phe_distribution_pleo" {% if phe_distribution_pleo %}
+                                                  checked {% endif %}><i class="octicon octicon-x"></i>Fein
+                                    pleomorph / Fine pleomorphic </label></li>
+                                <li><label><input type="checkbox" class="subOption"
+                                                  onclick="updateSuboptionIcon(this)" name="phe_distribution_finelinear"
+                                        {% if phe_distribution_finelinear %} checked {% endif %}><i
+                                        class="octicon octicon-x"></i>Fein linear oder fein linear, sich verzweigend
+                                    / Fine linear or fine-linear branching </label></li>
+                            </ul>
+                        </li>
+                        <li class="mainList">
+                            <input type="checkbox" class="mainBox" id="lymphnode_box" onclick="optionClicked(this)"
+                                   name="phe_intramammarylymphnode" {% if phe_intramammarylymphnode %}
+                                   checked {% endif %}><label for="lymphnode_box" class="mainCategory"><i
+                                class="octicon octicon-x"></i>Intramammärer Lymphknoten / Intramammary lymph
+                            node</label>
+                        </li>
+                        <li class="mainList">
+                            <input type="checkbox" class="mainBox" id="milkduct_box" onclick="optionClicked(this)"
+                                   name="phe_milkduct" {% if phe_milkduct %} checked {% endif %}><label
+                                for="milkduct_box" class="mainCategory"><i class="octicon octicon-x"></i>Solitärer
+                            dilatierter Gang / Solitary dilated duct</label>
+                        </li>
+                    </ul>
+                </div>
+                <button type="submit" class="btn btn-primary">Senden</button>
+            </form>
+        </div>
 
-            <div class="col-8">
-                <h4>Patches where this unit activated highest:</h4>
-                <div class="row">
-                    {% for i in range(top_patches|length) %}
-                        <div class="col-3 mt-3">
-                            <div class="card">
-                                <div class="card-header">
-                                    Rank {{ i + 1 }}
-                                    <button type="button" class="btn btn-secondary btn-sm modalButton"
-                                            data-toggle="modal" data-target="#fullImageModal"
-                                            imgsrc="{{ "/static/ddsm_raw/" + top_patches[i].split('/')[-1].split('LJPEG.1')[0] + "LJPEG.1.jpg" }}"
-                                            roiX="{{ top_patches[i].split("LJPEG.1-x")[1].split("_")[0]|int }}"
-                                            roiY="{{ top_patches[i].split("_y")[1].split("_")[0]|int }}"
-                                            roiW="{{ top_patches[i].replace('_without', '').split("_w")[1].split("_")[0]|int }}"
-                                            roiH="{{ top_patches[i].split("_h")[1].split("_")[0]|int }}"><i class="octicon octicon-eye"></i></button>
-                                </div>
-                                <div class="card-body">
-                                    <div class="image-parent-size" style="
-                                            height: 150px;
-                                            background-image: url({{ "/static/ddsm_3class/" + top_patches[i] }});
-                                            background-blend-mode: screen;
-                                            background-size: contain;
-                                            background-repeat: no-repeat;
-                                            width: 70%;
-                                            margin: 0 auto;"
-                                         onMouseOver="this.style.backgroundImage = 'url({{ "/static/ddsm_3class/" + top_patches[i] }}), url({{ "/" + patch_heatmaps[i] }})'; showttip('{{ "/static/ddsm_raw/" + top_patches[i].split('/')[-1].split('LJPEG.1')[0] + "LJPEG.1.jpg" }}', {{ top_patches[i].split("LJPEG.1-x")[1].split("_")[0]|int }}, {{ top_patches[i].split("_y")[1].split("_")[0]|int }}, {{ top_patches[i].replace('_without', '').split("_w")[1].split("_")[0]|int }}, {{ top_patches[i].split("_h")[1].split("_")[0]|int }});"
-                                         onMouseOut="this.style.backgroundImage = 'url({{ "/static/ddsm_3class/" + top_patches[i] }})'; hidettip();"
-                                         onclick="window.location='{{ "/image/" + patch_full_images[i] }}'">
-                                    </div>
+        <div class="col-8">
+            <h4>Patches where this unit activated highest:</h4>
+            <div class="row">
+                {% for i in range(top_patches|length) %}
+                    <div class="col-3 mt-3">
+                        <div class="card">
+                            <div class="card-header">
+                                Rank {{ i + 1 }}
+                                <button type="button" class="btn btn-secondary btn-sm modalButton"
+                                        data-toggle="modal" data-target="#fullImageModal"
+                                        imgsrc="{{ "/static/ddsm_raw/" + top_patches[i].split('/')[-1].split('LJPEG.1')[0] + "LJPEG.1.jpg" }}"
+                                        roiX="{{ top_patches[i].split("LJPEG.1-x")[1].split("_")[0]|int }}"
+                                        roiY="{{ top_patches[i].split("_y")[1].split("_")[0]|int }}"
+                                        roiW="{{ top_patches[i].replace('_without', '').split("_w")[1].split("_")[0]|int }}"
+                                        roiH="{{ top_patches[i].split("_h")[1].split("_")[0]|int }}"><i class="octicon octicon-eye"></i></button>
+                            </div>
+                            <div class="card-body">
+                                <div class="image-parent-size" style="
+                                        height: 150px;
+                                        background-image: url({{ "/static/ddsm_3class/" + top_patches[i] }});
+                                        background-blend-mode: screen;
+                                        background-size: contain;
+                                        background-repeat: no-repeat;
+                                        width: 70%;
+                                        margin: 0 auto;"
+                                     onMouseOver="this.style.backgroundImage = 'url({{ "/static/ddsm_3class/" + top_patches[i] }}), url({{ "/" + patch_heatmaps[i] }})'; showttip('{{ "/static/ddsm_raw/" + top_patches[i].split('/')[-1].split('LJPEG.1')[0] + "LJPEG.1.jpg" }}', {{ top_patches[i].split("LJPEG.1-x")[1].split("_")[0]|int }}, {{ top_patches[i].split("_y")[1].split("_")[0]|int }}, {{ top_patches[i].replace('_without', '').split("_w")[1].split("_")[0]|int }}, {{ top_patches[i].split("_h")[1].split("_")[0]|int }});"
+                                     onMouseOut="this.style.backgroundImage = 'url({{ "/static/ddsm_3class/" + top_patches[i] }})'; hidettip();"
+                                     onclick="window.location='{{ "/image/" + patch_full_images[i] }}'">
                                 </div>
                             </div>
                         </div>
-                    {% endfor %}
-                </div>
-                <div id="ttip">
-                    <canvas id="ttip-canvas"></canvas>
-                </div>
+                    </div>
+                {% endfor %}
+            </div>
+            <div id="ttip">
+                <canvas id="ttip-canvas"></canvas>
             </div>
         </div>
-
-        <div class="modal fade" id="fullImageModal" tabindex="-1" role="dialog" aria-labelledby="fullImageModalLabel" aria-hidden="true">
-          <div class="modal-dialog modal-xl" role="document">
-            <div class="modal-content">
-              <div class="modal-header">
-                <h5 class="modal-title" id="fullImageModalLabel">Full Image</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                  <span aria-hidden="true">&times;</span>
-                </button>
-              </div>
-              <div class="modal-body" id="modal-body">
-                  <canvas id="img-canvas"></canvas>
-              </div>
-            </div>
-          </div>
-        </div>
-
     </div>
+
+    <div class="modal fade" id="fullImageModal" tabindex="-1" role="dialog" aria-labelledby="fullImageModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="fullImageModalLabel">Full Image (Patch Region highlighted)</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body" id="modal-body">
+                    <canvas id="img-canvas"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
 </div>
 </body>
 </html>
