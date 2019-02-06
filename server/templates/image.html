@@ -7,8 +7,7 @@
             integrity="sha384-B0UglyR+jN6CkvvICOB2joaf5I4l3gm9GU6Hc1og6Ls7i6U/mkkaduKaBhlAXv9k"
             crossorigin="anonymous"></script>
 
-    <script
-            src="https://code.jquery.com/jquery-3.3.1.min.js"
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"
             integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
             crossorigin="anonymous"></script>
 
@@ -51,13 +50,17 @@
                             Prediction: {{ ('Normal', 'Benign', 'Cancer')[classification] }}</h4>
                     </div>
                     <div class="float-right">
-                        <h4 style="display: {{ 'inline' if is_correct else 'none' }}; color: green;">Correct ✓</h4>
-                        <h4 class="text-right" style="display: {{ 'none' if is_correct else 'inline' }}; color: red;">Incorrect ✗</h4>
+                        {% if is_correct != 'no_ground_truth' %}
+                            <h4 style="display: {{ 'inline' if is_correct else 'none' }}; color: green;">Correct ✓</h4>
+                            <h4 class="text-right" style="display: {{ 'none' if is_correct else 'inline' }}; color: red;">Incorrect ✗</h4>
+                        {% endif %}
                     </div>
                     <div class="clearfix"></div>
                 </div>
                 <div class="card-body">
-                    <p><b>Ground Truth:</b> {{ ('Normal', 'Benign', 'Cancer')[ground_truth] }}</p>
+                    {% if is_correct != 'no_ground_truth' %}
+                        <p><b>Ground Truth:</b> {{ ('Normal', 'Benign', 'Cancer')[ground_truth] }}</p>
+                    {% endif %}
                     <p><b>Image:</b> {{ image_name }}</p>
                     <p><b>Checkpoint used:</b> {{ checkpoint_path }}</p>
 
@@ -110,11 +113,13 @@
                             <li>Benign: {{ top_units_and_activations[rank][1][1]|round(3) }}</li>
                             <li>Cancer: {{ top_units_and_activations[rank][1][2]|round(3) }}</li>
                         </ul>#}
-                        <ul class="list-unstyled">
-                            {% for annotation in unit_annotations[top_units_and_activations[rank][0] + 1] %}
-                                <li>{{ annotation }}</li>
-                            {% endfor %}
-                        </ul>
+                        {% if unit_annotations %}
+                            <ul class="list-unstyled">
+                                {% for annotation in unit_annotations[top_units_and_activations[rank][0] + 1] %}
+                                    <li>{{ annotation }}</li>
+                                {% endfor %}
+                            </ul>
+                        {%  endif %}
                     </div>
                 </div>
             </div>
