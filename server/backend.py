@@ -294,7 +294,37 @@ def get_heatmap_paths_for_top_units(image_filename, top_units_and_activations, u
         heatmap.save(heatmap_path, "JPEG")
         heatmap_paths.append(heatmap_path)
 
-    return heatmap_paths
+    return heatmap_paths, preprocessed_size
+
+
+def generate_phenomenon_heatmap(forward_pass_result, annotation_id, preprocessed_size, user, net_id):
+    units = get_units_with_annotation(annotation_id, user, net_id)
+    activation_maps = np.asarray([forward_pass_result.feature_maps[unit_id - 1] for unit_id in units])
+    combined_activations = np.amax(activation_maps, axis=0)
+
+    heatmap = _activation_map_to_heatmap(combined_activations, activation_maps)
+    heatmap = heatmap.resize(preprocessed_size, resample=Image.BICUBIC)
+
+    heatmap_path = os.path.join(HEATMAPS_FOLDER,
+                                '{}_{}_{}.jpg'.format(forward_pass_result.image_path.split('/')[-1][:-4],
+                                                      annotation_id, net_id))
+    heatmap.save(heatmap_path, "JPEG")
+    return heatmap_path
+
+
+def get_units_with_annotation(annotation_id, user, net_id):
+    db = DB()
+    conn = db.get_connection()
+
+    select_stmt = "SELECT unit_id FROM unit_annotation " \
+                  "WHERE descriptions LIKE ? " \
+                  "AND net_id = (SELECT id FROM net WHERE net = ?) " \
+                  "AND doctor_id = (SELECT id FROM doctor WHERE name = ?);"
+
+    like_string = '%{}%'.format(annotation_id)
+    result = conn.execute(select_stmt, (like_string, net_id, user))
+    units = [row[0] for row in result]
+    return units
 
 
 def survey2unit_annotations_ui(survey, language):
@@ -314,6 +344,10 @@ def survey2unit_annotations_ui(survey, language):
             localized_descriptions.append(description)
 
     return localized_descriptions
+
+
+def human_readable_annotation(annotation_id, language):
+    return annotations[language].get(annotation_id, annotation_id)
 
 
 def get_correct_classified_images(class_id, count):
