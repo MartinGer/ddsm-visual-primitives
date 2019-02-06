@@ -254,7 +254,13 @@
                             <div class="card">
                                 <div class="card-header">
                                     Rank {{ i + 1 }}
-                                    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#fullImageModal" imgsrc="{{ "/static/ddsm_raw/" + top_patches[i].split('/')[-1].split('LJPEG.1')[0] + "LJPEG.1.jpg" }}" roiX="{{ top_patches[i].split("LJPEG.1-x")[1].split("_")[0]|int }}" roiY="{{ top_patches[i].split("_y")[1].split("_")[0]|int }}" roiW="{{ top_patches[i].replace('_without', '').split("_w")[1].split("_")[0]|int }}" roiH="{{ top_patches[i].split("_h")[1].split("_")[0]|int }}">O</button>
+                                    <button type="button" class="btn btn-secondary btn-sm modalButton"
+                                            data-toggle="modal" data-target="#fullImageModal"
+                                            imgsrc="{{ "/static/ddsm_raw/" + top_patches[i].split('/')[-1].split('LJPEG.1')[0] + "LJPEG.1.jpg" }}"
+                                            roiX="{{ top_patches[i].split("LJPEG.1-x")[1].split("_")[0]|int }}"
+                                            roiY="{{ top_patches[i].split("_y")[1].split("_")[0]|int }}"
+                                            roiW="{{ top_patches[i].replace('_without', '').split("_w")[1].split("_")[0]|int }}"
+                                            roiH="{{ top_patches[i].split("_h")[1].split("_")[0]|int }}"><i class="octicon octicon-eye"></i></button>
                                 </div>
                                 <div class="card-body">
                                     <div class="image-parent-size" style="
@@ -295,7 +301,7 @@
             </div>
           </div>
         </div>
-    
+
     </div>
 </div>
 </body>

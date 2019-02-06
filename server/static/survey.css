@@ -45,3 +45,7 @@ input.subOption {
 #img-canvas {
   width:100%;
 }
+
+.modalButton {
+  float: right;
+}
