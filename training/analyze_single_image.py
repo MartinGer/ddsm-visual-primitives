@@ -9,7 +9,7 @@ from munch import Munch
 from torch.autograd import Variable
 from training.common.dataset import preprocess_image_default
 from training.common.dataset_patches import preprocess_image_default as preprocess_patch_default
-from training.common.model import get_resnet_3class_model
+from training.common.model import get_resnet_model
 
 import sys
 sys.path.insert(0, '..')
@@ -48,7 +48,7 @@ class AnalysisResult(object):
 class SingleImageAnalysis(object):
 
     def __init__(self, checkpoint_path):
-        self.model, _, _, self.features_layer = get_resnet_3class_model(checkpoint_path)
+        self.model, _, _, self.features_layer = get_resnet_model(checkpoint_path)
         self.checkpoint_path = checkpoint_path
 
     def analyze_one_image(self, image_path):

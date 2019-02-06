@@ -14,7 +14,7 @@ from tensorboardX import SummaryWriter
 from torch.autograd import Variable
 
 from common.dataset_patches import DDSM
-from common.model import get_resnet_3class_model
+from common.model import get_resnet_model
 
 
 def accuracy(output, target):
@@ -173,7 +173,7 @@ def main():
             print('')
             raise Exception
 
-    model, start_epoch, optimizer_state, features_layer = get_resnet_3class_model(checkpoint_path, subtype=cfg.arch.model)
+    model, start_epoch, optimizer_state, features_layer = get_resnet_model(checkpoint_path, subtype=cfg.arch.model)
     optimizer = torch.optim.SGD(model.parameters(),
                                 lr=cfg.optimizer.lr,
                                 momentum=cfg.optimizer.momentum,
