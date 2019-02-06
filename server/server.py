@@ -193,16 +193,19 @@ def single_image():
 
 @app.route('/own_image/<image_filename>')
 def own_image(image_filename):
+    preprocess = True  # pre-processing for uploaded images
     image_path = os.path.join(app.config['UPLOAD_FOLDER'], image_filename)
+    image_name = image_filename[:-4]
 
-    image_name = image_filename[:-4] #
+    result = backend.single_image_analysis.analyze_one_image(image_path, preprocess)
+    if preprocess:
+        preprocessed_full_image_path = backend.get_preprocessed_image_path(image_filename)
+    else:
+        preprocessed_full_image_path = result.image_path  # no pre-processing for uploaded images
 
-    preprocessed_full_image_path = backend.get_preprocessed_image_path(image_filename, app.config['UPLOAD_FOLDER'])
     preprocessed_mask_path = ""  # no mask available for new images
     preprocessing_descr = dataset.preprocessing_description()
 
-    result = backend.single_image_analysis.analyze_one_image(image_path)
-    # ground_truth = dataset.get_ground_truth_from_filename(image_filename)  #
     is_correct = 'no_ground_truth'
 
     units_to_show = 10

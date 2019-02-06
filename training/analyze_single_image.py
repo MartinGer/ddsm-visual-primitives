@@ -1,13 +1,13 @@
 import argparse
 import os
-
 import numpy as np
 import torch
 import torch.utils.data
 import torch.nn as nn
+from PIL import Image
 from munch import Munch
 from torch.autograd import Variable
-from training.common.dataset import preprocess_image_default
+from training.common.dataset import preprocess_image_default, no_preprocessing
 from training.common.dataset_patches import preprocess_image_default as preprocess_patch_default
 from training.common.model import get_resnet_3class_model
 
@@ -51,8 +51,11 @@ class SingleImageAnalysis(object):
         self.model, _, _, self.features_layer = get_resnet_3class_model(checkpoint_path)
         self.checkpoint_path = checkpoint_path
 
-    def analyze_one_image(self, image_path):
-        image = preprocess_image_default(image_path, augmentation=False)
+    def analyze_one_image(self, image_path, preprocess=True):
+        if preprocess:
+            image = preprocess_image_default(image_path, augmentation=False)
+        else:
+            image = no_preprocessing(image_path)
         print("run image through model")
         return self._analyze(image, image_path)
 

@@ -27,18 +27,12 @@ def get_default_transform():
 
 
 def resize_and_pad_image(image, target_size, target_aspect_ratio, augmentation):
-    print(augmentation)
-    print(image)
+
     d = int(random() * CROP_VARIATION) if augmentation else 0
-    print(d)
-    print(image.size[0])
-    print(image.size[1])
     image = image.crop((LEFT_CROP + d, TOP_CROP + d, image.size[0] - (RIGHT_CROP + d), image.size[1] - (BOTTOM_CROP + d)))
     target_width = int(target_size * target_aspect_ratio)
     target_height = target_size
-    print(image)
-    print(image.size[0])
-    print(image.size[1])
+
     image_ratio = image.size[0] / image.size[1]
 
     if target_aspect_ratio < image_ratio:
@@ -85,6 +79,14 @@ def get_preview_of_preprocessed_image(path):
     image = resize_and_pad_image(image, IMAGE_SIZE_TO_ANALYZE, TARGET_ASPECT_RATIO, augmentation=False)
     image = remove_background_noise(image, augmentation=False)
     image = Image.fromarray(image)
+    return image
+
+
+def no_preprocessing(path):
+    image = np.array(Image.open(path))
+    image = np.broadcast_to(np.expand_dims(image, 2), image.shape + (3,))  # image shape is now (~1500, 896, 3)
+    transform = get_default_transform()
+    image = transform(image)  # image shape is now (3, height, width) and it is a tensor
     return image
 
 
