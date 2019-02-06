@@ -27,10 +27,18 @@ def get_default_transform():
 
 
 def resize_and_pad_image(image, target_size, target_aspect_ratio, augmentation):
+    print(augmentation)
+    print(image)
     d = int(random() * CROP_VARIATION) if augmentation else 0
+    print(d)
+    print(image.size[0])
+    print(image.size[1])
     image = image.crop((LEFT_CROP + d, TOP_CROP + d, image.size[0] - (RIGHT_CROP + d), image.size[1] - (BOTTOM_CROP + d)))
     target_width = int(target_size * target_aspect_ratio)
     target_height = target_size
+    print(image)
+    print(image.size[0])
+    print(image.size[1])
     image_ratio = image.size[0] / image.size[1]
 
     if target_aspect_ratio < image_ratio:
