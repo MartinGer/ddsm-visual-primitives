@@ -300,6 +300,6 @@ def image(image_filename):
 def example_analysis():
     # good examples:
     # cancer_15-B_3504_1.RIGHT_CC.LJPEG.1.jpg -> 99% cancer, two spots
-    return _image('cancer_09-B_3134_1.RIGHT_CC.LJPEG.1.jpg')
+    return image('cancer_09-B_3134_1.RIGHT_CC.LJPEG.1.jpg')
 
 
