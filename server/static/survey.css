@@ -37,3 +37,11 @@ input.subOption {
 .card-body {
   padding: 0;
 }
+
+.modal-body {
+  padding: 0;
+}
+
+#img-canvas {
+  width:100%;
+}

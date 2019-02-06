@@ -15,21 +15,6 @@
           crossorigin="anonymous">
     <link rel="stylesheet" type=text/css href="{{ url_for('static', filename='survey.css') }}">
     <script type="text/javascript" src="{{ url_for('static', filename='survey.js') }}"></script>
-
-    <script type="text/javascript">
-        $(document).on('show.bs.modal', '#fullImageModal', function (event) {
-            var button = $(event.relatedTarget); // Button that triggered the modal
-            var imgsrc = button.attr('imgsrc');
-            var modal = $(this);
-            var img = document.createElement('img');
-            img.className = 'fullImage';
-            img.id="fullImage";
-            img.src = imgsrc;
-            var body = modal.find('.modal-body').html(img);
-            $("#fullImage").css("width", "100%")
-})
-
-    </script>
 </head>
 <body>
 
@@ -269,7 +254,7 @@
                             <div class="card">
                                 <div class="card-header">
                                     Rank {{ i + 1 }}
-                                    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#fullImageModal" imgsrc="{{ "/static/ddsm_raw/" + top_patches[i].split('/')[-1].split('LJPEG.1')[0] + "LJPEG.1.jpg" }}">O</button>
+                                    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#fullImageModal" imgsrc="{{ "/static/ddsm_raw/" + top_patches[i].split('/')[-1].split('LJPEG.1')[0] + "LJPEG.1.jpg" }}" roiX="{{ top_patches[i].split("LJPEG.1-x")[1].split("_")[0]|int }}" roiY="{{ top_patches[i].split("_y")[1].split("_")[0]|int }}" roiW="{{ top_patches[i].replace('_without', '').split("_w")[1].split("_")[0]|int }}" roiH="{{ top_patches[i].split("_h")[1].split("_")[0]|int }}">O</button>
                                 </div>
                                 <div class="card-body">
                                     <div class="image-parent-size" style="
@@ -295,24 +280,22 @@
             </div>
         </div>
 
-
-
-                                    <div class="modal fade" id="fullImageModal" tabindex="-1" role="dialog" aria-labelledby="fullImageModalLabel" aria-hidden="true">
-                                      <div class="modal-dialog modal-xl" role="document">
-                                        <div class="modal-content">
-                                          <div class="modal-header">
-                                            <h5 class="modal-title" id="fullImageModalLabel">Full Image</h5>
-                                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                              <span aria-hidden="true">&times;</span>
-                                            </button>
-                                          </div>
-                                          <div class="modal-body" id="modal-body">
-                                            TODO: Insert Image here
-                                          </div>
-                                        </div>
-                                      </div>
-                                    </div>
-
+        <div class="modal fade" id="fullImageModal" tabindex="-1" role="dialog" aria-labelledby="fullImageModalLabel" aria-hidden="true">
+          <div class="modal-dialog modal-xl" role="document">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="fullImageModalLabel">Full Image</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+                </button>
+              </div>
+              <div class="modal-body" id="modal-body">
+                  <canvas id="img-canvas"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+    
     </div>
 </div>
 </body>
