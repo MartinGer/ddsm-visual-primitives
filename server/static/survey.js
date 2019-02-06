@@ -175,3 +175,30 @@ $(document).ready(function () {
         image.style.height = cardWidth + 'px';
     }
 });
+
+$(document).on('show.bs.modal', '#fullImageModal', function (event) {
+    var button = $(event.relatedTarget); // Button that triggered the modal
+    var imgsrc = button.attr('imgsrc');
+    var roiX = button.attr('roiY'); //patch data y is canvas x
+    var roiY = button.attr('roiX'); //patch data x is canvas y
+    var roiW = button.attr('roiW');
+    var roiH = button.attr('roiH');
+
+    var img = new Image();
+    img.setAttribute("src", imgsrc);
+
+    img.onload = function() { //we need to wait for the image to load
+        var canvas = document.getElementById("img-canvas");
+        var canvasWidth = canvas.width;
+        var factor = canvasWidth / img.width;
+
+        canvas.height = img.height * factor;
+
+        var canvasContext = canvas.getContext("2d");
+        canvasContext.drawImage(img, 0, 0, canvasWidth, img.height*factor);
+        canvasContext.rect(roiX*factor, roiY*factor, roiW*factor, roiH*factor);
+        canvasContext.linewidth = 3;
+        canvasContext.strokeStyle = "yellow";
+        canvasContext.stroke();
+    };
+});
