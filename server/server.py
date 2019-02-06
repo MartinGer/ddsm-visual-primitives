@@ -207,7 +207,7 @@ def own_image(image_filename):
 
     units_to_show = 10
     top_units_and_activations = result.get_top_units(result.classification, units_to_show)
-    heatmap_paths = backend.get_heatmap_paths_for_top_units(image_filename, top_units_and_activations, units_to_show, app.config['UPLOAD_FOLDER'])
+    heatmap_paths, preprocessed_size = backend.get_heatmap_paths_for_top_units(image_filename, top_units_and_activations, units_to_show, app.config['UPLOAD_FOLDER'])
 
     clinical_findings = []
     unit_annotations = {}
@@ -264,20 +264,23 @@ def image(image_filename):
 
     units_to_show = 10
     top_units_and_activations = result.get_top_units(result.classification, units_to_show)
-    heatmap_paths = backend.get_heatmap_paths_for_top_units(image_filename, top_units_and_activations, units_to_show)
+    heatmap_paths, preprocessed_size = backend.get_heatmap_paths_for_top_units(image_filename, top_units_and_activations, units_to_show)
 
+    unique_annotation_ids = []
     clinical_findings = []
+    phenomena_heatmaps = []
     unit_annotations = {}
     for unit_index, influence_per_class, activation_map in top_units_and_activations:
         survey = backend.get_survey(CURRENT_USER, CURRENT_MODEL, unit_index + 1)
         unit_annotations[unit_index + 1] = backend.survey2unit_annotations_ui(survey, 'german')
         if survey and survey[0]:
-            for annotation in unit_annotations[unit_index + 1]:
-                if annotation not in clinical_findings:
-                    clinical_findings.append(annotation)
-
-    if not clinical_findings:
-        clinical_findings = ["None"]
+            for annotation_id in survey[1]:
+                if annotation_id not in unique_annotation_ids:
+                    phenomenon_heatmap_path = backend.generate_phenomenon_heatmap(result, annotation_id, preprocessed_size, CURRENT_USER, CURRENT_MODEL)
+                    human_readable_description = backend.human_readable_annotation(annotation_id, 'german')
+                    unique_annotation_ids.append(annotation_id)
+                    clinical_findings.append(human_readable_description)
+                    phenomena_heatmaps.append(phenomenon_heatmap_path)
 
     return render_template('image.html',
                            image_path=result.image_path,
@@ -292,6 +295,7 @@ def image(image_filename):
                            heatmap_paths=heatmap_paths,
                            unit_annotations=unit_annotations,
                            clinical_findings=clinical_findings,
+                           phenomena_heatmaps=phenomena_heatmaps,
                            ground_truth=ground_truth,
                            is_correct=is_correct)
 

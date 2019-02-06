@@ -12,15 +12,6 @@
             crossorigin="anonymous"></script>
 
     <style>
-        .zoom-on-hover {
-            transition: transform .2s;
-        }
-
-        .zoom-on-hover:hover {
-            transform: scale(2);
-            z-index: 9999;
-        }
-
         #full-image {
             height: 600px; width: 100%;
             background-image: url({{ "/" + preprocessed_full_image_path }}), url({{ "/" + preprocessed_mask_path }});
@@ -28,11 +19,20 @@
             background-size: contain;
             background-repeat: no-repeat;
         }
-
-        #full-image:hover {
-            background-image: url({{ "/" + preprocessed_full_image_path }});
-        }
     </style>
+    <script>
+        function setHeatmap(heatmap_path) {
+            $('#full-image').css('backgroundImage', 'url({{ "/" + preprocessed_full_image_path }}), url(/' + heatmap_path + ')');
+        }
+
+        function showGroundTruth() {
+            $('#full-image').css('backgroundImage', 'url({{ "/" + preprocessed_full_image_path }}), url({{ "/" + preprocessed_mask_path }})');
+        }
+
+        function clearHeatmap() {
+            $('#full-image').css('backgroundImage', 'url({{ "/" + preprocessed_full_image_path }})');
+        }
+    </script>
 </head>
 <body>
 
@@ -72,8 +72,10 @@
                     </ul>
                     <p><b>Our clinical findings:</b></p>
                     <ul>
-                        {% for finding in clinical_findings %}
-                            <li>{{ finding }}</li>
+                        {% for i in range(clinical_findings|length) %}
+                            <li onMouseOver="setHeatmap('{{ phenomena_heatmaps[i] }}')"
+                                onMouseOut="showGroundTruth()"
+                            >{{ clinical_findings[i] }}</li>
                         {% endfor %}
                     </ul>
                 </div>
@@ -82,7 +84,10 @@
         <div class="col-md-6 card">
             <div class="card-image">
 
-                <div id="full-image"></div>
+                <div id="full-image"
+                     onMouseOver="clearHeatmap()"
+                     onMouseOut="showGroundTruth()"
+                ></div>
             </div>
         </div>
     </div>
