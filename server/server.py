@@ -285,6 +285,8 @@ def image(image_filename):
                     clinical_findings.append(human_readable_description)
                     phenomena_heatmaps.append(phenomenon_heatmap_path)
 
+    print("Similarity Metric:", backend.similarity_metric(image_filename, result.classification, CURRENT_USER, CURRENT_MODEL))
+
     return render_template('image.html',
                            image_path=result.image_path,
                            image_name=image_name,
@@ -307,6 +309,5 @@ def image(image_filename):
 def example_analysis():
     # good examples:
     # cancer_15-B_3504_1.RIGHT_CC.LJPEG.1.jpg -> 99% cancer, two spots
+    # cancer_09-B_3410_1.LEFT_CC.LJPEG.1.jpg -> one round mass
     return image('cancer_09-B_3134_1.RIGHT_CC.LJPEG.1.jpg')
-
-
