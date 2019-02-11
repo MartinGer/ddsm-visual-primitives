@@ -13,7 +13,8 @@
 
     <style>
         #full-image {
-            height: 600px; width: 100%;
+            height: 600px;
+            width: 100%;
             background-image: url({{ "/" + preprocessed_full_image_path }}), url({{ "/" + preprocessed_mask_path }});
             background-blend-mode: screen;
             background-size: contain;
@@ -40,7 +41,9 @@
 </head>
 <body>
 
-<button onclick="location.href = '/home';" class="btn btn-primary mb-2" style='top: 1%; right: 1%; position: fixed;'>Home</button>
+<button onclick="location.href = '/home';" class="btn btn-primary mb-2" style='top: 1%; right: 1%; position: fixed;'>
+    Home
+</button>
 <div class="container mt-3">
 
     <h1 class="my-2">Image Analysis</h1>
@@ -56,7 +59,8 @@
                     <div class="float-right">
                         {% if is_correct != 'no_ground_truth' %}
                             <h4 style="display: {{ 'inline' if is_correct else 'none' }}; color: green;">Correct ✓</h4>
-                            <h4 class="text-right" style="display: {{ 'none' if is_correct else 'inline' }}; color: red;">Incorrect ✗</h4>
+                            <h4 class="text-right"
+                                style="display: {{ 'none' if is_correct else 'inline' }}; color: red;">Incorrect ✗</h4>
                         {% endif %}
                     </div>
                     <div class="clearfix"></div>
@@ -77,12 +81,23 @@
                     <p><b>Our clinical findings:</b></p>
                     <ul>
                         {% for i in range(clinical_findings|length) %}
-                            <li onMouseOver="setHeatmap('{{ phenomena_heatmaps[i] }}')"
-                                onMouseOut="showGroundTruth()"
-                                class="bold-on-hover"
-                            >{{ clinical_findings[i] }}</li>
+                            <div class="row">
+                                <div class="col-5">
+                                    <li onMouseOver="setHeatmap('{{ phenomena_heatmaps[i] }}')"
+                                        onMouseOut="showGroundTruth()"
+                                        class="bold-on-hover"
+                                    >{{ clinical_findings[i] }}
+                                    </li>
+                                </div>
+                                <div class="col-5" style='margin-top: 2%;'>
+                                    <input type="checkbox" value="" checked>
+                                </div>
+                            </div>
                         {% endfor %}
                     </ul>
+                    <button onclick="location.href = '/home';" class="btn btn-primary mb-2">
+                        Find similar images
+                    </button>
                 </div>
             </div>
         </div>
@@ -129,7 +144,7 @@
                                     <li>{{ annotation }}</li>
                                 {% endfor %}
                             </ul>
-                        {%  endif %}
+                        {% endif %}
                     </div>
                 </div>
             </div>
