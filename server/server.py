@@ -257,6 +257,15 @@ def correct_classified_images():
                            images=images)
 
 
+@app.route('/similar_images/<image_name>')
+def similar_images(image_name):
+    similar_images = []
+    # clinical_findings = session.pop('stored_findings');
+    return render_template('similar_images.html',
+                           similar_images=similar_images,
+                           image_name=image_name)
+
+
 # for fast testing
 @app.route('/image/<image_filename>')
 def image(image_filename):

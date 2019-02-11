@@ -37,6 +37,19 @@
         function clearHeatmap() {
             $('#full-image').css('backgroundImage', 'url({{ "/" + preprocessed_full_image_path }})');
         }
+        function storeCheckedFindings(clinical_findings) {
+            var findings = [];
+            var checkboxes = document.getElementById("findings").getElementsByClassName("checkbox");
+            for (i in range(clinical_findings|length)) {
+                if (checkboxes[i].checked) {
+                    print("f")
+                    print(clinical_findings[i])
+                    findings.push(clinical_findings[i])
+                }
+            }
+            session['stored_findings'] = findings;
+            return redirect(url_for('stored_findings'));
+        }
     </script>
 </head>
 <body>
@@ -79,7 +92,7 @@
                         <li>Cancer: {{ (class_probs[2] * 100)|int }}%</li>
                     </ul>
                     <p><b>Our clinical findings:</b></p>
-                    <ul>
+                    <ul id="findings">
                         {% for i in range(clinical_findings|length) %}
                             <div class="row">
                                 <div class="col-5">
@@ -90,12 +103,12 @@
                                     </li>
                                 </div>
                                 <div class="col-5" style='margin-top: 2%;'>
-                                    <input type="checkbox" value="" checked>
+                                    <input type="checkbox" value="" checked class="checkbox">
                                 </div>
                             </div>
                         {% endfor %}
                     </ul>
-                    <button onclick="location.href = '/home';" class="btn btn-primary mb-2">
+                    <button onclick="location.href = '/similar_images/{{image_name}}';storeCheckedFindings(clinical_findings); "class="btn btn-primary mb-2">
                         Find similar images
                     </button>
                 </div>
