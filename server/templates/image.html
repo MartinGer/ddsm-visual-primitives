@@ -62,6 +62,7 @@
                     <div class="clearfix"></div>
                 </div>
                 <div class="card-body">
+                    <p>{{ similarity_score }} out of the top 20 similar cases are also {{ ('normal', 'benign', 'cancer')[classification] }}.</p>
                     {% if is_correct != 'no_ground_truth' %}
                         <p><b>Ground Truth:</b> {{ ('Normal', 'Benign', 'Cancer')[ground_truth] }}</p>
                     {% endif %}
