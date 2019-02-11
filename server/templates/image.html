@@ -19,6 +19,10 @@
             background-size: contain;
             background-repeat: no-repeat;
         }
+
+        .bold-on-hover:hover {
+            font-weight: bold;
+        }
     </style>
     <script>
         function setHeatmap(heatmap_path) {
@@ -75,6 +79,7 @@
                         {% for i in range(clinical_findings|length) %}
                             <li onMouseOver="setHeatmap('{{ phenomena_heatmaps[i] }}')"
                                 onMouseOut="showGroundTruth()"
+                                class="bold-on-hover"
                             >{{ clinical_findings[i] }}</li>
                         {% endfor %}
                     </ul>
