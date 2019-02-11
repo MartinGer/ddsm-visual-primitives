@@ -47,15 +47,18 @@ def preprocessing_description():
 
 
 class DDSM(torch.utils.data.Dataset):
-    def __init__(self, root, image_list_path, transform, augmentation):
+    def __init__(self, root, image_list_path, transform, augmentation, num_classes=3):
         self.root = root
 
         with open(image_list_path, 'r') as f:
-            self.images = [(line.strip().split(' ')[0], int(line.strip().split(' ')[1])) for line in f.readlines()]
+            if num_classes == 3:
+                self.images = [(line.strip().split(' ')[0], int(line.strip().split(' ')[1])) for line in f.readlines()]
+            elif num_classes == 2:
+                self.images = [(line.strip().split(' ')[0], min(int(line.strip().split(' ')[1]), 1)) for line in f.readlines()]
 
         self.image_names = [filename for filename, ground_truth in self.images]
         self.normal_indices = [i for i, item in enumerate(self.images) if item[1] == 0]
-        self.benign_indices = [i for i, item in enumerate(self.images) if item[1] == 1]
+        self.benign_or_suspicious_indices = [i for i, item in enumerate(self.images) if item[1] == 1]
         self.cancer_indices = [i for i, item in enumerate(self.images) if item[1] == 2]
         self.shuffled_indices = None
         self.pick_new_normal_images()
@@ -64,26 +67,33 @@ class DDSM(torch.utils.data.Dataset):
         self.augmentation = augmentation
 
         classes, class_count = np.unique([self.images[i][1] for i in self.shuffled_indices], return_counts=True)
-        if (classes != [0, 1, 2]).all():
+        if (classes != tuple(range(num_classes))).all():
             raise RuntimeError("DDSM Dataset: classes are missing or in wrong order")
         self.weight = 1 / (class_count / np.amin(class_count))
 
-        print("Dataset balance (normal, benign, malignant):", class_count)
+        if num_classes == 3:
+            print("Dataset balance (normal, benign, malignant):", class_count)
+        elif num_classes == 2:
+            print("Dataset balance (normal, suspicious):", class_count)
         print(preprocessing_description())
         print("Augmentation:", augmentation)
 
     def pick_new_normal_images(self):
-        self.shuffled_indices = self.benign_indices + \
-                                self.cancer_indices + \
-                                sample(self.normal_indices, min(len(self.benign_indices), len(self.cancer_indices)))
+        if self.cancer_indices:
+            self.shuffled_indices = self.benign_or_suspicious_indices + \
+                                    self.cancer_indices + \
+                                    sample(self.normal_indices, min(len(self.benign_or_suspicious_indices), len(self.cancer_indices)))
+        else:
+            self.shuffled_indices = self.benign_or_suspicious_indices + \
+                                    sample(self.normal_indices, len(self.benign_or_suspicious_indices))
         shuffle(self.shuffled_indices)
 
     @staticmethod
-    def create_patch_dataset(split):
+    def create_patch_dataset(split, num_classes=3):
         patch_dir = '../data/ddsm_3class'
         image_list = '../data/ddsm_3class/' + split + '.txt'
         transform = get_default_augmented_transform() if split == 'train' else get_default_transform()
-        dataset = DDSM(patch_dir, image_list, transform, augmentation=split == 'train')
+        dataset = DDSM(patch_dir, image_list, transform, augmentation=split == 'train', num_classes=num_classes)
         return dataset
 
     def __len__(self):

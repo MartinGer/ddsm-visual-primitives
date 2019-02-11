@@ -48,7 +48,7 @@ class AnalysisResult(object):
 class SingleImageAnalysis(object):
 
     def __init__(self, checkpoint_path):
-        self.model, _, _, self.features_layer = get_resnet_model(checkpoint_path)
+        self.model, _, _, self.features_layer = get_resnet_model(checkpoint_path, classes=2)
         self.checkpoint_path = checkpoint_path
 
     def analyze_one_image(self, image_path):

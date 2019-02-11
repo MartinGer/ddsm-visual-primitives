@@ -68,7 +68,9 @@
                     <ul>
                         <li>Normal: {{ (class_probs[0] * 100)|int }}%</li>
                         <li>Benign: {{ (class_probs[1] * 100)|int }}%</li>
+                        {% if class_probs|length == 3 %}
                         <li>Cancer: {{ (class_probs[2] * 100)|int }}%</li>
+                        {%  endif %}
                     </ul>
                     <p><b>Our clinical findings:</b></p>
                     <ul>

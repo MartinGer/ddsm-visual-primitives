@@ -95,29 +95,35 @@ def get_ground_truth_from_filename(filename):
 
 
 class DDSM(torch.utils.data.Dataset):
-    def __init__(self, root, image_list_path, target_size, transform, augmentation):
+    def __init__(self, root, image_list_path, target_size, transform, augmentation, num_classes=3):
         self.root = root
         with open(image_list_path, 'r') as f:
-            self.images = [(line.strip(), get_ground_truth_from_filename(line.strip())) for line in f.readlines()]
+            if num_classes == 3:
+                self.images = [(line.strip(), get_ground_truth_from_filename(line.strip())) for line in f.readlines()]
+            elif num_classes == 2:
+                self.images = [(line.strip(), min(get_ground_truth_from_filename(line.strip()), 1)) for line in f.readlines()]
         self.image_names = [filename for filename, ground_truth in self.images]
         self.target_size = target_size
         self.transform = transform
         self.augmentation = augmentation
 
         classes, class_count = np.unique([label for _, label in self.images], return_counts=True)
-        if (classes != [0, 1, 2]).all():
+        if (classes != tuple(range(num_classes))).all():
             raise RuntimeError("DDSM Dataset: classes are missing or in wrong order")
         self.weight = 1 / (class_count / np.amin(class_count))
 
-        print("Dataset balance (normal, benign, malignant):", class_count)
+        if num_classes == 3:
+            print("Dataset balance (normal, benign, malignant):", class_count)
+        elif num_classes == 2:
+            print("Dataset balance (normal, suspicious):", class_count)
         print(preprocessing_description())
         print("Augmentation:", augmentation)
 
     @staticmethod
-    def create_full_image_dataset(split):
+    def create_full_image_dataset(split, num_classes=3):
         raw_image_dir = '../data/ddsm_raw'
         image_list = '../data/ddsm_raw_image_lists/' + split + '.txt'
-        dataset = DDSM(raw_image_dir, image_list, IMAGE_SIZE_TO_ANALYZE, get_default_transform(), split == 'train')
+        dataset = DDSM(raw_image_dir, image_list, IMAGE_SIZE_TO_ANALYZE, get_default_transform(), split == 'train', num_classes)
         return dataset
 
     def __len__(self):

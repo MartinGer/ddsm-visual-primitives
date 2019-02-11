@@ -40,11 +40,11 @@ def get_resnet_model(checkpoint_path=None, subtype='resnet152', classes=3):
     return model, epoch, optimizer_state, features_layer
 
 
-def get_model_from_config(cfg, epoch=None, classes=3):
+def get_model_from_config(cfg, epoch=None):
     if epoch:
         resume_path = cfg.training.resume.replace(cfg.training.resume[-16:-8], '{:08}'.format(epoch))
     else:
         resume_path = cfg.training.resume
     resume_path = os.path.join('../training', resume_path)
-    model, epoch, optimizer_state, features_layer = get_resnet_model(resume_path, subtype=cfg.arch.model, classes=classes)
+    model, epoch, optimizer_state, features_layer = get_resnet_model(resume_path, subtype=cfg.arch.model, classes=cfg.arch.num_classes)
     return model, features_layer, resume_path

@@ -1,7 +1,6 @@
 # do a forward pass on all patches in validation set and store results in DB
 
 import argparse
-import os
 import hashlib
 
 import numpy as np
@@ -78,7 +77,7 @@ def create_unit_ranking(model, max_activation_per_unit_per_input):
 def save_activations_to_db(weighted_max_activations, classifications, val_dataset, checkpoint_path):
     db = DB()
     conn = db.get_connection()
-    num_classes = 3
+    num_classes = cfg.arch.num_classes
 
     with open(checkpoint_path, 'rb') as f:
         network_hash = hashlib.md5(f.read()).hexdigest()
@@ -116,7 +115,7 @@ def save_influences_to_db(unit_id_and_count_per_class, model, network_hash):
     db = DB()
     conn = db.get_connection()
 
-    for class_index in range(3):
+    for class_index in range(cfg.arch.num_classes):
         print("Inserting unit influences on class {} into DB...".format(class_index))
         for unit_id, appearances_in_top_units in tqdm(unit_id_and_count_per_class[class_index]):
             influence = fc_weights[class_index][unit_id]
@@ -152,7 +151,7 @@ def print_statistics(ranked_units, max_activation_per_unit_per_input):
 
 def analyze_patches(args, cfg):
     model, features_layer, checkpoint_path = get_model_from_config(cfg, args.epoch)
-    val_dataset = DDSM.create_patch_dataset('val')
+    val_dataset = DDSM.create_patch_dataset('val', cfg.arch.num_classes)
 
     max_activation_per_unit_per_input, classifications = run_model_on_all_images(model, features_layer, val_dataset)
     unit_id_and_count_per_class, ranked_units, weighted_max_activations = create_unit_ranking(model, max_activation_per_unit_per_input)

@@ -35,14 +35,14 @@ if cfg.training.resume is not None:
         raise Exception
 
 # --- Prepare model: ---
-model, start_epoch, optimizer_state, features_layer = get_resnet_model(checkpoint_path, subtype=cfg.arch.model)
+model, start_epoch, optimizer_state, features_layer = get_resnet_model(checkpoint_path, subtype=cfg.arch.model, classes=cfg.arch.num_classes)
 optimizer = torch.optim.SGD(model.parameters(),
                             lr=cfg.optimizer.lr,
                             momentum=cfg.optimizer.momentum,
                             weight_decay=cfg.optimizer.weight_decay)
 
 # --- Prepare dataset: ---
-val_dataset = DDSM.create_full_image_dataset('val')
+val_dataset = DDSM.create_full_image_dataset('val', num_classes=cfg.arch.num_classes)
 val_loader = torch.utils.data.DataLoader(
     val_dataset, batch_size=cfg.data.batch_size, shuffle=False,
     num_workers=cfg.data.workers, pin_memory=True)

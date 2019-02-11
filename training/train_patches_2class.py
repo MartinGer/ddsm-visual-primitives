@@ -13,7 +13,7 @@ from munch import Munch
 from tensorboardX import SummaryWriter
 from torch.autograd import Variable
 
-from common.dataset_patches_2class import DDSM
+from common.dataset_patches import DDSM
 from common.model import get_resnet_model
 
 
