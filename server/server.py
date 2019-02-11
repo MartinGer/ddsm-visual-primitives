@@ -134,7 +134,7 @@ def unit_ranking_by_appearances(unit_count=20, patch_count=6):
 def unit(unit_id):
     if not backend.single_image_analysis:
         return redirect('/checkpoints')
-    top_patches, patch_heatmaps = backend.get_top_patches_and_heatmaps_for_unit(unit_id, 8)
+    top_patches, patch_heatmaps = backend.get_top_patches_and_heatmaps_for_unit(unit_id, 12)
     patch_ground_truth = [path.split("/")[-1][:6] for path in top_patches]
     patch_full_images = ["-".join(path.split("/")[-1].split("-")[:2]) + '.jpg' for path in top_patches]
 
