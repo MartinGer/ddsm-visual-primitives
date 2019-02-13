@@ -362,3 +362,17 @@ def get_correct_classified_images(class_id, count):
     result = c.execute(select_stmt, (class_id, count))
     images = [row[0].split("/")[-1] for row in result]
     return images
+
+
+def get_annotated_units(user, net_id):
+    db = DB()
+    conn = db.get_connection()
+
+    select_stmt = "SELECT unit_id, descriptions FROM unit_annotation " \
+                  "WHERE net_id = (SELECT id FROM net WHERE net = ?) " \
+                  "AND doctor_id = (SELECT id FROM doctor WHERE name = ?)" \
+                  "AND shows_concept=1;"  # disregard 'no concept detected' annotations
+
+    result = conn.execute(select_stmt, (net_id, user))
+    rows = [row for row in result]
+    return dict(rows)
