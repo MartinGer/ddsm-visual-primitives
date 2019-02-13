@@ -62,7 +62,14 @@
                     <div class="clearfix"></div>
                 </div>
                 <div class="card-body">
-                    <p>{{ similarity_score }} out of the top 20 similar cases are also {{ ('normal', 'benign', 'cancer')[classification] }}.</p>
+
+                    <p>Ground truth of Top 20 similar images (normal, benign, cancer):</p>
+                    <div class="progress mt-0 mb-1">
+                        <div class="progress-bar bg-success" role="progressbar" style="width: {{ (ground_truth_of_similar[0] / 20) * 100 }}%"></div>
+                        <div class="progress-bar bg-warning" role="progressbar" style="width: {{ (ground_truth_of_similar[1] / 20) * 100 }}%"></div>
+                        <div class="progress-bar bg-danger" role="progressbar" style="width: {{ (ground_truth_of_similar[2] / 20) * 100 }}%"></div>
+                    </div>
+
                     {% if is_correct != 'no_ground_truth' %}
                         <p><b>Ground Truth:</b> {{ ('Normal', 'Benign', 'Cancer')[ground_truth] }}</p>
                     {% endif %}

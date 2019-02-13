@@ -406,7 +406,7 @@ def similarity_metric(image_filename, analysis_result, name, model):
     ground_truth_of_top20 = np.asarray([_get_ground_truth(image_id) for image_id in top20_images])
     print("ground_truth_of_top20:", ground_truth_of_top20)
 
-    return (ground_truth_of_top20 == analysis_result.classification).sum(), top20_image_paths
+    return np.unique(ground_truth_of_top20, return_counts=True)[1], top20_image_paths
 
 
 def _get_image_id(image_path):
