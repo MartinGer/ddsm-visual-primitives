@@ -372,36 +372,36 @@ def similarity_metric(image_filename, analysis_result, name, model):
     annotated_units = _get_annotated_units(name, model)
     annotated_top_units = [item[0] + 1 for item in top_units_and_activations if item[0] + 1 in annotated_units]
     print("annotated_top_units:", annotated_top_units)
-    activations_per_image = {}
+    ranks_of_units_per_image = {}
 
     for unit_id in annotated_top_units:
-        for image_id, activation in _get_activations_for_unit(unit_id, analysis_result.classification, model):
-            if image_id in activations_per_image:
-                activations_per_image[image_id].append(activation)
+        for image_id, rank in _get_ranks_of_unit(unit_id, analysis_result.classification, model):
+            if image_id in ranks_of_units_per_image:
+                ranks_of_units_per_image[image_id].append(rank)
             else:
-                activations_per_image[image_id] = [activation]
+                ranks_of_units_per_image[image_id] = [rank]
 
-
-    reference_activations = activations_per_image[reference_image]
-    del activations_per_image[reference_image]
-    print("Reference activation:", reference_activations)
-    print("Example activation:", activations_per_image[list(activations_per_image.keys())[0]])
+    reference_ranks = ranks_of_units_per_image[reference_image]
+    del ranks_of_units_per_image[reference_image]
+    print("Reference ranks:", reference_ranks)
+    print("Example ranks:", ranks_of_units_per_image[list(ranks_of_units_per_image.keys())[0]])
 
     similarities = []
 
-    for image_id in activations_per_image.keys():
-        activations = activations_per_image[image_id]
-        similarity = cosine_distance(reference_activations, activations)
+    for image_id in ranks_of_units_per_image.keys():
+        ranks = ranks_of_units_per_image[image_id]
+        similarity = cosine_distance(reference_ranks, ranks)
         similarities.append((image_id, similarity))
 
     print("similarities:", similarities[:10])
 
-    similarities.sort(key=lambda x: x[1], reverse=True)
+    similarities.sort(key=lambda x: x[1], reverse=False)
     print("similarities sorted:", similarities[:10])
 
     top20_images = [image_id for image_id, similarity in similarities[:20]]
     top20_image_paths = [_get_image_path(image_id) for image_id in top20_images]
     print("top20:", top20_images)
+    print("top1:", ranks_of_units_per_image[top20_images[0]])
 
     ground_truth_of_top20 = np.asarray([_get_ground_truth(image_id) for image_id in top20_images])
     print("ground_truth_of_top20:", ground_truth_of_top20)
@@ -457,6 +457,23 @@ def _get_activations_for_unit(unit_id, classification, model):
     select_net = "(SELECT id FROM net WHERE net = '{}')".format(model)
 
     select_stmt = "SELECT image_id, activation FROM image_unit_activation " \
+                  "WHERE net_id = {net} " \
+                  "AND class_id = ? " \
+                  "AND unit_id = ?;".format(net=select_net)
+    result = c.execute(select_stmt, (classification, unit_id))
+    activations = [(row[0], row[1]) for row in result]
+
+    return activations
+
+
+def _get_ranks_of_unit(unit_id, classification, model):
+    db = DB()
+    conn = db.get_connection()
+    c = conn.cursor()
+
+    select_net = "(SELECT id FROM net WHERE net = '{}')".format(model)
+
+    select_stmt = "SELECT image_id, rank FROM image_unit_activation " \
                   "WHERE net_id = {net} " \
                   "AND class_id = ? " \
                   "AND unit_id = ?;".format(net=select_net)
