@@ -367,11 +367,9 @@ def get_correct_classified_images(class_id, count):
 
 def similarity_metric(image_filename, analysis_result, name, model):
     reference_image = _get_image_id(image_filename)
-    print("similarity_metric:", image_filename, reference_image, analysis_result.classification, name, model)
     top_units_and_activations = analysis_result.get_top_units(analysis_result.classification, 10)
     annotated_units = _get_annotated_units(name, model)
     annotated_top_units = [item[0] + 1 for item in top_units_and_activations if item[0] + 1 in annotated_units]
-    print("annotated_top_units:", annotated_top_units)
     ranks_of_units_per_image = {}
 
     for unit_id in annotated_top_units:
@@ -383,8 +381,6 @@ def similarity_metric(image_filename, analysis_result, name, model):
 
     reference_ranks = ranks_of_units_per_image[reference_image]
     del ranks_of_units_per_image[reference_image]
-    print("Reference ranks:", reference_ranks)
-    print("Example ranks:", ranks_of_units_per_image[list(ranks_of_units_per_image.keys())[0]])
 
     similarities = []
 
@@ -393,18 +389,12 @@ def similarity_metric(image_filename, analysis_result, name, model):
         similarity = cosine_distance(reference_ranks, ranks)
         similarities.append((image_id, similarity))
 
-    print("similarities:", similarities[:10])
-
     similarities.sort(key=lambda x: x[1], reverse=False)
-    print("similarities sorted:", similarities[:10])
 
     top20_images = [image_id for image_id, similarity in similarities[:20]]
     top20_image_paths = [_get_image_path(image_id) for image_id in top20_images]
-    print("top20:", top20_images)
-    print("top1:", ranks_of_units_per_image[top20_images[0]])
 
     ground_truth_of_top20 = np.asarray([_get_ground_truth(image_id) for image_id in top20_images])
-    print("ground_truth_of_top20:", ground_truth_of_top20)
 
     return np.unique(ground_truth_of_top20, return_counts=True)[1], top20_image_paths
 
