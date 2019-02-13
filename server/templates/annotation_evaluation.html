@@ -1,16 +1,35 @@
 <!DOCTYPE html>
 <head>
     <meta charset="UTF-8">
-    <title>Top Units (Custom Scoring)</title>
+    <title>Annotation Evaluation</title>
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"
+            integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
+            crossorigin="anonymous"></script>
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" rel="stylesheet"
           integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js"
             integrity="sha384-B0UglyR+jN6CkvvICOB2joaf5I4l3gm9GU6Hc1og6Ls7i6U/mkkaduKaBhlAXv9k"
             crossorigin="anonymous"></script>
+    <link rel="stylesheet" type=text/css href="{{ url_for('static', filename='survey.css') }}">
 
-    <script src="https://code.jquery.com/jquery-3.3.1.min.js"
-            integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
-            crossorigin="anonymous"></script>
+    <script type="text/javascript">
+        function imageClicked(elem) {
+            var imgsrc = elem.getAttribute('src');
+            $('#fullImageModal').modal();
+
+            var img = new Image();
+            img.setAttribute("src", imgsrc);
+            img.onload = function() {
+                var canvas = document.getElementById("img-canvas");
+                var canvasWidth = canvas.width;
+                var factor = canvasWidth / img.width;
+
+                canvas.height = img.height * factor;
+                var canvasContext = canvas.getContext("2d");
+                canvasContext.drawImage(img, 0, 0, canvasWidth, img.height*factor);
+            };
+        }
+    </script>
 </head>
 
 <body class="container mt-3">
@@ -18,7 +37,7 @@
 <h1>Annotation Evaluation</h1>
 <br>
 <br>
-
+<p>Click on the images to see a higher resolution version.</p>
 
 
 {% for unit_id in annotated_units %}
@@ -44,7 +63,9 @@
                     </div>
                     <div class="col-md-8">
                         {% for img_filename in annotated_units[unit_id][1] %}
-                            <img src="{{ "/static/ddsm_raw/" + img_filename }}" style="
+                            <img src="{{ "/static/ddsm_raw/" + img_filename }}"
+                                 onclick="imageClicked(this)"
+                                 style="
                             height: 100px; width: 100px;
                             display: inline;
                     ">
@@ -57,6 +78,22 @@
     </div>
 {% endfor %}
 
+
+<div class="modal fade" id="fullImageModal" tabindex="-1" role="dialog" aria-labelledby="fullImageModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="fullImageModalLabel">Full Image</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body" id="modal-body">
+                    <canvas id="img-canvas"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
 
 
 
