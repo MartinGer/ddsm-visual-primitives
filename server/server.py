@@ -330,3 +330,15 @@ def example_analysis():
     return image('cancer_09-B_3134_1.RIGHT_CC.LJPEG.1.jpg')
 
 
+@app.route('/annotation_eval')
+def annotation_eval():
+    annotated_units = backend.get_annotated_units(CURRENT_USER, CURRENT_MODEL)
+
+    for unit_id in annotated_units:
+        top_images = backend._get_top_images_for_unit(unit_id, 6)
+        annotations = annotated_units[unit_id].split('\n')
+        readable_annotations = [backend.human_readable_annotation(a, 'german') for a in annotations]
+        annotated_units[unit_id] = readable_annotations, top_images
+
+    return render_template('annotation_evaluation.html',
+                           annotated_units=annotated_units)
