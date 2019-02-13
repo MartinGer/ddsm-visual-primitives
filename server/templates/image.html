@@ -79,27 +79,28 @@
                         <li>Cancer: {{ (class_probs[2] * 100)|int }}%</li>
                     </ul>
                     <p><b>Our clinical findings:</b></p>
-                <form action='/similar_images/{{ image_name }}' method='POST' id='checkbox_form'>
-                    <ul id="findings">
-                        {% for i in range(clinical_findings|length) %}
-                            <div class="row">
-                                <div class="col-5">
-                                    <li onMouseOver="setHeatmap('{{ phenomena_heatmaps[i] }}')"
-                                        onMouseOut="showGroundTruth()"
-                                        class="bold-on-hover"
-                                    >{{ clinical_findings[i] }}
-                                    </li>
+                    <form action='/similar_images/{{ image_name }}' method='POST' id='checkbox_form'>
+                        <ul id="findings">
+                            {% for i in range(clinical_findings|length) %}
+                                <div class="row">
+                                    <div class="col-5">
+                                        <li onMouseOver="setHeatmap('{{ phenomena_heatmaps[i] }}')"
+                                            onMouseOut="showGroundTruth()"
+                                            class="bold-on-hover"
+                                        >{{ clinical_findings[i] }}
+                                        </li>
+                                    </div>
+                                    <div class="col-5" style='margin-top: 2%;'>
+                                        <input type="checkbox" value="{{ clinical_findings[i] }}" checked
+                                               class="checkbox" name="checkboxes">
+                                    </div>
                                 </div>
-                                <div class="col-5" style='margin-top: 2%;'>
-                                    <input type="checkbox" value="{{ clinical_findings[i] }}" checked class="checkbox" name="checkboxes">
-                                </div>
-                            </div>
-                        {% endfor %}
-                    </ul>
-                    <button type="submit" class="btn btn-primary mb-2">
-                        Find similar images
-                    </button>
-                </form>
+                            {% endfor %}
+                        </ul>
+                            <button type="submit" class="btn btn-primary mb-2">
+                                Find similar images
+                            </button>
+                    </form>
                 </div>
             </div>
         </div>

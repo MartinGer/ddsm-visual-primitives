@@ -29,9 +29,9 @@ app.config['PROCESSED_FOLDER'] = PROCESSED_FOLDER
 PROCESSED_FOLDER = os.path.join(STATIC_DIR, 'activation_maps')
 app.config['ACTIVATIONS_FOLDER'] = PROCESSED_FOLDER
 
-CURRENT_USER = "default"
+CURRENT_USER = 'default'
 CURRENT_MODEL = 'resnet152'
-
+CURRENT_RESULT = None
 
 @app.route('/')
 def index(name=None):
@@ -198,6 +198,8 @@ def own_image(image_filename):
     image_name = image_filename[:-4]
 
     result = backend.single_image_analysis.analyze_one_image(image_path, preprocess)
+    global CURRENT_RESULT
+    CURRENT_RESULT = result
     if preprocess:
         preprocessed_full_image_path = backend.get_preprocessed_image_path(image_filename)
     else:
@@ -263,11 +265,15 @@ def similar_images(image_name):
     if request.method == "POST":
         checkboxes = request.form.getlist('checkboxes')
 
-    similar_images = []
+    image_file = os.path.join(app.config['UPLOAD_FOLDER'], image_name)
+    ground_truth_of_similar, top20_image_paths = backend.similarity_metric(image_file, CURRENT_RESULT, CURRENT_USER,
+                                                                           CURRENT_MODEL)
     return render_template('similar_images.html',
                            findings=checkboxes,
-                           similar_images=similar_images,
-                           image_name=image_name)
+                           image_name=image_name,
+                           ground_truth_of_similar=ground_truth_of_similar,
+                           top20_image_paths=top20_image_paths
+                           )
 
 
 # for fast testing

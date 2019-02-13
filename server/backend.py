@@ -6,6 +6,7 @@ import numpy as np
 from PIL import Image, ImageOps
 import matplotlib.colors
 
+from scipy.spatial.distance import cosine as cosine_distance
 from db.doctor import insert_doctor_into_db_if_not_exists
 from db.database import DB
 from training.analyze_single_image import SingleImageAnalysis
@@ -376,3 +377,163 @@ def get_annotated_units(user, net_id):
     result = conn.execute(select_stmt, (net_id, user))
     rows = [row for row in result]
     return dict(rows)
+
+
+def similarity_metric(image_file, analysis_result, name, model):
+    reference_image = image_file
+    top_units_and_activations = analysis_result.get_top_units(analysis_result.classification, 10)
+    annotated_units = _get_annotated_units(name, model)
+    annotated_top_units = [item[0] + 1 for item in top_units_and_activations if item[0] + 1 in annotated_units]
+    ranks_of_units_per_image = {}
+
+    for unit_id in annotated_top_units:
+        for image_id, rank in _get_ranks_of_unit(unit_id, analysis_result.classification, model):
+            if image_id in ranks_of_units_per_image:
+                ranks_of_units_per_image[image_id].append(rank)
+            else:
+                ranks_of_units_per_image[image_id] = [rank]
+
+    reference_ranks = []
+    for unit_id in annotated_top_units:
+       # reference_ranks.append()     # rank activations of units for the uploaded image
+
+    # reference_ranks = ranks_of_units_per_image[reference_image]
+    # del ranks_of_units_per_image[reference_image]
+
+    reference_ranks = 0         #
+
+    similarities = []
+
+    for image_id in ranks_of_units_per_image.keys():
+        ranks = ranks_of_units_per_image[image_id]
+        print(ranks)
+        similarity = cosine_distance(reference_ranks, ranks)
+        similarities.append((image_id, similarity))
+
+    similarities.sort(key=lambda x: x[1], reverse=False)
+
+    top20_images = [image_id for image_id, similarity in similarities[:20]]
+    top20_image_paths = [_get_image_path(image_id) for image_id in top20_images]
+
+    ground_truth_of_top20 = np.asarray([_get_ground_truth(image_id) for image_id in top20_images])
+
+    return np.unique(ground_truth_of_top20, return_counts=True)[1], top20_image_paths
+
+
+def similarity_metric_original(image_filename, analysis_result, name, model):
+    reference_image = _get_image_id(image_filename)
+    top_units_and_activations = analysis_result.get_top_units(analysis_result.classification, 10)
+    annotated_units = _get_annotated_units(name, model)
+    annotated_top_units = [item[0] + 1 for item in top_units_and_activations if item[0] + 1 in annotated_units]
+    ranks_of_units_per_image = {}
+
+    for unit_id in annotated_top_units:
+        for image_id, rank in _get_ranks_of_unit(unit_id, analysis_result.classification, model):
+            if image_id in ranks_of_units_per_image:
+                ranks_of_units_per_image[image_id].append(rank)
+            else:
+                ranks_of_units_per_image[image_id] = [rank]
+
+    reference_ranks = ranks_of_units_per_image[reference_image]
+    del ranks_of_units_per_image[reference_image]
+
+    similarities = []
+
+    for image_id in ranks_of_units_per_image.keys():
+        ranks = ranks_of_units_per_image[image_id]
+        similarity = cosine_distance(reference_ranks, ranks)
+        similarities.append((image_id, similarity))
+
+    similarities.sort(key=lambda x: x[1], reverse=False)
+
+    top20_images = [image_id for image_id, similarity in similarities[:20]]
+    top20_image_paths = [_get_image_path(image_id) for image_id in top20_images]
+
+    ground_truth_of_top20 = np.asarray([_get_ground_truth(image_id) for image_id in top20_images])
+
+    return np.unique(ground_truth_of_top20, return_counts=True)[1], top20_image_paths
+
+
+def _get_image_id(image_path):
+    db = DB()
+    conn = db.get_connection()
+    c = conn.cursor()
+    select_stmt = "SELECT id FROM image " \
+                  "WHERE image_path = ?;"
+    c.execute(select_stmt, (image_path,))
+    result = c.fetchone()[0]
+    return result
+
+
+def _get_image_path(image_id):
+    db = DB()
+    conn = db.get_connection()
+    c = conn.cursor()
+    select_stmt = "SELECT image_path FROM image " \
+                  "WHERE id = ?;"
+    c.execute(select_stmt, (image_id,))
+    result = c.fetchone()[0]
+    return result
+
+
+def _get_annotated_units(name, model):
+    db = DB()
+    conn = db.get_connection()
+    c = conn.cursor()
+
+    select_net = "(SELECT id FROM net WHERE net = '{}')".format(model)
+    select_doctor = "(SELECT id FROM doctor WHERE name = '{}')".format(name)
+
+    select_stmt = "SELECT unit_id FROM unit_annotation " \
+                  "WHERE net_id = {net} " \
+                  "AND doctor_id = {doctor} " \
+                  "AND unit_annotation.shows_concept = 1;".format(doctor=select_doctor, net=select_net)
+    result = c.execute(select_stmt)
+    annotated_units = [row[0] for row in result]
+
+    return annotated_units
+
+
+def _get_activations_for_unit(unit_id, classification, model):
+    db = DB()
+    conn = db.get_connection()
+    c = conn.cursor()
+
+    select_net = "(SELECT id FROM net WHERE net = '{}')".format(model)
+
+    select_stmt = "SELECT image_id, activation FROM image_unit_activation " \
+                  "WHERE net_id = {net} " \
+                  "AND class_id = ? " \
+                  "AND unit_id = ?;".format(net=select_net)
+    result = c.execute(select_stmt, (classification, unit_id))
+    activations = [(row[0], row[1]) for row in result]
+
+    return activations
+
+
+def _get_ranks_of_unit(unit_id, classification, model):
+    db = DB()
+    conn = db.get_connection()
+    c = conn.cursor()
+
+    select_net = "(SELECT id FROM net WHERE net = '{}')".format(model)
+
+    select_stmt = "SELECT image_id, rank FROM image_unit_activation " \
+                  "WHERE net_id = {net} " \
+                  "AND class_id = ? " \
+                  "AND unit_id = ?;".format(net=select_net)
+    result = c.execute(select_stmt, (classification, unit_id))
+    activations = [(row[0], row[1]) for row in result]
+
+    return activations
+
+
+def _get_ground_truth(image_id):
+    db = DB()
+    conn = db.get_connection()
+    c = conn.cursor()
+    select_stmt = "SELECT ground_truth FROM image " \
+                  "WHERE id = ?;"
+    c.execute(select_stmt, (image_id,))
+    result = c.fetchone()[0]
+    return result
