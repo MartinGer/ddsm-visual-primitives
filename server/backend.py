@@ -370,6 +370,10 @@ def similarity_metric(image_filename, analysis_result, name, model):
     top_units_and_activations = analysis_result.get_top_units(analysis_result.classification, 10)
     annotated_units = _get_annotated_units(name, model)
     annotated_top_units = [item[0] + 1 for item in top_units_and_activations if item[0] + 1 in annotated_units]
+
+    if not annotated_top_units:
+        return (0, 0, 0), [], []
+
     ranks_of_units_per_image = {}
 
     for unit_id in annotated_top_units:
@@ -395,8 +399,9 @@ def similarity_metric(image_filename, analysis_result, name, model):
     top20_image_paths = [_get_image_path(image_id) for image_id in top20_images]
 
     ground_truth_of_top20 = np.asarray([_get_ground_truth(image_id) for image_id in top20_images])
+    gt_distribution = ((ground_truth_of_top20 == 0).sum(), (ground_truth_of_top20 == 1).sum(), (ground_truth_of_top20 == 2).sum())
 
-    return np.unique(ground_truth_of_top20, return_counts=True)[1], top20_image_paths
+    return gt_distribution, top20_image_paths, ground_truth_of_top20
 
 
 def _get_image_id(image_path):
