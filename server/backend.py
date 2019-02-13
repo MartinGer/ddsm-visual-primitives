@@ -6,6 +6,7 @@ import numpy as np
 from scipy.spatial.distance import cosine as cosine_distance
 from PIL import Image, ImageOps
 import matplotlib.colors
+from tqdm import tqdm
 
 from db.doctor import insert_doctor_into_db_if_not_exists
 from db.database import DB
@@ -22,6 +23,8 @@ PREPROCESSED_IMAGES_FOLDER = os.path.join(STATIC_DIR, 'preprocessed_images')
 PREPROCESSED_MASKS_FOLDER = os.path.join(STATIC_DIR, 'preprocessed_masks')
 
 single_image_analysis = None
+
+RANKS_OF_UNITS_PER_IMAGE = {}
 
 
 def init_single_image_analysis(checkpoint_path):
@@ -365,43 +368,95 @@ def get_correct_classified_images(class_id, count):
     return images
 
 
-def similarity_metric(image_filename, analysis_result, name, model):
-    reference_image = _get_image_id(image_filename)
-    top_units_and_activations = analysis_result.get_top_units(analysis_result.classification, 10)
-    annotated_units = _get_annotated_units(name, model)
-    annotated_top_units = [item[0] + 1 for item in top_units_and_activations if item[0] + 1 in annotated_units]
+def similarity_metric(image_filename, name, model):
+    reference_image_id = _get_image_id(image_filename)
+    gt_distribution, top20_image_ids, ground_truth_of_top20 = _similarity_metric_ids(reference_image_id, name, model)
+    top20_image_paths = [_get_image_path(image_id) for image_id in top20_image_ids]
+    return gt_distribution, top20_image_paths, ground_truth_of_top20
+
+
+def _similarity_metric_ids(reference_image_id, name, model, annotated_units=None):
+    if not annotated_units:
+        annotated_units = _get_annotated_units(name, model)
+    classification = _get_classification(reference_image_id, model)
+    ranks_of_units_per_image = _get_annotated_unit_ranks(annotated_units, classification, model)
+
+    reference_ranks = ranks_of_units_per_image[reference_image_id]
+    annotated_top_units = [annotated_units[i] for i in range(len(annotated_units)) if reference_ranks[i] < 10]
 
     if not annotated_top_units:
         return (0, 0, 0), [], []
 
-    ranks_of_units_per_image = {}
-
-    for unit_id in annotated_top_units:
-        for image_id, rank in _get_ranks_of_unit(unit_id, analysis_result.classification, model):
-            if image_id in ranks_of_units_per_image:
-                ranks_of_units_per_image[image_id].append(rank)
-            else:
-                ranks_of_units_per_image[image_id] = [rank]
-
-    reference_ranks = ranks_of_units_per_image[reference_image]
-    del ranks_of_units_per_image[reference_image]
-
     similarities = []
 
     for image_id in ranks_of_units_per_image.keys():
-        ranks = ranks_of_units_per_image[image_id]
-        similarity = cosine_distance(reference_ranks, ranks)
+        if image_id == reference_image_id:
+            continue
+        similarity = cosine_distance(reference_ranks, ranks_of_units_per_image[image_id])
         similarities.append((image_id, similarity))
 
     similarities.sort(key=lambda x: x[1], reverse=False)
 
-    top20_images = [image_id for image_id, similarity in similarities[:20]]
-    top20_image_paths = [_get_image_path(image_id) for image_id in top20_images]
+    top20_image_ids = [image_id for image_id, similarity in similarities[:20]]
 
-    ground_truth_of_top20 = np.asarray([_get_ground_truth(image_id) for image_id in top20_images])
+    ground_truth_of_top20 = np.asarray([_get_ground_truth(image_id) for image_id in top20_image_ids])
     gt_distribution = ((ground_truth_of_top20 == 0).sum(), (ground_truth_of_top20 == 1).sum(), (ground_truth_of_top20 == 2).sum())
 
-    return gt_distribution, top20_image_paths, ground_truth_of_top20
+    return gt_distribution, top20_image_ids, ground_truth_of_top20
+
+
+def overall_network_performance_on_annotated_units(name, model):
+    if 0 in RANKS_OF_UNITS_PER_IMAGE:
+        print("already started")
+        return
+    print("overall_network_performance_on_annotated_units started")
+    annotated_units = _get_annotated_units(name, model)
+    ranks_of_units_per_image = _get_annotated_unit_ranks(annotated_units, 2, model)
+    image_ids = list(ranks_of_units_per_image.keys())
+
+    similar_imgs_with_same_gt = 0
+
+    for image_id in tqdm(image_ids):
+        gt = _get_ground_truth(image_id)
+        gt_distribution = _similarity_metric_ids(image_id, name, model, annotated_units)[0]
+        similar_imgs_with_same_gt += gt_distribution[gt]
+
+    avg_imgs_with_same_gt = similar_imgs_with_same_gt / len(image_ids)
+
+    print("Avg. similar images with same ground truth: {} of {}".format(avg_imgs_with_same_gt, 20))
+
+
+def _get_annotated_unit_ranks(annotated_units, classification, model):
+    global RANKS_OF_UNITS_PER_IMAGE
+    if classification in RANKS_OF_UNITS_PER_IMAGE \
+            and len(RANKS_OF_UNITS_PER_IMAGE[classification][list(RANKS_OF_UNITS_PER_IMAGE[classification].keys())[0]]) == len(annotated_units):
+        return RANKS_OF_UNITS_PER_IMAGE[classification]
+
+    RANKS_OF_UNITS_PER_IMAGE[classification] = {}
+
+    for unit_id in annotated_units:
+        for image_id, rank in _get_ranks_of_unit(unit_id, classification, model):
+            if image_id in RANKS_OF_UNITS_PER_IMAGE[classification]:
+                RANKS_OF_UNITS_PER_IMAGE[classification][image_id].append(rank)
+            else:
+                RANKS_OF_UNITS_PER_IMAGE[classification][image_id] = [rank]
+
+    return RANKS_OF_UNITS_PER_IMAGE[classification]
+
+
+def _get_classification(image_id, model):
+    db = DB()
+    conn = db.get_connection()
+    c = conn.cursor()
+
+    select_net = "(SELECT id FROM net WHERE net = '{}')".format(model)
+
+    select_stmt = "SELECT class_id FROM image_classification " \
+                  "WHERE net_id = {net} " \
+                  "AND image_id = ?;".format(net=select_net)
+    c.execute(select_stmt, (image_id,))
+    result = c.fetchone()[0]
+    return result
 
 
 def _get_image_id(image_path):
@@ -437,7 +492,8 @@ def _get_annotated_units(name, model):
     select_stmt = "SELECT unit_id FROM unit_annotation " \
                   "WHERE net_id = {net} " \
                   "AND doctor_id = {doctor} " \
-                  "AND unit_annotation.shows_concept = 1;".format(doctor=select_doctor, net=select_net)
+                  "AND unit_annotation.shows_concept = 1 " \
+                  "ORDER BY unit_id;".format(doctor=select_doctor, net=select_net)
     result = c.execute(select_stmt)
     annotated_units = [row[0] for row in result]
 

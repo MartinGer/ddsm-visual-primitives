@@ -285,7 +285,7 @@ def image(image_filename):
                     clinical_findings.append(human_readable_description)
                     phenomena_heatmaps.append(phenomenon_heatmap_path)
 
-    ground_truth_of_similar, top20_image_paths, ground_truth_of_top20 = backend.similarity_metric(image_filename, result, CURRENT_USER, CURRENT_MODEL)
+    ground_truth_of_similar, top20_image_paths, ground_truth_of_top20 = backend.similarity_metric(image_filename, CURRENT_USER, CURRENT_MODEL)
 
     return render_template('image.html',
                            image_path=result.image_path,
@@ -314,4 +314,5 @@ def example_analysis():
     # cancer_15-B_3504_1.RIGHT_CC.LJPEG.1.jpg -> 99% cancer, two spots
     # cancer_09-B_3410_1.LEFT_CC.LJPEG.1.jpg -> one round mass
     # cancer_09-C_0049_1.LEFT_MLO.LJPEG.1.jpg -> spiculated mass
+    backend.overall_network_performance_on_annotated_units(CURRENT_USER, CURRENT_MODEL)
     return image('cancer_09-B_3134_1.RIGHT_CC.LJPEG.1.jpg')
