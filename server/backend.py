@@ -365,25 +365,27 @@ def get_correct_classified_images(class_id, count):
     return images
 
 
-def similarity_metric(image_path, classification, name, model):
-    reference_image = _get_image_id(image_path)
-    print("similarity_metric:", image_path, reference_image, classification, name, model)
+def similarity_metric(image_filename, analysis_result, name, model):
+    reference_image = _get_image_id(image_filename)
+    print("similarity_metric:", image_filename, reference_image, analysis_result.classification, name, model)
+    top_units_and_activations = analysis_result.get_top_units(analysis_result.classification, 10)
     annotated_units = _get_annotated_units(name, model)
-    print("annotated_units:", annotated_units)
+    annotated_top_units = [item[0] + 1 for item in top_units_and_activations if item[0] + 1 in annotated_units]
+    print("annotated_top_units:", annotated_top_units)
     activations_per_image = {}
 
-    for unit_id in annotated_units:
-        for image_id, activation in _get_activations_for_unit(unit_id, classification, model):
+    for unit_id in annotated_top_units:
+        for image_id, activation in _get_activations_for_unit(unit_id, analysis_result.classification, model):
             if image_id in activations_per_image:
                 activations_per_image[image_id].append(activation)
             else:
                 activations_per_image[image_id] = [activation]
 
-    print("Some Image IDs:", list(activations_per_image.keys())[:10])
-    print("Some activations:", activations_per_image[list(activations_per_image.keys())[0]])
 
     reference_activations = activations_per_image[reference_image]
     del activations_per_image[reference_image]
+    print("Reference activation:", reference_activations)
+    print("Example activation:", activations_per_image[list(activations_per_image.keys())[0]])
 
     similarities = []
 
@@ -398,12 +400,13 @@ def similarity_metric(image_path, classification, name, model):
     print("similarities sorted:", similarities[:10])
 
     top20_images = [image_id for image_id, similarity in similarities[:20]]
+    top20_image_paths = [_get_image_path(image_id) for image_id in top20_images]
     print("top20:", top20_images)
 
     ground_truth_of_top20 = np.asarray([_get_ground_truth(image_id) for image_id in top20_images])
     print("ground_truth_of_top20:", ground_truth_of_top20)
 
-    return (ground_truth_of_top20 == classification).sum()
+    return (ground_truth_of_top20 == analysis_result.classification).sum(), top20_image_paths
 
 
 def _get_image_id(image_path):
@@ -413,6 +416,17 @@ def _get_image_id(image_path):
     select_stmt = "SELECT id FROM image " \
                   "WHERE image_path = ?;"
     c.execute(select_stmt, (image_path,))
+    result = c.fetchone()[0]
+    return result
+
+
+def _get_image_path(image_id):
+    db = DB()
+    conn = db.get_connection()
+    c = conn.cursor()
+    select_stmt = "SELECT image_path FROM image " \
+                  "WHERE id = ?;"
+    c.execute(select_stmt, (image_id,))
     result = c.fetchone()[0]
     return result
 

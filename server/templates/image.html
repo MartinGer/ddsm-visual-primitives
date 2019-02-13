@@ -136,5 +136,19 @@
             </div>
         {% endfor %}
     </div>
+
+    <h2>Similar Images:</h2>
+
+    <div class="row">
+        {% for image_filename in top20_image_paths %}
+            <div class="col-2 mt-3">
+                <div class="card">
+                    <a href="/image/{{ image_filename }}">
+                        <img class="card-img-top" src="{{ "/static/ddsm_raw/" + image_filename }}" alt="Card image cap">
+                    </a>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
 </div>
 </body>

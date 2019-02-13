@@ -285,7 +285,7 @@ def image(image_filename):
                     clinical_findings.append(human_readable_description)
                     phenomena_heatmaps.append(phenomenon_heatmap_path)
 
-    similarity_score = backend.similarity_metric(image_filename, result.classification, CURRENT_USER, CURRENT_MODEL)
+    similarity_score, top20_image_paths = backend.similarity_metric(image_filename, result, CURRENT_USER, CURRENT_MODEL)
     print("Similarity Metric:", similarity_score)
 
     return render_template('image.html',
@@ -304,7 +304,8 @@ def image(image_filename):
                            phenomena_heatmaps=phenomena_heatmaps,
                            ground_truth=ground_truth,
                            is_correct=is_correct,
-                           similarity_score=similarity_score)
+                           similarity_score=similarity_score,
+                           top20_image_paths=top20_image_paths)
 
 
 @app.route('/example_analysis')
