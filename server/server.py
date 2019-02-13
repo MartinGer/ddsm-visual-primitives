@@ -257,11 +257,15 @@ def correct_classified_images():
                            images=images)
 
 
-@app.route('/similar_images/<image_name>')
+@app.route('/similar_images/<image_name>', methods=['POST', 'GET'])
 def similar_images(image_name):
+    checkboxes = []
+    if request.method == "POST":
+        checkboxes = request.form.getlist('checkboxes')
+
     similar_images = []
-    # clinical_findings = session.pop('stored_findings');
     return render_template('similar_images.html',
+                           findings=checkboxes,
                            similar_images=similar_images,
                            image_name=image_name)
 

@@ -31,8 +31,8 @@
                 </div>
                 <div class="card-body">
                     <ul>
-                        {% for finding in session['stored_findings'] %}
-                            {{ finding }}
+                        {% for finding in findings %}
+                           <li> {{ finding }} </li>
                         {% endfor %}
                     </ul>
                 </div>

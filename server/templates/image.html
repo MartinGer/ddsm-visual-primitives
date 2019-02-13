@@ -37,19 +37,6 @@
         function clearHeatmap() {
             $('#full-image').css('backgroundImage', 'url({{ "/" + preprocessed_full_image_path }})');
         }
-        function storeCheckedFindings(clinical_findings) {
-            var findings = [];
-            var checkboxes = document.getElementById("findings").getElementsByClassName("checkbox");
-            for (i in range(clinical_findings|length)) {
-                if (checkboxes[i].checked) {
-                    print("f")
-                    print(clinical_findings[i])
-                    findings.push(clinical_findings[i])
-                }
-            }
-            session['stored_findings'] = findings;
-            return redirect(url_for('stored_findings'));
-        }
     </script>
 </head>
 <body>
@@ -82,7 +69,7 @@
                     {% if is_correct != 'no_ground_truth' %}
                         <p><b>Ground Truth:</b> {{ ('Normal', 'Benign', 'Cancer')[ground_truth] }}</p>
                     {% endif %}
-                    <p><b>Image:</b> {{ image_name }}</p>
+                    <p><b>Image:</b>{{ image_name }}</p>
                     <p><b>Checkpoint used:</b> {{ checkpoint_path }}</p>
 
                     <p><b>Class probabilities:</b></p>
@@ -92,6 +79,7 @@
                         <li>Cancer: {{ (class_probs[2] * 100)|int }}%</li>
                     </ul>
                     <p><b>Our clinical findings:</b></p>
+                <form action='/similar_images/{{ image_name }}' method='POST' id='checkbox_form'>
                     <ul id="findings">
                         {% for i in range(clinical_findings|length) %}
                             <div class="row">
@@ -103,14 +91,15 @@
                                     </li>
                                 </div>
                                 <div class="col-5" style='margin-top: 2%;'>
-                                    <input type="checkbox" value="" checked class="checkbox">
+                                    <input type="checkbox" value="{{ clinical_findings[i] }}" checked class="checkbox" name="checkboxes">
                                 </div>
                             </div>
                         {% endfor %}
                     </ul>
-                    <button onclick="location.href = '/similar_images/{{image_name}}';storeCheckedFindings(clinical_findings); "class="btn btn-primary mb-2">
+                    <button type="submit" class="btn btn-primary mb-2">
                         Find similar images
                     </button>
+                </form>
                 </div>
             </div>
         </div>
