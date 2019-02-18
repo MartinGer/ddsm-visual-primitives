@@ -237,6 +237,8 @@ def own_image(image_filename):
                     phenomena_heatmaps.append(phenomenon_heatmap_path)
                     FINDINGS_WITH_UNITS.append([unit_index, human_readable_description])
 
+    global CURRENT_HEATMAPS
+    CURRENT_HEATMAPS = phenomena_heatmaps
     if not clinical_findings:
         clinical_findings = ["None"]
 
@@ -329,10 +331,6 @@ def image(image_filename):
                     unique_annotation_ids.append(annotation_id)
                     clinical_findings.append(human_readable_description)
                     phenomena_heatmaps.append(phenomenon_heatmap_path)
-
-
-    global CURRENT_HEATMAPS
-    CURRENT_HEATMAPS = phenomena_heatmaps
 
     ground_truth_of_similar, top20_image_paths, ground_truth_of_top20 = similarity_metric(image_filename, CURRENT_USER, CURRENT_MODEL)
 
