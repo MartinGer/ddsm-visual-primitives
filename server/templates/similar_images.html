@@ -20,7 +20,6 @@
             background-size: contain;
             background-repeat: no-repeat;
         }
-
         .bold-on-hover:hover {
             font-weight: bold;
         }
@@ -58,11 +57,11 @@
                     </div>
                 </div>
                 <div class="card-body">
-                    {% for finding in findings %}
+                    {% for i in range(findings|length) %}
                         <li onMouseOver="setHeatmap('{{ phenomena_heatmaps[i] }}')"
                             onMouseOut="showGroundTruth()"
                             class="bold-on-hover"
-                        > {{ finding }} </li>
+                        > {{ findings[i] }} </li>
                     {% endfor %}
                 </div>
             </div>

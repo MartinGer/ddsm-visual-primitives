@@ -196,17 +196,13 @@ def single_image():
 
 @app.route('/own_image/<image_filename>')
 def own_image(image_filename):
-    preprocess = True  # pre-processing for uploaded images
     image_path = os.path.join(app.config['UPLOAD_FOLDER'], image_filename)
     image_name = image_filename[:-4]
 
-    result = backend.single_image_analysis.analyze_one_image(image_path, preprocess)
+    result = backend.single_image_analysis.analyze_one_image(image_path)
     global CURRENT_RESULT
     CURRENT_RESULT = result
-    if preprocess:
-        preprocessed_full_image_path = backend.get_preprocessed_image_path(image_filename)
-    else:
-        preprocessed_full_image_path = result.image_path  # no pre-processing for uploaded images
+    preprocessed_full_image_path = backend.get_preprocessed_image_path(image_filename)
 
     preprocessed_mask_path = ""  # no mask available for new images
     preprocessing_descr = dataset.preprocessing_description()
@@ -284,11 +280,13 @@ def similar_images(image_name):
             if f[1] == cf:
                 chosen_findings_with_units.append(f)
 
+    preprocessed_full_image_path = backend.get_preprocessed_image_path(image_name+".jpg")
     ground_truth_of_similar, top20_image_paths = similarity_metric_for_uploaded_image(chosen_findings_with_units, CURRENT_RESULT, CURRENT_MODEL)
+    phenomena_heatmaps = CURRENT_HEATMAPS
 
     return render_template('similar_images.html',
-                           preprocessed_full_image_path=CURRENT_RESULT.image_path,
-                           phenomena_heatmaps=CURRENT_HEATMAPS,
+                           preprocessed_full_image_path=preprocessed_full_image_path,
+                           phenomena_heatmaps=phenomena_heatmaps,
                            preprocessed_mask_path="",
                            findings=chosen_findings,
                            image_name=image_name,
