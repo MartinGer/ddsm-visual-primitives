@@ -73,13 +73,17 @@
                         <p class="mb-1"><b>Ground Truth:</b> {{ ('Normal', 'Benign', 'Cancer')[ground_truth] }}</p>
                     {% endif %}
 
-                    <p class="mb-1">Ground Truth of Top 20 similar images (normal, benign, cancer):</p>
-                    <div class="progress mb-3">
-                        <div class="progress-bar bg-success" role="progressbar" style="width: {{ (ground_truth_of_similar[0] / 20) * 100 }}%"></div>
-                        <div class="progress-bar bg-warning" role="progressbar" style="width: {{ (ground_truth_of_similar[1] / 20) * 100 }}%"></div>
-                        <div class="progress-bar bg-danger" role="progressbar" style="width: {{ (ground_truth_of_similar[2] / 20) * 100 }}%"></div>
-                    </div>
-
+                    {% if ground_truth_of_similar[0] %}
+                        <p class="mb-1">Ground Truth of Top 20 similar images (normal, benign, cancer):</p>
+                        <div class="progress mb-3">
+                            <div class="progress-bar bg-success" role="progressbar"
+                                 style="width: {{ (ground_truth_of_similar[0] / 20) * 100 }}%"></div>
+                            <div class="progress-bar bg-warning" role="progressbar"
+                                 style="width: {{ (ground_truth_of_similar[1] / 20) * 100 }}%"></div>
+                            <div class="progress-bar bg-danger" role="progressbar"
+                                 style="width: {{ (ground_truth_of_similar[2] / 20) * 100 }}%"></div>
+                        </div>
+                    {% endif %}
                     <p><b>Image:</b> {{ image_name }}</p>
                     <p><b>Checkpoint used:</b> {{ checkpoint_path }}</p>
 
@@ -108,9 +112,9 @@
                                 </div>
                             {% endfor %}
                         </ul>
-                            <button type="submit" class="btn btn-primary mb-2">
-                                Find similar images
-                            </button>
+                        <button type="submit" class="btn btn-primary mb-2">
+                            Find similar images
+                        </button>
                     </form>
                 </div>
             </div>
@@ -172,11 +176,13 @@
             <div class="col-2 mt-3">
                 <div class="card">
                     <a href="/image/{{ top20_image_paths[i] }}">
-                        <img class="card-img-top" src="{{ "/static/ddsm_raw/" + top20_image_paths[i] }}" alt="Card image cap">
+                        <img class="card-img-top" src="{{ "/static/ddsm_raw/" + top20_image_paths[i] }}"
+                             alt="Card image cap">
                     </a>
 
                     <div class="card-body">
-                        <p class="text-{{ ('success', 'warning', 'danger')[ground_truth_of_top20[i]] }}">GT: {{ ('Normal', 'Benign', 'Cancer')[ground_truth_of_top20[i]] }}</p>
+                        <p class="text-{{ ('success', 'warning', 'danger')[ground_truth_of_top20[i]] }}">
+                            GT: {{ ('Normal', 'Benign', 'Cancer')[ground_truth_of_top20[i]] }}</p>
                     </div>
                 </div>
             </div>

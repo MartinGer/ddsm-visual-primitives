@@ -19,6 +19,51 @@ def similarity_metric(image_filename, name, model):
     return gt_distribution, top20_image_paths, ground_truth_of_top20
 
 
+def similarity_metric_for_uploaded_image(findings, analysis_result, model):
+    top_units_and_activations = analysis_result.get_top_units(analysis_result.classification, 10)
+    findings_ids = np.array(findings).transpose()[0]
+
+    annotated_top_units = []
+    for findings_id in findings_ids:
+        for top_unit in top_units_and_activations:
+            if int(findings_id) == int(top_unit[0]):
+                annotated_top_units.append(int(findings_id))
+
+    ranks_of_units_per_image = {}
+
+    for unit_id in set(annotated_top_units):
+        for image_id, rank in _get_ranks_of_unit(unit_id, analysis_result.classification, model):
+            if image_id in ranks_of_units_per_image:
+                ranks_of_units_per_image[image_id].append(rank)
+            else:
+                ranks_of_units_per_image[image_id] = [rank]
+
+    reference_ranks = []
+
+    all_units_and_activations = analysis_result.get_top_units(analysis_result.classification, 2048)
+    for unit_idx in range(len(all_units_and_activations)):
+        for annotated_unit in set(annotated_top_units):
+            if all_units_and_activations[unit_idx] == annotated_unit:
+                print(unit, unit_idx)
+                reference_ranks.append(unit_idx)     # rank of annotated units for the uploaded image
+
+    similarities = []
+
+    for image_id in ranks_of_units_per_image.keys():
+        ranks = ranks_of_units_per_image[image_id]
+        similarity = cosine_distance(reference_ranks, ranks)
+        similarities.append((image_id, similarity))
+
+    similarities.sort(key=lambda x: x[1], reverse=False)
+
+    top20_images = [image_id for image_id, similarity in similarities[:20]]
+    top20_image_paths = [_get_image_path(image_id) for image_id in top20_images]
+
+    ground_truth_of_top20 = np.asarray([_get_ground_truth(image_id) for image_id in top20_images])
+
+    return np.unique(ground_truth_of_top20, return_counts=True)[1], top20_image_paths
+
+
 def print_all_similarity_scores(name, model):
     global METRIC_CALCULATION_RUNNING
     if METRIC_CALCULATION_RUNNING:

@@ -10,7 +10,7 @@ import backend
 from common import dataset
 from training.unit_rankings import get_top_units_by_class_influences, get_top_units_ranked, get_top_units_by_appearances_in_top_units
 from db.database import DB
-from metrics import similarity_metric, print_all_similarity_scores
+from metrics import similarity_metric, print_all_similarity_scores, similarity_metric_for_uploaded_image
 
 app = Flask(__name__)
 
@@ -254,7 +254,11 @@ def own_image(image_filename):
                            unit_annotations=unit_annotations,
                            clinical_findings=clinical_findings,
                            phenomena_heatmaps=phenomena_heatmaps,
-                           is_correct=is_correct)
+                           is_correct=is_correct,
+                           ground_truth_of_similar=[],
+                           top20_image_paths=[],
+                           ground_truth_of_top20=[]
+                           )
 
 
 @app.route('/correct_classified_images')
@@ -278,7 +282,7 @@ def similar_images(image_name):
             if f[1] == cf:
                 chosen_findings_with_units.append(f)
 
-    ground_truth_of_similar, top20_image_paths = backend.similarity_metric_for_uploaded_image(chosen_findings_with_units, CURRENT_RESULT, CURRENT_MODEL)
+    ground_truth_of_similar, top20_image_paths = similarity_metric_for_uploaded_image(chosen_findings_with_units, CURRENT_RESULT, CURRENT_MODEL)
 
     return render_template('similar_images.html',
                            preprocessed_full_image_path=CURRENT_RESULT.image_path,
