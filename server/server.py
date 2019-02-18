@@ -10,6 +10,7 @@ import backend
 from common import dataset
 from training.unit_rankings import get_top_units_by_class_influences, get_top_units_ranked, get_top_units_by_appearances_in_top_units
 from db.database import DB
+from metrics import similarity_metric, print_all_similarity_scores
 
 app = Flask(__name__)
 
@@ -325,8 +326,11 @@ def image(image_filename):
                     clinical_findings.append(human_readable_description)
                     phenomena_heatmaps.append(phenomenon_heatmap_path)
 
+
     global CURRENT_HEATMAPS
     CURRENT_HEATMAPS = phenomena_heatmaps
+
+    ground_truth_of_similar, top20_image_paths, ground_truth_of_top20 = similarity_metric(image_filename, CURRENT_USER, CURRENT_MODEL)
 
     return render_template('image.html',
                            image_path=result.image_path,
@@ -344,25 +348,19 @@ def image(image_filename):
                            clinical_findings=clinical_findings,
                            phenomena_heatmaps=phenomena_heatmaps,
                            ground_truth=ground_truth,
-                           is_correct=is_correct)
+                           is_correct=is_correct,
+                           ground_truth_of_similar=ground_truth_of_similar,
+                           top20_image_paths=top20_image_paths,
+                           ground_truth_of_top20=ground_truth_of_top20)
 
 
 @app.route('/example_analysis')
 def example_analysis():
     # good examples:
     # cancer_15-B_3504_1.RIGHT_CC.LJPEG.1.jpg -> 99% cancer, two spots
+    # cancer_09-B_3410_1.LEFT_CC.LJPEG.1.jpg -> one round mass
+    # cancer_09-C_0049_1.LEFT_MLO.LJPEG.1.jpg -> speculated mass
+    # benign_09-D_4075_1.LEFT_CC.LJPEG.1.jpg -> three different masses
+    print_all_similarity_scores(CURRENT_USER, CURRENT_MODEL)
     return image('cancer_09-B_3134_1.RIGHT_CC.LJPEG.1.jpg')
 
-
-@app.route('/annotation_eval')
-def annotation_eval():
-    annotated_units = backend.get_annotated_units(CURRENT_USER, CURRENT_MODEL)
-
-    for unit_id in annotated_units:
-        top_images = backend._get_top_images_for_unit(unit_id, 6)
-        annotations = annotated_units[unit_id].split('\n')
-        readable_annotations = [backend.human_readable_annotation(a, 'german') for a in annotations]
-        annotated_units[unit_id] = readable_annotations, top_images
-
-    return render_template('annotation_evaluation.html',
-                           annotated_units=annotated_units)

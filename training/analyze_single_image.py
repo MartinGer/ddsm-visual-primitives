@@ -41,7 +41,7 @@ class AnalysisResult(object):
         ranked_units_and_activations = sorted(units_and_activations, key=lambda x: x[1][diagnosis_class], reverse=True)[
                                        :number_of_units]
 
-        # entries of ranked_units_and_activations: unit_name, influence_per_class[0,1,2], activation_map for the unit
+        # entries of ranked_units_and_activations: unit index (0-based), influence_per_class[0,1,2], activation_map for the unit
         return ranked_units_and_activations
 
 

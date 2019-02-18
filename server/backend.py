@@ -23,6 +23,8 @@ PREPROCESSED_MASKS_FOLDER = os.path.join(STATIC_DIR, 'preprocessed_masks')
 
 single_image_analysis = None
 
+RANKS_OF_UNITS_PER_IMAGE = {}
+
 
 def init_single_image_analysis(checkpoint_path):
     global single_image_analysis
@@ -82,10 +84,10 @@ def store_survey(name, model, unit, shows_phenomena, phenomena):
     # make sure it exists
     insert_stmt = "INSERT OR IGNORE INTO unit_annotation(unit_id, net_id, doctor_id, descriptions, shows_concept) " \
                   "VALUES ({}, {}, {}, '{}', {});".format(select_unit,
-                                                        select_net,
-                                                        select_doctor,
-                                                        phenomena_description,
-                                                        select_concept)
+                                                          select_net,
+                                                          select_doctor,
+                                                          phenomena_description,
+                                                          select_concept)
     conn.execute(insert_stmt)
     conn.commit()
 
@@ -232,7 +234,7 @@ def get_preprocessed_image_path(full_image_name, root="../data/ddsm_raw/"):
 def _activation_map_to_heatmap(activation_map, all_activation_maps):
     activation_map_normalized = normalize_activation_map(activation_map, all_activation_maps)
 
-    #_get_highest_activations_in_percentage(activation_map_normalized, 0.25)
+    # _get_highest_activations_in_percentage(activation_map_normalized, 0.25)
 
     activation_heatmap = np.ndarray((activation_map.shape[0], activation_map.shape[1], 3), np.double)
     for x in range(activation_map.shape[0]):
@@ -257,8 +259,8 @@ def _get_highest_activations_in_percentage(activation_map, percentage):
             if activation_map[x][y] < threshold:
                 activation_map[x][y] = 0
 
-    print('Showing top', percentage, 'percent of activations in activation map. That`s'
-          , no_of_elements_in_percentage_range, 'of', no_of_elements_in_matrix, 'elements.')
+    print('Showing top', percentage, 'percent of activations in activation map. That`s',
+          no_of_elements_in_percentage_range, 'of', no_of_elements_in_matrix, 'elements.')
     return activation_map
 
 
