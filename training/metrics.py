@@ -25,7 +25,7 @@ def print_all_similarity_scores(name, model):
         return
     METRIC_CALCULATION_RUNNING = True
 
-    print("overall_network_performance_on_annotated_units started")
+    print("print_all_similarity_scores started")
 
     for units_to_compare in ('top_10_units', 'top_annotated', 'all_annotated'):
         for feature_to_compare in ('activation', 'rank'):
@@ -45,7 +45,7 @@ def _print_average_similarity_score(name, model, units_to_compare, feature_to_co
         similar_imgs_with_same_gt += gt_distribution[gt]
 
     avg_imgs_with_same_gt = similar_imgs_with_same_gt / len(image_ids)
-    print("Avg. similar images with same ground truth: {} of {}".format(avg_imgs_with_same_gt, 20))
+    print("Avg. similar images with same ground truth: {:.2f} of {} -> {:.2f}%".format(avg_imgs_with_same_gt, image_count, (avg_imgs_with_same_gt / image_count) * 100))
 
 
 def _get_similarity_score_by_image_id(reference_image_id, name, model, units_to_compare='top_10_units', feature_to_compare='activation', image_count=20):
@@ -61,7 +61,7 @@ def _get_similarity_score_by_image_id(reference_image_id, name, model, units_to_
         raise ValueError("Unknown content of units_to_compare.")
 
     if not _units_to_compare:
-        print("No units to compare for this image -> can't find similar images.")
+        # print("No units to compare for this image -> can't find similar images.")
         return (0, 0, 0), [], []
 
     if feature_to_compare == 'activation':
