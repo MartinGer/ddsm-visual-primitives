@@ -3,10 +3,8 @@ import math
 import sys
 sys.path.insert(0, '..')
 import numpy as np
-from scipy.spatial.distance import cosine as cosine_distance
 from PIL import Image, ImageOps
 import matplotlib.colors
-from tqdm import tqdm
 
 from db.doctor import insert_doctor_into_db_if_not_exists
 from db.database import DB
@@ -85,10 +83,10 @@ def store_survey(name, model, unit, shows_phenomena, phenomena):
     # make sure it exists
     insert_stmt = "INSERT OR IGNORE INTO unit_annotation(unit_id, net_id, doctor_id, descriptions, shows_concept) " \
                   "VALUES ({}, {}, {}, '{}', {});".format(select_unit,
-                                                        select_net,
-                                                        select_doctor,
-                                                        phenomena_description,
-                                                        select_concept)
+                                                          select_net,
+                                                          select_doctor,
+                                                          phenomena_description,
+                                                          select_concept)
     conn.execute(insert_stmt)
     conn.commit()
 
@@ -235,7 +233,7 @@ def get_preprocessed_image_path(full_image_name, root="../data/ddsm_raw/"):
 def _activation_map_to_heatmap(activation_map, all_activation_maps):
     activation_map_normalized = normalize_activation_map(activation_map, all_activation_maps)
 
-    #_get_highest_activations_in_percentage(activation_map_normalized, 0.25)
+    # _get_highest_activations_in_percentage(activation_map_normalized, 0.25)
 
     activation_heatmap = np.ndarray((activation_map.shape[0], activation_map.shape[1], 3), np.double)
     for x in range(activation_map.shape[0]):
@@ -260,8 +258,8 @@ def _get_highest_activations_in_percentage(activation_map, percentage):
             if activation_map[x][y] < threshold:
                 activation_map[x][y] = 0
 
-    print('Showing top', percentage, 'percent of activations in activation map. That`s'
-          , no_of_elements_in_percentage_range, 'of', no_of_elements_in_matrix, 'elements.')
+    print('Showing top', percentage, 'percent of activations in activation map. That`s',
+          no_of_elements_in_percentage_range, 'of', no_of_elements_in_matrix, 'elements.')
     return activation_map
 
 
@@ -366,180 +364,3 @@ def get_correct_classified_images(class_id, count):
     result = c.execute(select_stmt, (class_id, count))
     images = [row[0].split("/")[-1] for row in result]
     return images
-
-
-def similarity_metric(image_filename, name, model):
-    reference_image_id = _get_image_id(image_filename)
-    gt_distribution, top20_image_ids, ground_truth_of_top20 = _similarity_metric_ids(reference_image_id, name, model)
-    top20_image_paths = [_get_image_path(image_id) for image_id in top20_image_ids]
-    return gt_distribution, top20_image_paths, ground_truth_of_top20
-
-
-def _similarity_metric_ids(reference_image_id, name, model, annotated_units=None):
-    if not annotated_units:
-        annotated_units = _get_annotated_units(name, model)
-    classification = _get_classification(reference_image_id, model)
-    ranks_of_units_per_image = _get_annotated_unit_ranks(annotated_units, classification, model)
-
-    reference_ranks = ranks_of_units_per_image[reference_image_id]
-    annotated_top_units = [annotated_units[i] for i in range(len(annotated_units)) if reference_ranks[i] < 10]
-
-    if not annotated_top_units:
-        return (0, 0, 0), [], []
-
-    similarities = []
-
-    for image_id in ranks_of_units_per_image.keys():
-        if image_id == reference_image_id:
-            continue
-        similarity = cosine_distance(reference_ranks, ranks_of_units_per_image[image_id])
-        similarities.append((image_id, similarity))
-
-    similarities.sort(key=lambda x: x[1], reverse=False)
-
-    top20_image_ids = [image_id for image_id, similarity in similarities[:20]]
-
-    ground_truth_of_top20 = np.asarray([_get_ground_truth(image_id) for image_id in top20_image_ids])
-    gt_distribution = ((ground_truth_of_top20 == 0).sum(), (ground_truth_of_top20 == 1).sum(), (ground_truth_of_top20 == 2).sum())
-
-    return gt_distribution, top20_image_ids, ground_truth_of_top20
-
-
-def overall_network_performance_on_annotated_units(name, model):
-    if 0 in RANKS_OF_UNITS_PER_IMAGE:
-        print("already started")
-        return
-    print("overall_network_performance_on_annotated_units started")
-    annotated_units = _get_annotated_units(name, model)
-    ranks_of_units_per_image = _get_annotated_unit_ranks(annotated_units, 2, model)
-    image_ids = list(ranks_of_units_per_image.keys())
-
-    similar_imgs_with_same_gt = 0
-
-    for image_id in tqdm(image_ids):
-        gt = _get_ground_truth(image_id)
-        gt_distribution = _similarity_metric_ids(image_id, name, model, annotated_units)[0]
-        similar_imgs_with_same_gt += gt_distribution[gt]
-
-    avg_imgs_with_same_gt = similar_imgs_with_same_gt / len(image_ids)
-
-    print("Avg. similar images with same ground truth: {} of {}".format(avg_imgs_with_same_gt, 20))
-
-
-def _get_annotated_unit_ranks(annotated_units, classification, model):
-    global RANKS_OF_UNITS_PER_IMAGE
-    if classification in RANKS_OF_UNITS_PER_IMAGE \
-            and len(RANKS_OF_UNITS_PER_IMAGE[classification][list(RANKS_OF_UNITS_PER_IMAGE[classification].keys())[0]]) == len(annotated_units):
-        return RANKS_OF_UNITS_PER_IMAGE[classification]
-
-    RANKS_OF_UNITS_PER_IMAGE[classification] = {}
-
-    for unit_id in annotated_units:
-        for image_id, rank in _get_ranks_of_unit(unit_id, classification, model):
-            if image_id in RANKS_OF_UNITS_PER_IMAGE[classification]:
-                RANKS_OF_UNITS_PER_IMAGE[classification][image_id].append(rank)
-            else:
-                RANKS_OF_UNITS_PER_IMAGE[classification][image_id] = [rank]
-
-    return RANKS_OF_UNITS_PER_IMAGE[classification]
-
-
-def _get_classification(image_id, model):
-    db = DB()
-    conn = db.get_connection()
-    c = conn.cursor()
-
-    select_net = "(SELECT id FROM net WHERE net = '{}')".format(model)
-
-    select_stmt = "SELECT class_id FROM image_classification " \
-                  "WHERE net_id = {net} " \
-                  "AND image_id = ?;".format(net=select_net)
-    c.execute(select_stmt, (image_id,))
-    result = c.fetchone()[0]
-    return result
-
-
-def _get_image_id(image_path):
-    db = DB()
-    conn = db.get_connection()
-    c = conn.cursor()
-    select_stmt = "SELECT id FROM image " \
-                  "WHERE image_path = ?;"
-    c.execute(select_stmt, (image_path,))
-    result = c.fetchone()[0]
-    return result
-
-
-def _get_image_path(image_id):
-    db = DB()
-    conn = db.get_connection()
-    c = conn.cursor()
-    select_stmt = "SELECT image_path FROM image " \
-                  "WHERE id = ?;"
-    c.execute(select_stmt, (image_id,))
-    result = c.fetchone()[0]
-    return result
-
-
-def _get_annotated_units(name, model):
-    db = DB()
-    conn = db.get_connection()
-    c = conn.cursor()
-
-    select_net = "(SELECT id FROM net WHERE net = '{}')".format(model)
-    select_doctor = "(SELECT id FROM doctor WHERE name = '{}')".format(name)
-
-    select_stmt = "SELECT unit_id FROM unit_annotation " \
-                  "WHERE net_id = {net} " \
-                  "AND doctor_id = {doctor} " \
-                  "AND unit_annotation.shows_concept = 1 " \
-                  "ORDER BY unit_id;".format(doctor=select_doctor, net=select_net)
-    result = c.execute(select_stmt)
-    annotated_units = [row[0] for row in result]
-
-    return annotated_units
-
-
-def _get_activations_for_unit(unit_id, classification, model):
-    db = DB()
-    conn = db.get_connection()
-    c = conn.cursor()
-
-    select_net = "(SELECT id FROM net WHERE net = '{}')".format(model)
-
-    select_stmt = "SELECT image_id, activation FROM image_unit_activation " \
-                  "WHERE net_id = {net} " \
-                  "AND class_id = ? " \
-                  "AND unit_id = ?;".format(net=select_net)
-    result = c.execute(select_stmt, (classification, unit_id))
-    activations = [(row[0], row[1]) for row in result]
-
-    return activations
-
-
-def _get_ranks_of_unit(unit_id, classification, model):
-    db = DB()
-    conn = db.get_connection()
-    c = conn.cursor()
-
-    select_net = "(SELECT id FROM net WHERE net = '{}')".format(model)
-
-    select_stmt = "SELECT image_id, rank FROM image_unit_activation " \
-                  "WHERE net_id = {net} " \
-                  "AND class_id = ? " \
-                  "AND unit_id = ?;".format(net=select_net)
-    result = c.execute(select_stmt, (classification, unit_id))
-    activations = [(row[0], row[1]) for row in result]
-
-    return activations
-
-
-def _get_ground_truth(image_id):
-    db = DB()
-    conn = db.get_connection()
-    c = conn.cursor()
-    select_stmt = "SELECT ground_truth FROM image " \
-                  "WHERE id = ?;"
-    c.execute(select_stmt, (image_id,))
-    result = c.fetchone()[0]
-    return result
