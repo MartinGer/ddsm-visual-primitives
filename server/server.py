@@ -32,6 +32,8 @@ app.config['ACTIVATIONS_FOLDER'] = PROCESSED_FOLDER
 CURRENT_USER = 'default'
 CURRENT_MODEL = 'resnet152'
 CURRENT_RESULT = None
+CURRENT_HEATMAPS = []
+FINDINGS_WITH_UNITS = []
 
 @app.route('/')
 def index(name=None):
@@ -214,6 +216,9 @@ def own_image(image_filename):
     top_units_and_activations = result.get_top_units(result.classification, units_to_show)
     heatmap_paths, preprocessed_size = backend.get_heatmap_paths_for_top_units(image_filename, top_units_and_activations, units_to_show, app.config['UPLOAD_FOLDER'])
 
+    global FINDINGS_WITH_UNITS
+    FINDINGS_WITH_UNITS = []
+
     unique_annotation_ids = []
     clinical_findings = []
     phenomena_heatmaps = []
@@ -229,6 +234,7 @@ def own_image(image_filename):
                     unique_annotation_ids.append(annotation_id)
                     clinical_findings.append(human_readable_description)
                     phenomena_heatmaps.append(phenomenon_heatmap_path)
+                    FINDINGS_WITH_UNITS.append([unit_index, human_readable_description])
 
     if not clinical_findings:
         clinical_findings = ["None"]
@@ -261,15 +267,23 @@ def correct_classified_images():
 
 @app.route('/similar_images/<image_name>', methods=['POST', 'GET'])
 def similar_images(image_name):
-    checkboxes = []
+    chosen_findings = []
     if request.method == "POST":
-        checkboxes = request.form.getlist('checkboxes')
+        chosen_findings = request.form.getlist('checkboxes')    # by user chosen findings that should be displayed
 
-    image_file = os.path.join(app.config['UPLOAD_FOLDER'], image_name)
-    ground_truth_of_similar, top20_image_paths = backend.similarity_metric(image_file, CURRENT_RESULT, CURRENT_USER,
-                                                                           CURRENT_MODEL)
+    chosen_findings_with_units = []
+    for f in FINDINGS_WITH_UNITS:
+        for cf in chosen_findings:
+            if f[1] == cf:
+                chosen_findings_with_units.append(f)
+
+    ground_truth_of_similar, top20_image_paths = backend.similarity_metric_for_uploaded_image(chosen_findings_with_units, CURRENT_RESULT, CURRENT_MODEL)
+
     return render_template('similar_images.html',
-                           findings=checkboxes,
+                           preprocessed_full_image_path=CURRENT_RESULT.image_path,
+                           phenomena_heatmaps=CURRENT_HEATMAPS,
+                           preprocessed_mask_path="",
+                           findings=chosen_findings,
                            image_name=image_name,
                            ground_truth_of_similar=ground_truth_of_similar,
                            top20_image_paths=top20_image_paths
@@ -311,6 +325,9 @@ def image(image_filename):
                     clinical_findings.append(human_readable_description)
                     phenomena_heatmaps.append(phenomenon_heatmap_path)
 
+    global CURRENT_HEATMAPS
+    CURRENT_HEATMAPS = phenomena_heatmaps
+
     return render_template('image.html',
                            image_path=result.image_path,
                            image_name=image_name,
@@ -323,6 +340,7 @@ def image(image_filename):
                            top_units_and_activations=top_units_and_activations,
                            heatmap_paths=heatmap_paths,
                            unit_annotations=unit_annotations,
+                           unique_annotation_ids=unique_annotation_ids,
                            clinical_findings=clinical_findings,
                            phenomena_heatmaps=phenomena_heatmaps,
                            ground_truth=ground_truth,

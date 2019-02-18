@@ -379,14 +379,19 @@ def get_annotated_units(user, net_id):
     return dict(rows)
 
 
-def similarity_metric(image_file, analysis_result, name, model):
-    reference_image = image_file
+def similarity_metric_for_uploaded_image(findings, analysis_result, model):
     top_units_and_activations = analysis_result.get_top_units(analysis_result.classification, 10)
-    annotated_units = _get_annotated_units(name, model)
-    annotated_top_units = [item[0] + 1 for item in top_units_and_activations if item[0] + 1 in annotated_units]
+    findings_ids = np.array(findings).transpose()[0]
+
+    annotated_top_units = []
+    for findings_id in findings_ids:
+        for top_unit in top_units_and_activations:
+            if int(findings_id) == int(top_unit[0]):
+                annotated_top_units.append(int(findings_id))
+
     ranks_of_units_per_image = {}
 
-    for unit_id in annotated_top_units:
+    for unit_id in set(annotated_top_units):
         for image_id, rank in _get_ranks_of_unit(unit_id, analysis_result.classification, model):
             if image_id in ranks_of_units_per_image:
                 ranks_of_units_per_image[image_id].append(rank)
@@ -394,19 +399,18 @@ def similarity_metric(image_file, analysis_result, name, model):
                 ranks_of_units_per_image[image_id] = [rank]
 
     reference_ranks = []
-    for unit_id in annotated_top_units:
-       # reference_ranks.append()     # rank activations of units for the uploaded image
 
-    # reference_ranks = ranks_of_units_per_image[reference_image]
-    # del ranks_of_units_per_image[reference_image]
-
-    reference_ranks = 0         #
+    all_units_and_activations = analysis_result.get_top_units(analysis_result.classification, 2048)
+    for unit_idx in range(len(all_units_and_activations)):
+        for annotated_unit in set(annotated_top_units):
+            if all_units_and_activations[unit_idx] == annotated_unit:
+                print(unit, unit_idx)
+                reference_ranks.append(unit_idx)     # rank of annotated units for the uploaded image
 
     similarities = []
 
     for image_id in ranks_of_units_per_image.keys():
         ranks = ranks_of_units_per_image[image_id]
-        print(ranks)
         similarity = cosine_distance(reference_ranks, ranks)
         similarities.append((image_id, similarity))
 
@@ -420,7 +424,7 @@ def similarity_metric(image_file, analysis_result, name, model):
     return np.unique(ground_truth_of_top20, return_counts=True)[1], top20_image_paths
 
 
-def similarity_metric_original(image_filename, analysis_result, name, model):
+def similarity_metric(image_filename, analysis_result, name, model):
     reference_image = _get_image_id(image_filename)
     top_units_and_activations = analysis_result.get_top_units(analysis_result.classification, 10)
     annotated_units = _get_annotated_units(name, model)

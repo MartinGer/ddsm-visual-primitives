@@ -69,7 +69,7 @@
                     {% if is_correct != 'no_ground_truth' %}
                         <p><b>Ground Truth:</b> {{ ('Normal', 'Benign', 'Cancer')[ground_truth] }}</p>
                     {% endif %}
-                    <p><b>Image:</b>{{ image_name }}</p>
+                    <p><b>Image: </b>{{ image_name }}</p>
                     <p><b>Checkpoint used:</b> {{ checkpoint_path }}</p>
 
                     <p><b>Class probabilities:</b></p>
@@ -106,7 +106,6 @@
         </div>
         <div class="col-md-6 card">
             <div class="card-image">
-
                 <div id="full-image"
                      onMouseOver="clearHeatmap()"
                      onMouseOut="showGroundTruth()"
