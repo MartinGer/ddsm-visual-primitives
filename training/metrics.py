@@ -1,9 +1,12 @@
 import sys
+import os
 from functools import lru_cache
 
 import numpy as np
 from scipy.spatial.distance import cosine as cosine_distance
+from skimage.measure import compare_ssim as ssim
 from tqdm import tqdm
+from PIL import Image
 
 sys.path.insert(0, '..')
 from db.database import DB
@@ -70,6 +73,30 @@ def _get_similarity_score_by_image_id(reference_image_id, name, model, units_to_
         top_image_ids = _get_similar_images_by_ranks(reference_image_id, classification, model, _units_to_compare, image_count)
     else:
         raise ValueError("Unknown content of feature_to_compare.")
+
+    ground_truth_of_top_images = np.asarray([_get_ground_truth(image_id) for image_id in top_image_ids])
+    gt_distribution = ((ground_truth_of_top_images == 0).sum(), (ground_truth_of_top_images == 1).sum(), (ground_truth_of_top_images == 2).sum())
+
+    return gt_distribution, top_image_ids, ground_truth_of_top_images
+
+
+def _get_ssim_similarity_score(image_count=20):
+    image_names = _get_all_image_names()
+    image_paths = [os.path.join('../data/ddsm_raw', filename) for filename in image_names]
+
+    for reference_image_path in image_paths:
+        similarites = []
+        reference_image = np.array(Image.open(reference_image_path))
+        for image_path in image_paths:
+            img = np.array(Image.open(image_path))
+            similarites.append((image_path, ssim(reference_image, img)))
+        similarites.sort(key=lambda x: x[1], reverse=True)
+        top_image_paths = [image_path for image_path, similarity in similarites[:image_count]]
+
+
+    return
+
+    top_image_ids = []
 
     ground_truth_of_top_images = np.asarray([_get_ground_truth(image_id) for image_id in top_image_ids])
     gt_distribution = ((ground_truth_of_top_images == 0).sum(), (ground_truth_of_top_images == 1).sum(), (ground_truth_of_top_images == 2).sum())
@@ -156,6 +183,17 @@ def _get_all_image_ids(split='val'):
     conn = db.get_connection()
     c = conn.cursor()
     select_stmt = "SELECT id FROM image " \
+                  "WHERE split = ?"
+    result = c.execute(select_stmt, (split,))
+    image_ids = [row[0] for row in result]
+    return image_ids
+
+
+def _get_all_image_names(split='val'):
+    db = DB()
+    conn = db.get_connection()
+    c = conn.cursor()
+    select_stmt = "SELECT image_path FROM image " \
                   "WHERE split = ?"
     result = c.execute(select_stmt, (split,))
     image_ids = [row[0] for row in result]
