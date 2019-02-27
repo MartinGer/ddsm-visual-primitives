@@ -1,6 +1,8 @@
 import sys
 import os
 from functools import lru_cache
+from multiprocessing import Pool
+import time
 
 import numpy as np
 from scipy.spatial.distance import cosine as cosine_distance
@@ -10,6 +12,7 @@ from PIL import Image
 
 sys.path.insert(0, '..')
 from db.database import DB
+from training.common import dataset
 
 
 METRIC_CALCULATION_RUNNING = False
@@ -82,26 +85,44 @@ def _get_similarity_score_by_image_id(reference_image_id, name, model, units_to_
 
 def _get_ssim_similarity_score(image_count=20):
     image_names = _get_all_image_names()
-    image_paths = [os.path.join('../data/ddsm_raw', filename) for filename in image_names]
 
-    for reference_image_path in image_paths:
-        similarites = []
-        reference_image = np.array(Image.open(reference_image_path))
-        for image_path in image_paths:
-            img = np.array(Image.open(image_path))
-            similarites.append((image_path, ssim(reference_image, img)))
+    similar_imgs_with_same_gt = 0
+    pool = Pool()
+
+    for i, reference_image_name in enumerate(image_names):
+        print("Finding similar images using SSIM for image {} of {}".format(i, len(image_names)))
+        begin = time.time()
+        reference_image = _get_preprocessed_image_as_array(os.path.join('../data/ddsm_raw', reference_image_name))
+
+        similarites = pool.map(_get_similarity, [(reference_image, image_name) for image_name in image_names if image_name != reference_image_name])
+
         similarites.sort(key=lambda x: x[1], reverse=True)
-        top_image_paths = [image_path for image_path, similarity in similarites[:image_count]]
+        top_image_names = [image_path for image_path, similarity in similarites[:image_count]]
+
+        ground_truth_of_top_images = np.asarray([_get_ground_truth_by_name(image_name) for image_name in top_image_names])
+        gt_distribution = ((ground_truth_of_top_images == 0).sum(), (ground_truth_of_top_images == 1).sum(), (ground_truth_of_top_images == 2).sum())
+        gt = _get_ground_truth_by_name(reference_image_name)
+        similar_imgs_with_same_gt += gt_distribution[gt]
+        print("GT distribution:", gt_distribution, gt, (similar_imgs_with_same_gt / (i + 1)))
+        end = time.time()
+        print("Estimated Remaining Time: {:.1f}h".format(((end - begin) * (len(image_names) - i)) / 3600))
+
+    avg_imgs_with_same_gt = similar_imgs_with_same_gt / len(image_names)
+    print("Avg. similar images with same ground truth (SSIM): {:.2f} of {} -> {:.2f}%".format(avg_imgs_with_same_gt, image_count, (avg_imgs_with_same_gt / image_count) * 100))
 
 
-    return
+def _get_similarity(input):
+    reference_image, image_name = input
+    img = _get_preprocessed_image_as_array(os.path.join('../data/ddsm_raw', image_name))
+    return (image_name, ssim(reference_image, img))
 
-    top_image_ids = []
 
-    ground_truth_of_top_images = np.asarray([_get_ground_truth(image_id) for image_id in top_image_ids])
-    gt_distribution = ((ground_truth_of_top_images == 0).sum(), (ground_truth_of_top_images == 1).sum(), (ground_truth_of_top_images == 2).sum())
-
-    return gt_distribution, top_image_ids, ground_truth_of_top_images
+@lru_cache(maxsize=None)
+def _get_preprocessed_image_as_array(path):
+    image = Image.open(path)
+    image = dataset.resize_and_pad_image(image, dataset.IMAGE_SIZE_TO_ANALYZE, dataset.TARGET_ASPECT_RATIO, augmentation=False)
+    image = dataset.remove_background_noise(image, augmentation=False)
+    return image
 
 
 def _get_annotated_top_units(reference_image_id, classification, name, model):
@@ -288,6 +309,18 @@ def _get_ground_truth(image_id):
 
 
 @lru_cache(maxsize=None)
+def _get_ground_truth_by_name(image_name):
+    db = DB()
+    conn = db.get_connection()
+    c = conn.cursor()
+    select_stmt = "SELECT ground_truth FROM image " \
+                  "WHERE image_path = ?;"
+    c.execute(select_stmt, (image_name,))
+    result = c.fetchone()[0]
+    return result
+
+
+@lru_cache(maxsize=None)
 def _get_top_n_units(image_id, classification, model, count):
     db = DB()
     conn = db.get_connection()
@@ -304,3 +337,6 @@ def _get_top_n_units(image_id, classification, model, count):
     unit_ids = [row[0] for row in result]
     return unit_ids
 
+
+if __name__ == '__main__':
+    _get_ssim_similarity_score()

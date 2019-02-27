@@ -10,7 +10,7 @@ import backend
 from common import dataset
 from training.unit_rankings import get_top_units_by_class_influences, get_top_units_ranked, get_top_units_by_appearances_in_top_units
 from db.database import DB
-from metrics import similarity_metric, print_all_similarity_scores
+from metrics import similarity_metric
 
 app = Flask(__name__)
 
@@ -316,5 +316,5 @@ def example_analysis():
     # cancer_09-B_3410_1.LEFT_CC.LJPEG.1.jpg -> one round mass
     # cancer_09-C_0049_1.LEFT_MLO.LJPEG.1.jpg -> speculated mass
     # benign_09-D_4075_1.LEFT_CC.LJPEG.1.jpg -> three different masses
-    print_all_similarity_scores(CURRENT_USER, CURRENT_MODEL)
+    #print_all_similarity_scores(CURRENT_USER, CURRENT_MODEL)
     return image('cancer_09-B_3134_1.RIGHT_CC.LJPEG.1.jpg')
