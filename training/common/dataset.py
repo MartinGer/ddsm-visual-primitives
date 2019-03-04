@@ -1,9 +1,13 @@
 import os
+import sys
 import torch.utils.data
 from PIL import Image, ImageOps
 import numpy as np
 import torchvision.transforms as transforms
 from random import random
+
+sys.path.insert(0, '..')
+from db.database import DB
 
 
 IMAGE_SIZE_TO_ANALYZE = 1024
@@ -96,12 +100,14 @@ def preprocessing_description():
 
 
 def get_ground_truth_from_filename(filename):
-    name2class = {
-        'normal': 0,
-        'benign': 1,
-        'cancer': 2,
-    }
-    return name2class[filename[:6]]
+    db = DB()
+    conn = db.get_connection()
+    c = conn.cursor()
+    select_stmt = "SELECT ground_truth FROM image " \
+                  "WHERE image_path = ?;"
+    c.execute(select_stmt, (filename,))
+    result = c.fetchone()[0]
+    return result
 
 
 class DDSM(torch.utils.data.Dataset):

@@ -1,8 +1,12 @@
 import os
+import sys
 import torch.utils.data
 from PIL import Image
 import numpy as np
 import torchvision.transforms as transforms
+
+sys.path.insert(0, '..')
+from db.database import DB
 
 
 def get_default_transform():
@@ -34,16 +38,22 @@ def preprocessing_description():
     return "No preprocessing (full res images)"
 
 
+def get_ground_truth_from_filename(filename):
+    db = DB()
+    conn = db.get_connection()
+    c = conn.cursor()
+    select_stmt = "SELECT ground_truth FROM image " \
+                  "WHERE image_path = ?;"
+    c.execute(select_stmt, (filename,))
+    result = c.fetchone()[0]
+    return result
+
+
 class DDSM(torch.utils.data.Dataset):
     def __init__(self, root, image_list_path, transform, augmentation):
         self.root = root
-        name2class = {
-            'normal': 0,
-            'benign': 1,
-            'cancer': 2,
-        }
         with open(image_list_path, 'r') as f:
-            self.images = [(line.strip(), name2class[line.strip()[:6]]) for line in f.readlines()]
+            self.images = [(line.strip(), get_ground_truth_from_filename(line.strip())) for line in f.readlines()]
         self.image_names = [filename for filename, ground_truth in self.images]
         self.transform = transform
         self.augmentation = augmentation
