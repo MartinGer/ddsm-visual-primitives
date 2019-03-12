@@ -52,11 +52,11 @@ Such a setup using the PyCharm IDE is explained in this section.
 | Configuration Name | Type | Target | Additional Options | Environment Variables | Working Directory |
 | :------------- | :------------- | :------------- | :------------- |
 | server | Flask server | `server` | `-h 0.0.0.0` | `FLASK_APP=server.py;FLASK_RUN_PORT=1221` | `<proj~>/server` |
-| analyze_full_images | Python | `<proj~>/training/analyze_full_images.py` | `--config_path=../training/pretrained/resnet152_3class/config.yml` | `PYTHONUNBUFFERED=1` | `<proj~>/training` |
-| analyze_patches | Python | `<proj~>/training/analyze_patches.py` | `--config_path=../training/pretrained/resnet152_3class/config.yml` | `PYTHONUNBUFFERED=1` | `<proj~>/training` |
-| analyze_patches | Python | `<proj~>/training/analyze_patches.py` | `--config_path=../training/pretrained/resnet152_3class/config.yml` | `PYTHONUNBUFFERED=1` | `<proj~>/training` |
-| fix_full_images | Python | `` | `` | `` | `` |
-| train_patches | Python | `` | `` | `` | `` |
+| analyze_full_images | Python | `<proj~>/training/analyze_full_images.py` | `--config_path=../training/logs/<latest_model>/config.yml` | `PYTHONUNBUFFERED=1` | `<proj~>/training` |
+| analyze_patches | Python | `<proj~>/training/analyze_patches.py` | `--config_path=../training/logs/<latest_model>/config.yml` | `PYTHONUNBUFFERED=1` | `<proj~>/training` |
+| analyze_patches | Python | `<proj~>/training/analyze_patches.py` | `--config_path=../training/logs/<latest_model>/config.yml` | `PYTHONUNBUFFERED=1` | `<proj~>/training` |
+| fix_full_images | Python | `<proj~>/training/fix_full_images.py` | | `PYTHONUNBUFFERED=1` | `<proj~>/training` |
+| train_patches | Python | `<proj~>/training/train_patches` | `--config_path=../training/logs/<latest_model>/config.yml` | `PYTHONUNBUFFERED=1` | `<proj~>/training` |
 
 The `FLASK_RUN_PORT` will be the port under which you will be able visit the server application on your server.
 
