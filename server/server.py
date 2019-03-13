@@ -10,7 +10,7 @@ import backend
 from common import dataset
 from training.unit_rankings import get_top_units_by_class_influences, get_top_units_ranked, get_top_units_by_appearances_in_top_units
 from db.database import DB
-from metrics import similarity_metric
+from metrics import similarity_metric, similarity_metric_for_uploaded_image
 
 app = Flask(__name__)
 
@@ -30,9 +30,11 @@ app.config['PROCESSED_FOLDER'] = PROCESSED_FOLDER
 PROCESSED_FOLDER = os.path.join(STATIC_DIR, 'activation_maps')
 app.config['ACTIVATIONS_FOLDER'] = PROCESSED_FOLDER
 
-CURRENT_USER = "default"
+CURRENT_USER = 'default'
 CURRENT_MODEL = 'resnet152'
-
+CURRENT_RESULT = None
+CURRENT_HEATMAPS = []
+FINDINGS_WITH_UNITS = []
 
 @app.route('/')
 def index(name=None):
@@ -194,15 +196,13 @@ def single_image():
 
 @app.route('/own_image/<image_filename>')
 def own_image(image_filename):
-    preprocess = True  # pre-processing for uploaded images
     image_path = os.path.join(app.config['UPLOAD_FOLDER'], image_filename)
     image_name = image_filename[:-4]
 
-    result = backend.single_image_analysis.analyze_one_image(image_path, preprocess)
-    if preprocess:
-        preprocessed_full_image_path = backend.get_preprocessed_image_path(image_filename)
-    else:
-        preprocessed_full_image_path = result.image_path  # no pre-processing for uploaded images
+    result = backend.single_image_analysis.analyze_one_image(image_path)
+    global CURRENT_RESULT
+    CURRENT_RESULT = result
+    preprocessed_full_image_path = backend.get_preprocessed_image_path(image_filename)
 
     preprocessed_mask_path = ""  # no mask available for new images
     preprocessing_descr = dataset.preprocessing_description()
@@ -213,16 +213,28 @@ def own_image(image_filename):
     top_units_and_activations = result.get_top_units(result.classification, units_to_show)
     heatmap_paths, preprocessed_size = backend.get_heatmap_paths_for_top_units(image_filename, top_units_and_activations, units_to_show, app.config['UPLOAD_FOLDER'])
 
+    global FINDINGS_WITH_UNITS
+    FINDINGS_WITH_UNITS = []
+
+    unique_annotation_ids = []
     clinical_findings = []
+    phenomena_heatmaps = []
     unit_annotations = {}
     for unit_index, influence_per_class, activation_map in top_units_and_activations:
         survey = backend.get_survey(CURRENT_USER, CURRENT_MODEL, unit_index + 1)
         unit_annotations[unit_index + 1] = backend.survey2unit_annotations_ui(survey, 'german')
         if survey and survey[0]:
-            for annotation in unit_annotations[unit_index + 1]:
-                if annotation not in clinical_findings:
-                    clinical_findings.append(annotation)
+            for annotation_id in survey[1]:
+                if annotation_id not in unique_annotation_ids:
+                    phenomenon_heatmap_path = backend.generate_phenomenon_heatmap(result, annotation_id, preprocessed_size, CURRENT_USER, CURRENT_MODEL)
+                    human_readable_description = backend.human_readable_annotation(annotation_id, 'german')
+                    unique_annotation_ids.append(annotation_id)
+                    clinical_findings.append(human_readable_description)
+                    phenomena_heatmaps.append(phenomenon_heatmap_path)
+                    FINDINGS_WITH_UNITS.append([unit_index, human_readable_description])
 
+    global CURRENT_HEATMAPS
+    CURRENT_HEATMAPS = phenomena_heatmaps
     if not clinical_findings:
         clinical_findings = ["None"]
 
@@ -239,7 +251,12 @@ def own_image(image_filename):
                            heatmap_paths=heatmap_paths,
                            unit_annotations=unit_annotations,
                            clinical_findings=clinical_findings,
-                           is_correct=is_correct)
+                           phenomena_heatmaps=phenomena_heatmaps,
+                           is_correct=is_correct,
+                           ground_truth_of_similar=[],
+                           top20_image_paths=[],
+                           ground_truth_of_top20=[]
+                           )
 
 
 @app.route('/correct_classified_images')
@@ -249,6 +266,33 @@ def correct_classified_images():
               2: backend.get_correct_classified_images(class_id=2, count=24)}
     return render_template('correct_classified_images.html',
                            images=images)
+
+
+@app.route('/similar_images/<image_name>', methods=['POST', 'GET'])
+def similar_images(image_name):
+    chosen_findings = []
+    if request.method == "POST":
+        chosen_findings = request.form.getlist('checkboxes')    # by user chosen findings that should be displayed
+
+    chosen_findings_with_units = []
+    for f in FINDINGS_WITH_UNITS:
+        for cf in chosen_findings:
+            if f[1] == cf:
+                chosen_findings_with_units.append(f)
+
+    preprocessed_full_image_path = backend.get_preprocessed_image_path(image_name+".jpg")
+    ground_truth_of_similar, top20_image_paths = similarity_metric_for_uploaded_image(chosen_findings_with_units, CURRENT_RESULT, CURRENT_MODEL)
+    phenomena_heatmaps = CURRENT_HEATMAPS
+
+    return render_template('similar_images.html',
+                           preprocessed_full_image_path=preprocessed_full_image_path,
+                           phenomena_heatmaps=phenomena_heatmaps,
+                           preprocessed_mask_path="",
+                           findings=chosen_findings,
+                           image_name=image_name,
+                           ground_truth_of_similar=ground_truth_of_similar,
+                           top20_image_paths=top20_image_paths
+                           )
 
 
 # for fast testing
@@ -300,6 +344,7 @@ def image(image_filename):
                            top_units_and_activations=top_units_and_activations,
                            heatmap_paths=heatmap_paths,
                            unit_annotations=unit_annotations,
+                           unique_annotation_ids=unique_annotation_ids,
                            clinical_findings=clinical_findings,
                            phenomena_heatmaps=phenomena_heatmaps,
                            ground_truth=ground_truth,
@@ -317,3 +362,4 @@ def example_analysis():
     # cancer_09-C_0049_1.LEFT_MLO.LJPEG.1.jpg -> speculated mass
     # benign_09-D_4075_1.LEFT_CC.LJPEG.1.jpg -> three different masses
     return image('cancer_09-B_3134_1.RIGHT_CC.LJPEG.1.jpg')
+

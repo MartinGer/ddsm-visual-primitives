@@ -6,6 +6,7 @@ import numpy as np
 from PIL import Image, ImageOps
 import matplotlib.colors
 
+from scipy.spatial.distance import cosine as cosine_distance
 from db.doctor import insert_doctor_into_db_if_not_exists
 from db.database import DB
 from training.analyze_single_image import SingleImageAnalysis
@@ -364,3 +365,4 @@ def get_correct_classified_images(class_id, count):
     result = c.execute(select_stmt, (class_id, count))
     images = [row[0].split("/")[-1] for row in result]
     return images
+

@@ -24,24 +24,60 @@ Jimmy Wu, Bolei Zhou, Diondra Peck, Scott Hsieh, Vandana Dialani, Lester Mackey,
 Directory | Purpose
 ------|--------
 [`data`](data) | DDSM data
-[`deepminer`](deepminer) | Code for DeepMiner
+[`db`](db) | DB module for interacting with DB for persisting annotations and network characteristics
 [`training`](training) | CNN training and evaluation code
-[`unit_visualization`](unit_visualization) | CNN unit visualization code
 [`server`](server) | Flask server code for expert annotation web interface
 
-## Getting Started
+## Project Setup
 
-You can download our processed DDSM data (about 15GB total) using the following script:
+The subdirectories [`training`](training) and [`server`](server) contain original and for the most part unchanged READMEs from the original DeepMiner trunk project.
+You can refer to these for detailed information on how to interact with either component.
+For the first time setup and general use of the project as is, this subsection is you one-stop-shop.
 
-```bash
-./download_data.sh
-```
+### Clone Project and Setup IDE
 
-Please see the [`training`](training) directory for CNN training and evaluation code. We provide pretrained models to reproduce the numbers reported in the paper.
+You can clone this project to your local machine as usual.
+You may want to build and run the project on a remote server however for continuous availability of the server application as well as due to long-running scripts and/or training.
+Such a setup using the PyCharm IDE is explained in this section.
 
-To run the annotation web interface, you will need to use a trained CNN to generate unit visualizations using code in [`unit_visualization`](unit_visualization), then start a web server using code in [`server`](server).
+1. After cloning, open the local project using the PyCharm IDE
+2. Add a remote deployment to your remote server by going to `Tools -> Deployment -> Configuration...`
+  1. Add a new configuration using the `+` symbol in the top-left
+  2. Choose `SFTP` as the connection type and an arbitrary name
+  3. Use your host address and SSH port (22), and SSH credentials (e.g. username and password) and test the connection
+  4. You can set a default root path for your deployments, this what all file paths will be relative to when project files are uploaded to your host during deployment
+3. Right click your the project name (`ddsm-visual-primitives`) in the Project window, choose `Deployment` and `Upload to <your host>`
+4. Create Run configurations for the server application and various prerequisite scripts as per the following table (make sure to always use your *Remote Python* interpreter for all run configurations, and check *Add content roots to PYTHONPATH* and *ADD source roots to PYTHONPATH*)
 
-Please reference additional READMEs in the respective directories for more detailed instructions.
+| Configuration Name | Type | Target | Additional Options | Environment Variables | Working Directory |
+| :------------- | :------------- | :------------- | :------------- | :---- | :---- |
+| server | Flask server | `server` | `-h 0.0.0.0` | `FLASK_APP=server.py;FLASK_RUN_PORT=1221` | `<proj~>/server` |
+| analyze_full_images | Python | `<proj~>/training/analyze_full_images.py` | `--config_path=../training/logs/<latest_model>/config.yml` | `PYTHONUNBUFFERED=1` | `<proj~>/training` |
+| analyze_patches | Python | `<proj~>/training/analyze_patches.py` | `--config_path=../training/logs/<latest_model>/config.yml` | `PYTHONUNBUFFERED=1` | `<proj~>/training` |
+| analyze_patches | Python | `<proj~>/training/analyze_patches.py` | `--config_path=../training/logs/<latest_model>/config.yml` | `PYTHONUNBUFFERED=1` | `<proj~>/training` |
+| fix_full_images | Python | `<proj~>/training/fix_full_images.py` | | `PYTHONUNBUFFERED=1` | `<proj~>/training` |
+| train_patches | Python | `<proj~>/training/train_patches.py` | `--config_path=../training/logs/<latest_model>/config.yml` | `PYTHONUNBUFFERED=1` | `<proj~>/training` |
+
+The `FLASK_RUN_PORT` will be the port under which you will be able visit the server application on your server.
+
+### Download and extract DDSM data
+
+The DDSM data is not bundled in this repo for obvious size considerations. You can download and extract the data using the `download_data.sh` script.
+Note, that instead of downloading the DDSM data to you local machine and then pushing it to your remote host using SFTP, you likely will want to download the data onto your remote host straight away by running the script there.
+The download and extraction can take up to an hour, also depending on the speed of your internet connection, so you might want to start a `screen` session when executing it via an ssh connection in case of a disconnect.
+
+### Train or use Pre-trained Neural Network
+
+You can train a new neural network on the DDSM data using the `train_patches` Run configuration created earlier.
+*Alternatively*, you can also use a pre-trained network.
+
+### Run Prerequisite Scripts
+
+Before starting up the server for the first time you will need to run the following scripts using the Run Configurations created earlier; `analyze_patches`, `analyze_full_images`, and `fix_full_images`.
+
+### Start Server for Unit Visualizations and Annotations
+
+You can start the server on your remote host using the `server` Run configuration described earlier.
 
 ## Citation
 
