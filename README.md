@@ -50,7 +50,7 @@ Such a setup using the PyCharm IDE is explained in this section.
 4. Create Run configurations for the server application and various prerequisite scripts as per the following table (make sure to always use your *Remote Python* interpreter for all run configurations, and check *Add content roots to PYTHONPATH* and *ADD source roots to PYTHONPATH*)
 
 | Configuration Name | Type | Target | Additional Options | Environment Variables | Working Directory |
-| :------------- | :------------- | :------------- | :------------- |
+| :------------- | :------------- | :------------- | :------------- | :---- | :---- |
 | server | Flask server | `server` | `-h 0.0.0.0` | `FLASK_APP=server.py;FLASK_RUN_PORT=1221` | `<proj~>/server` |
 | analyze_full_images | Python | `<proj~>/training/analyze_full_images.py` | `--config_path=../training/logs/<latest_model>/config.yml` | `PYTHONUNBUFFERED=1` | `<proj~>/training` |
 | analyze_patches | Python | `<proj~>/training/analyze_patches.py` | `--config_path=../training/logs/<latest_model>/config.yml` | `PYTHONUNBUFFERED=1` | `<proj~>/training` |
