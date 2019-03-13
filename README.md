@@ -55,7 +55,7 @@ Such a setup using the PyCharm IDE is explained in this section.
 | analyze_full_images | Python | `<proj~>/training/analyze_full_images.py` | `--config_path=../training/logs/<latest_model>/config.yml` | `PYTHONUNBUFFERED=1` | `<proj~>/training` |
 | analyze_patches | Python | `<proj~>/training/analyze_patches.py` | `--config_path=../training/logs/<latest_model>/config.yml` | `PYTHONUNBUFFERED=1` | `<proj~>/training` |
 | analyze_patches | Python | `<proj~>/training/analyze_patches.py` | `--config_path=../training/logs/<latest_model>/config.yml` | `PYTHONUNBUFFERED=1` | `<proj~>/training` |
-| fix_full_images | Python | `<proj~>/training/fix_full_images.py` | | `PYTHONUNBUFFERED=1` | `<proj~>/training` |
+| fix_full_images | Python | `<proj~>/training/fix_full_image_ground_truth_in_db.py` | | `PYTHONUNBUFFERED=1` | `<proj~>/training` |
 | train_patches | Python | `<proj~>/training/train_patches.py` | `--config_path=../training/logs/<latest_model>/config.yml` | `PYTHONUNBUFFERED=1` | `<proj~>/training` |
 
 The `FLASK_RUN_PORT` will be the port under which you will be able visit the server application on your server.
