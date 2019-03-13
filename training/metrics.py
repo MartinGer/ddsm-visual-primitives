@@ -94,6 +94,7 @@ def _get_ssim_similarity_score(image_count=20):
         begin = time.time()
         reference_image = _get_preprocessed_image_as_array(os.path.join('../data/ddsm_raw', reference_image_name))
 
+        # TODO: exclude MLO AND CC images?
         similarites = pool.map(_get_similarity, [(reference_image, image_name) for image_name in image_names if image_name != reference_image_name])
 
         similarites.sort(key=lambda x: x[1], reverse=True)
@@ -203,10 +204,23 @@ def _get_all_image_ids(split='val'):
     db = DB()
     conn = db.get_connection()
     c = conn.cursor()
-    select_stmt = "SELECT id FROM image " \
-                  "WHERE split = ?"
-    result = c.execute(select_stmt, (split,))
-    image_ids = [row[0] for row in result]
+    image_ids = []
+    for class_id in (0, 1, 2):
+        select_stmt = "SELECT id FROM image " \
+                      "WHERE split = ? " \
+                      "AND ground_truth = ? " \
+                      "ORDER BY id " \
+                      "LIMIT (" \
+                      "  SELECT MIN(images_per_class) " \
+                      "  FROM (" \
+                      "    SELECT COUNT(id) images_per_class " \
+                      "    FROM image " \
+                      "    WHERE split = ? " \
+                      "    GROUP BY ground_truth" \
+                      "  )" \
+                      ")"
+        result = c.execute(select_stmt, (split, class_id, split))
+        image_ids += [row[0] for row in result]
     return image_ids
 
 
@@ -214,11 +228,24 @@ def _get_all_image_names(split='val'):
     db = DB()
     conn = db.get_connection()
     c = conn.cursor()
-    select_stmt = "SELECT image_path FROM image " \
-                  "WHERE split = ?"
-    result = c.execute(select_stmt, (split,))
-    image_ids = [row[0] for row in result]
-    return image_ids
+    image_names = []
+    for class_id in (0, 1, 2):
+        select_stmt = "SELECT image_path, id FROM image " \
+                      "WHERE split = ? " \
+                      "AND ground_truth = ? " \
+                      "ORDER BY id " \
+                      "LIMIT (" \
+                      "  SELECT MIN(images_per_class) " \
+                      "  FROM (" \
+                      "    SELECT COUNT(id) images_per_class " \
+                      "    FROM image " \
+                      "    WHERE split = ? " \
+                      "    GROUP BY ground_truth" \
+                      "  )" \
+                      ")"
+        result = c.execute(select_stmt, (split, class_id, split))
+        image_names += [row[0] for row in result]
+    return image_names
 
 
 def _get_image_id(image_path):
@@ -339,4 +366,5 @@ def _get_top_n_units(image_id, classification, model, count):
 
 
 if __name__ == '__main__':
-    _get_ssim_similarity_score()
+    print_all_similarity_scores('Prof Dr Bick', 'resnet152')
+    #_get_ssim_similarity_score()
