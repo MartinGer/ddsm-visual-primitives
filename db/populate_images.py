@@ -3,11 +3,28 @@ from collections import namedtuple
 
 Image = namedtuple("Image", "image_path ground_truth split")
 
-ground_truth_2_idx = {
-    "normal": 0,
-    "benign": 1,
-    "cancer": 2
-}
+
+def get_real_gt_per_image():
+    splits = ['train', 'val', 'test']
+
+    gt_per_image = {}
+
+    for split in splits:
+        image_list = '../data/ddsm_3class/' + split + '.txt'
+
+        with open(image_list, 'r') as f:
+            for line in f.readlines():
+                patch_filename = line.strip().split(' ')[0]
+                patch_gt = int(line.strip().split(' ')[1])
+
+                full_image_name = patch_filename.split('/')[2].split('-x')[0] + '.jpg'
+
+                if full_image_name in gt_per_image:
+                    gt_per_image[full_image_name] = max(gt_per_image[full_image_name], patch_gt)
+                else:
+                    gt_per_image[full_image_name] = patch_gt
+
+    return gt_per_image
 
 
 def _check_that_image_table_empty(conn):
@@ -26,10 +43,6 @@ def populate_db_with_images(conn, image_lists_path):
 
 
 def _get_images(image_lists_path):
-    '''
-    :param image_lists_path:
-    :return:
-    '''
     files = []
 
     for filename in os.listdir(image_lists_path):
@@ -38,11 +51,13 @@ def _get_images(image_lists_path):
 
     images = []
 
+    gt_per_image = get_real_gt_per_image()
+
     for split, filename in files:
         with open(os.path.join(image_lists_path, filename)) as file:
             for line in file.readlines():
                 image_path = line.rstrip()
-                ground_truth = ground_truth_2_idx[line.split("_")[0]]
+                ground_truth = gt_per_image[image_path]
                 image = Image(image_path, ground_truth, split.rstrip())
                 images.append(image)
 
@@ -50,11 +65,6 @@ def _get_images(image_lists_path):
 
 
 def _generate_sql_insert(images):
-    '''
-
-    :param images:
-    :return:
-    '''
     num_images = len(images)
     if num_images == 0:
         raise IndexError("No images were given")
