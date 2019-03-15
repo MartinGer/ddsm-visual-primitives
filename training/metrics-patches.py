@@ -22,18 +22,30 @@ METRIC_CALCULATION_RUNNING = False
 patchname_to_gt = None
 
 
+def _get_all_patches_in_db():
+    db = DB()
+    conn = db.get_connection()
+    c = conn.cursor()
+    select_stmt = "SELECT DISTINCT patch_filename FROM patch_unit_activation"
+    result = c.execute(select_stmt, ())
+    patch_names = [row[0] for row in result]
+    return patch_names
 
 
 def _get_patches(split='val'):
+    patches_in_db = _get_all_patches_in_db()
     with open(os.path.join('..', 'data', 'ddsm_labels', '3class', split+'.txt'), 'r') as f:
         lines = f.readlines()
         sanitized_lines = [l.strip() for l in lines]
         split_lines = [l.split(' ') for l in sanitized_lines]
+        # only 100 out of all normal patches are in DB, filter the missing ones out:
+        filtered_patches = [(name, gt) for name, gt in split_lines if name in patches_in_db]
         global patchname_to_gt
-        patchname_to_gt = dict(split_lines)
-    return split_lines
+        patchname_to_gt = dict(filtered_patches)
+    return filtered_patches
 
 
+@lru_cache(maxsize=None)
 def _get_balanced_list_of_patchnames(patch_count=10):
     balanced = defaultdict(list)
     for patch in _get_patches():
@@ -66,7 +78,7 @@ def print_all_similarity_scores(name, model):
 
 def _print_average_similarity_score(name, model, units_to_compare, feature_to_compare, patch_count):
     print("_get_average_similarity_score started:", units_to_compare, feature_to_compare, patch_count)
-    balanced_patches = _get_balanced_list_of_patchnames(10)
+    balanced_patches = _get_balanced_list_of_patchnames(100)
     similar_patches_with_same_gt = 0
 
     for patchname in tqdm(balanced_patches):
@@ -79,7 +91,18 @@ def _print_average_similarity_score(name, model, units_to_compare, feature_to_co
 
 
 def _get_classification(patchname, model):
-    return random.choice([0, 1, 2])  # FIXME: we don't have classifications saved for patches right? Either forward pass here or precalculate?
+    db = DB()
+    conn = db.get_connection()
+    c = conn.cursor()
+
+    select_net = "(SELECT id FROM net WHERE net = '{}')".format(model)
+
+    select_stmt = "SELECT class_id FROM patch_classification " \
+                  "WHERE net_id = {net} " \
+                  "AND patch_filename = ?;".format(net=select_net)
+    c.execute(select_stmt, (patchname,))
+    result = c.fetchone()[0]
+    return result
 
 
 @lru_cache(maxsize=None)
@@ -225,7 +248,7 @@ def _get_similarity_score_by_patchname(reference_patchname, name, model, units_t
         raise ValueError("Unknown content of units_to_compare.")
 
     if not _units_to_compare:
-        print("No units to compare for this patch -> can't find similar patches.")
+        print("No units to compare for this patch -> can't find similar patches. (This can happen for normal patches.)")
         return (0, 0, 0), [], []
 
     if feature_to_compare == 'activation':
@@ -239,7 +262,6 @@ def _get_similarity_score_by_patchname(reference_patchname, name, model, units_t
     gt_distribution = ((ground_truth_of_top_patches == 0).sum(), (ground_truth_of_top_patches == 1).sum(), (ground_truth_of_top_patches == 2).sum())
 
     return gt_distribution, top_patchnames, ground_truth_of_top_patches
-
 
 
 if __name__ == '__main__':
