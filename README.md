@@ -55,7 +55,6 @@ Such a setup using the PyCharm IDE is explained in this section.
 | analyze_full_images | Python | `<proj~>/training/analyze_full_images.py` | `--config_path=../training/logs/<latest_model>/config.yml` | `PYTHONUNBUFFERED=1` | `<proj~>/training` |
 | analyze_patches | Python | `<proj~>/training/analyze_patches.py` | `--config_path=../training/logs/<latest_model>/config.yml` | `PYTHONUNBUFFERED=1` | `<proj~>/training` |
 | analyze_patches | Python | `<proj~>/training/analyze_patches.py` | `--config_path=../training/logs/<latest_model>/config.yml` | `PYTHONUNBUFFERED=1` | `<proj~>/training` |
-| fix_full_images | Python | `<proj~>/training/fix_full_image_ground_truth_in_db.py` | | `PYTHONUNBUFFERED=1` | `<proj~>/training` |
 | train_patches | Python | `<proj~>/training/train_patches.py` | `--config_path=../training/logs/<latest_model>/config.yml` | `PYTHONUNBUFFERED=1` | `<proj~>/training` |
 
 The `FLASK_RUN_PORT` will be the port under which you will be able visit the server application on your server.
@@ -73,7 +72,7 @@ You can train a new neural network on the DDSM data using the `train_patches` Ru
 
 ### Run Prerequisite Scripts
 
-Before starting up the server for the first time you will need to run the following scripts using the Run Configurations created earlier; `analyze_patches`, `analyze_full_images`, and `fix_full_images`.
+Before starting up the server for the first time you will need to run the following scripts using the Run Configurations created earlier; `analyze_patches` and `analyze_full_images`.
 
 ### Start Server for Unit Visualizations and Annotations
 
