@@ -58,7 +58,7 @@ def _get_balanced_list_of_patchnames(patch_count=10):
 
 def _get_ground_truth(patchname):
     global patchname_to_gt
-    return int(patchname_to_gt[patchname])
+    return min(int(patchname_to_gt[patchname]), 1)  # merge benign and malignant to one category
 
 
 def print_all_similarity_scores(name, model):
@@ -102,7 +102,7 @@ def _get_classification(patchname, model):
                   "AND patch_filename = ?;".format(net=select_net)
     c.execute(select_stmt, (patchname,))
     result = c.fetchone()[0]
-    return result
+    return min(result, 1)  # merge benign and malignant to one category
 
 
 @lru_cache(maxsize=None)
