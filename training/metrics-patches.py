@@ -3,7 +3,6 @@ import os
 from functools import lru_cache
 from multiprocessing import Pool
 import time
-import random
 from collections import defaultdict
 
 import numpy as np
@@ -14,7 +13,6 @@ from PIL import Image
 
 sys.path.insert(0, '..')
 from db.database import DB
-from training.common import dataset
 
 
 METRIC_CALCULATION_RUNNING = False
@@ -39,7 +37,7 @@ def _get_patches(split='val'):
         sanitized_lines = [l.strip() for l in lines]
         split_lines = [l.split(' ') for l in sanitized_lines]
         # only 100 out of all normal patches are in DB, filter the missing ones out:
-        filtered_patches = [(name, gt) for name, gt in split_lines if name in patches_in_db]
+        filtered_patches = [(name, min(int(gt), 1)) for name, gt in split_lines if name in patches_in_db]
         global patchname_to_gt
         patchname_to_gt = dict(filtered_patches)
     return filtered_patches
@@ -51,14 +49,14 @@ def _get_balanced_list_of_patchnames(patch_count=10):
     for patch in _get_patches():
         if len(balanced[patch[1]]) != patch_count:
             balanced[patch[1]].append(patch[0])
-        if len(balanced['0']) == patch_count and len(balanced['1']) == patch_count and len(balanced['2']) == patch_count:
+        if len(balanced[0]) == patch_count and len(balanced[1]) == patch_count:  # and len(balanced['2']) == patch_count:
             break
-    return balanced['0'] + balanced['1'] + balanced['2']
+    return balanced[0] + balanced[1]  # + balanced[2]
 
 
 def _get_ground_truth(patchname):
     global patchname_to_gt
-    return min(int(patchname_to_gt[patchname]), 1)  # merge benign and malignant to one category
+    return min(patchname_to_gt[patchname], 1)  # merge benign and malignant to one category
 
 
 def print_all_similarity_scores(name, model):
@@ -264,6 +262,47 @@ def _get_similarity_score_by_patchname(reference_patchname, name, model, units_t
     return gt_distribution, top_patchnames, ground_truth_of_top_patches
 
 
+def _get_ssim_similarity_score(similar_patches_to_find=20):
+    image_names = _get_balanced_list_of_patchnames(100)
+
+    similar_imgs_with_same_gt = 0
+    pool = Pool()
+
+    for i, reference_image_name in enumerate(image_names):
+        print("Finding similar images using SSIM for image {} of {}".format(i, len(image_names)))
+        begin = time.time()
+        reference_image = _get_preprocessed_image_as_array(os.path.join('../data/ddsm_3class', reference_image_name))
+
+        similarites = pool.map(_get_similarity, [(reference_image, image_name) for image_name in image_names if image_name != reference_image_name])
+
+        similarites.sort(key=lambda x: x[1], reverse=True)
+        top_image_names = [image_path for image_path, similarity in similarites[:similar_patches_to_find]]
+
+        ground_truth_of_top_images = np.asarray([_get_ground_truth(image_name) for image_name in top_image_names])
+        gt_distribution = ((ground_truth_of_top_images == 0).sum(), (ground_truth_of_top_images == 1).sum(), (ground_truth_of_top_images == 2).sum())
+        gt = _get_ground_truth(reference_image_name)
+        similar_imgs_with_same_gt += gt_distribution[gt]
+        print("GT distribution:", gt_distribution, gt, (similar_imgs_with_same_gt / (i + 1)))
+        end = time.time()
+        print("Estimated Remaining Time: {:.1f}min".format(((end - begin) * (len(image_names) - i)) / 60))
+
+    avg_imgs_with_same_gt = similar_imgs_with_same_gt / len(image_names)
+    print("Avg. similar images with same ground truth (SSIM): {:.2f} of {} -> {:.2f}%".format(avg_imgs_with_same_gt, similar_patches_to_find, (avg_imgs_with_same_gt / similar_patches_to_find) * 100))
+
+
+def _get_similarity(input):
+    reference_image, image_name = input
+    img = _get_preprocessed_image_as_array(os.path.join('../data/ddsm_3class', image_name))
+    return image_name, ssim(reference_image, img, multichannel=True)
+
+
+@lru_cache(maxsize=None)
+def _get_preprocessed_image_as_array(path):
+    image = Image.open(path)
+    return np.array(image)
+
+
 if __name__ == '__main__':
     print_all_similarity_scores('Prof Dr Bick', 'resnet152')
+    #_get_ssim_similarity_score()
 
