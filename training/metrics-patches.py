@@ -19,6 +19,8 @@ METRIC_CALCULATION_RUNNING = False
 
 patchname_to_gt = None
 
+MAX_CLASS = 2
+
 
 def _get_all_patches_in_db():
     db = DB()
@@ -37,7 +39,7 @@ def _get_patches(split='val'):
         sanitized_lines = [l.strip() for l in lines]
         split_lines = [l.split(' ') for l in sanitized_lines]
         # only 100 out of all normal patches are in DB, filter the missing ones out:
-        filtered_patches = [(name, min(int(gt), 1)) for name, gt in split_lines if name in patches_in_db]
+        filtered_patches = [(name, min(int(gt), MAX_CLASS)) for name, gt in split_lines if name in patches_in_db]
         global patchname_to_gt
         patchname_to_gt = dict(filtered_patches)
     return filtered_patches
@@ -49,14 +51,14 @@ def _get_balanced_list_of_patchnames(patch_count=10):
     for patch in _get_patches():
         if len(balanced[patch[1]]) != patch_count:
             balanced[patch[1]].append(patch[0])
-        if len(balanced[0]) == patch_count and len(balanced[1]) == patch_count:  # and len(balanced['2']) == patch_count:
+        if len(balanced[0]) == patch_count and len(balanced[1]) == patch_count and len(balanced[2]) == patch_count:
             break
-    return balanced[0] + balanced[1]  # + balanced[2]
+    return balanced[1] + balanced[2]
 
 
 def _get_ground_truth(patchname):
     global patchname_to_gt
-    return min(patchname_to_gt[patchname], 1)  # merge benign and malignant to one category
+    return min(patchname_to_gt[patchname], MAX_CLASS)
 
 
 def print_all_similarity_scores(name, model):
@@ -100,7 +102,7 @@ def _get_classification(patchname, model):
                   "AND patch_filename = ?;".format(net=select_net)
     c.execute(select_stmt, (patchname,))
     result = c.fetchone()[0]
-    return min(result, 1)  # merge benign and malignant to one category
+    return min(result, MAX_CLASS)
 
 
 @lru_cache(maxsize=None)
@@ -246,7 +248,7 @@ def _get_similarity_score_by_patchname(reference_patchname, name, model, units_t
         raise ValueError("Unknown content of units_to_compare.")
 
     if not _units_to_compare:
-        print("No units to compare for this patch -> can't find similar patches. (This can happen for normal patches.)")
+        #print("No units to compare for this patch -> can't find similar patches. (This can happen for normal patches.)")
         return (0, 0, 0), [], []
 
     if feature_to_compare == 'activation':
@@ -264,6 +266,7 @@ def _get_similarity_score_by_patchname(reference_patchname, name, model, units_t
 
 def _get_ssim_similarity_score(similar_patches_to_find=20):
     image_names = _get_balanced_list_of_patchnames(100)
+    all_patches = _get_all_patches_in_db()
 
     similar_imgs_with_same_gt = 0
     pool = Pool()
@@ -273,7 +276,7 @@ def _get_ssim_similarity_score(similar_patches_to_find=20):
         begin = time.time()
         reference_image = _get_preprocessed_image_as_array(os.path.join('../data/ddsm_3class', reference_image_name))
 
-        similarites = pool.map(_get_similarity, [(reference_image, image_name) for image_name in image_names if image_name != reference_image_name])
+        similarites = pool.map(_get_similarity, [(reference_image, image_name) for image_name in all_patches if image_name != reference_image_name])
 
         similarites.sort(key=lambda x: x[1], reverse=True)
         top_image_names = [image_path for image_path, similarity in similarites[:similar_patches_to_find]]
@@ -303,6 +306,6 @@ def _get_preprocessed_image_as_array(path):
 
 
 if __name__ == '__main__':
-    print_all_similarity_scores('Prof Dr Bick', 'resnet152')
-    #_get_ssim_similarity_score()
+    #print_all_similarity_scores('Prof Dr Bick', 'resnet152')
+    _get_ssim_similarity_score()
 
