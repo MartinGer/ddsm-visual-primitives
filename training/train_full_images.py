@@ -22,7 +22,7 @@ def accuracy(output, target):
     return 100.0 * target.eq(pred).float().mean()
 
 
-def save_checkpoint(checkpoint_dir, state, epoch, loss):
+def save_checkpoint(checkpoint_dir, state, epoch, loss, accuracy):
     file_path = os.path.join(checkpoint_dir, 'checkpoint_{:08d}_{:.4f}_{:.4f}.pth.tar'.format(epoch, loss, accuracy))
     torch.save(state, file_path)
     return file_path
@@ -84,9 +84,13 @@ def train(train_loader, model, criterion, optimizer, epoch):
         losses.update(loss.item(), input_data.size(0))
         accuracies.update(acc, input_data.size(0))
         prob = nn.Softmax(dim=1)(output)
-        auc0.add(prob.data[:, 0], target.eq(0))
-        auc1.add(prob.data[:, 1], target.eq(1))
-        auc2.add(prob.data[:, 2], target.eq(2))
+        try:
+            auc0.add(prob.data[:, 0], target.eq(0))
+            auc1.add(prob.data[:, 1], target.eq(1))
+            auc2.add(prob.data[:, 2], target.eq(2))
+        except AssertionError:
+            # can happen when last batch has size 1
+            pass
 
         optimizer.zero_grad()
         loss.backward()
@@ -131,9 +135,13 @@ def validate(val_loader, model, criterion):
         losses.update(loss.item(), input_data.size(0))
         accuracies.update(acc, input_data.size(0))
         prob = nn.Softmax(dim=1)(output)
-        auc0.add(prob.data[:, 0], target.eq(0))
-        auc1.add(prob.data[:, 1], target.eq(1))
-        auc2.add(prob.data[:, 2], target.eq(2))
+        try:
+            auc0.add(prob.data[:, 0], target.eq(0))
+            auc1.add(prob.data[:, 1], target.eq(1))
+            auc2.add(prob.data[:, 2], target.eq(2))
+        except AssertionError:
+            # can happen when last batch has size 1
+            pass
 
         batch_time.update(time.time() - end)
         end = time.time()

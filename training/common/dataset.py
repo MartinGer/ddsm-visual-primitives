@@ -114,7 +114,13 @@ class DDSM(torch.utils.data.Dataset):
     def __init__(self, root, image_list_path, target_size, transform, augmentation):
         self.root = root
         with open(image_list_path, 'r') as f:
-            self.images = [(line.strip(), get_ground_truth_from_filename(line.strip())) for line in f.readlines()]
+            unbalanced_images = [(line.strip(), get_ground_truth_from_filename(line.strip())) for line in f.readlines()]
+        images_by_class = [[], [], []]
+        for path, gt in unbalanced_images:
+            images_by_class[gt].append((path, gt))
+        # balance images:
+        min_count = min([len(c) for c in images_by_class])
+        self.images = images_by_class[0][:min_count] + images_by_class[1][:min_count] + images_by_class[2][:min_count]
         self.image_names = [filename for filename, ground_truth in self.images]
         self.target_size = target_size
         self.transform = transform
