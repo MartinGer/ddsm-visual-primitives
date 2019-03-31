@@ -1,3 +1,11 @@
+# Fork of the DeepMiner Framework
+
+This repository contains the code for a project that builds on the DeepMiner framework. It ports it to Python 3, adds a database for the image metadata and analysis results, adds a more modern web UI and experiments with a content retrieval system that shows the top 20 most similar images based on the results of the network.
+
+Below find the original README with updated set-up instructions:
+
+---
+
 
 # ddsm-visual-primitives
 
