@@ -73,7 +73,7 @@ def print_all_similarity_scores(name, model):
 
     print("print_all_similarity_scores started")
 
-    for units_to_compare in ('top_10_units', 'top_annotated', 'all_annotated'):
+    for units_to_compare in ('all_annotated', 'top_10_units', 'top_annotated'):
         for feature_to_compare in ('activation', 'rank'):
             _print_average_similarity_score(name, model, units_to_compare, feature_to_compare, image_count=20)
 
@@ -94,7 +94,7 @@ def _print_average_similarity_score(name, model, units_to_compare, feature_to_co
     print("Avg. similar images with same ground truth: {:.2f} of {} -> {:.2f}%".format(avg_imgs_with_same_gt, image_count, (avg_imgs_with_same_gt / image_count) * 100))
 
 
-def _get_similarity_score_by_image_id(reference_image_id, name, model, units_to_compare='top_10_units', feature_to_compare='activation', image_count=20):
+def _get_similarity_score_by_image_id(reference_image_id, name, model, units_to_compare='top_annotated', feature_to_compare='activation', image_count=20):
     classification = _get_classification(reference_image_id, model)
 
     if units_to_compare == 'top_10_units':
@@ -117,7 +117,7 @@ def _get_similarity_score_by_image_id(reference_image_id, name, model, units_to_
     else:
         raise ValueError("Unknown content of feature_to_compare.")
 
-    ground_truth_of_top_images = np.asarray([_get_ground_truth(image_id) for image_id in top_image_ids])
+    ground_truth_of_top_images = np.asarray([_get_classification(image_id, model) for image_id in top_image_ids])
     gt_distribution = ((ground_truth_of_top_images == 0).sum(), (ground_truth_of_top_images == 1).sum(), (ground_truth_of_top_images == 2).sum())
 
     return gt_distribution, top_image_ids, ground_truth_of_top_images
@@ -249,17 +249,17 @@ def _get_all_image_ids(split='val'):
         select_stmt = "SELECT id FROM image " \
                       "WHERE split = ? " \
                       "AND ground_truth = ? " \
-                      "ORDER BY id " \
-                      "LIMIT (" \
-                      "  SELECT MIN(images_per_class) " \
-                      "  FROM (" \
-                      "    SELECT COUNT(id) images_per_class " \
-                      "    FROM image " \
-                      "    WHERE split = ? " \
-                      "    GROUP BY ground_truth" \
-                      "  )" \
-                      ")"
-        result = c.execute(select_stmt, (split, class_id, split))
+                      "ORDER BY id;"
+                      # "LIMIT (" \
+                      # "  SELECT MIN(images_per_class) " \
+                      # "  FROM (" \
+                      # "    SELECT COUNT(id) images_per_class " \
+                      # "    FROM image " \
+                      # "    WHERE split = ? " \
+                      # "    GROUP BY ground_truth" \
+                      # "  )" \
+                      # ")"
+        result = c.execute(select_stmt, (split, class_id))
         image_ids += [row[0] for row in result]
     return image_ids
 
@@ -273,17 +273,17 @@ def _get_all_image_names(split='val'):
         select_stmt = "SELECT image_path, id FROM image " \
                       "WHERE split = ? " \
                       "AND ground_truth = ? " \
-                      "ORDER BY id " \
-                      "LIMIT (" \
-                      "  SELECT MIN(images_per_class) " \
-                      "  FROM (" \
-                      "    SELECT COUNT(id) images_per_class " \
-                      "    FROM image " \
-                      "    WHERE split = ? " \
-                      "    GROUP BY ground_truth" \
-                      "  )" \
-                      ")"
-        result = c.execute(select_stmt, (split, class_id, split))
+                      "ORDER BY id;"
+                      # "LIMIT (" \
+                      # "  SELECT MIN(images_per_class) " \
+                      # "  FROM (" \
+                      # "    SELECT COUNT(id) images_per_class " \
+                      # "    FROM image " \
+                      # "    WHERE split = ? " \
+                      # "    GROUP BY ground_truth" \
+                      # "  )" \
+                      # ")"
+        result = c.execute(select_stmt, (split, class_id))
         image_names += [row[0] for row in result]
     return image_names
 

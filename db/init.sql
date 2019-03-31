@@ -57,6 +57,15 @@ CREATE TABLE IF NOT EXISTS image_classification (
   PRIMARY KEY(net_id, image_id)
 );
 
+CREATE TABLE IF NOT EXISTS patch_classification (
+  net_id TEXT NOT NULL,
+  patch_filename TEXT NOT NULL,
+  class_id INTEGER NOT NULL,
+  FOREIGN KEY(net_id) REFERENCES net(id),
+  FOREIGN KEY(class_id) REFERENCES class(id),
+  PRIMARY KEY(net_id, patch_filename)
+);
+
 CREATE TABLE IF NOT EXISTS patch_unit_activation (
   net_id TEXT NOT NULL,
   patch_filename TEXT NOT NULL,
